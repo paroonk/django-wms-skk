@@ -1,0 +1,297 @@
+{% extends 'wms_skk/base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load bootstrap4 %}
+{% load widget_tweaks %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'select2/css/select2.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'select2/css/select2-bootstrap4.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'wms_skk/css/agv.css' %}"/>
+{% endblock %}
+
+{% block title %}AGV{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex align-items-center justify-content-center">
+        <p class="font-weight-bold my-0">AGV Control</p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-md-6">
+            <div id="plan-table" class="card shadow">
+                <div class="card-header text-primary subtitle"><span>Production Plan</span></div>
+                <div class="card-body table-responsive">
+                    {% if plan_db %}
+                    <table class="table table-sm table-hover">
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Lot Name</th>
+                            <th>Total Qty (Bags)</th>
+                            <th>Remaining Qty (Bags)</th>
+                            <th>% Complete</th>
+                        </tr>
+                        {% for plan in plan_db %}
+                        <tr>
+                            <td><a href="#" onclick="PopupCenter('{% url 'wms_skk:plan_form' plan.id %}','Popup','400','600');">{{ plan.product_id }}</a></td>
+                            <td>{% if plan.lot_name %}{{ plan.lot_name }}{% endif %}</td>
+                            <td>{{ plan.qty_total }}</td>
+                            <td>{{ plan.qty_remain }}</td>
+                            <td>{{ plan.percent_complete }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    <div align="center">
+                        <a href="{% url 'wms_skk:plan_clear' %}" class="btn btn-danger" onclick="return confirm('Are you sure?');">Clear All</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="queue1-table" class="card shadow">
+                <div class="card-header text-primary subtitle"><span>AGV Queue</span></div>
+                <div class="card-body table-responsive">
+                    {% if queue1_db %}
+                    <table class="table table-sm table-hover">
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Lot Name</th>
+                            <th>Qty (Bags)</th>
+                            <th>Robot No.</th>
+                            <th>Pick Location</th>
+                            <th>Place Location</th>
+                            <th>Mode</th>
+                        </tr>
+                        {% for queue in queue1_db %}
+                        <tr>
+                            <td><a href="#" onclick="PopupCenter('{% url 'wms_skk:queue1_form' queue.id %}','Popup','400','600');">{{ queue.product_id }}</a></td>
+                            <td>{% if queue.lot_name %}{{ queue.lot_name }}{% endif %}</td>
+                            <td>{{ queue.qty_act }}</td>
+                            <td>{% if queue.robot_no %}{{ queue.robot_no }}{% endif %}</td>
+                            <td>{% if queue.pick_id %}{{ queue.pick_id }}{% endif %}</td>
+                            <td>{{ queue.place_id }}</td>
+                            <td>{{ queue.get_mode_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    <div align="center">
+                        <a href="{% url 'wms_skk:queue1_clear' %}" class="btn btn-danger" onclick="return confirm('Are you sure?');">Clear All</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div id="transfer1-table" class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <tr>
+                        <th>Status</th>
+                        <th>Step</th>
+                        <th>X NAV</th>
+                        <th>Y NAV</th>
+                        <th>Beta NAV</th>
+                        <th>Pattern</th>
+                        <th>X1</th>
+                        <th>Y1</th>
+                        <th>X2</th>
+                        <th>Y2</th>
+                        <th>X3</th>
+                        <th>Y3</th>
+                        <th>X4</th>
+                        <th>Y4</th>
+                        <th>X5</th>
+                        <th>Y5</th>
+                    </tr>
+                    <tr>
+                        {% for transfer in transfer1_db %}
+                        <td><a href="#" onclick="PopupCenter('{% url 'wms_skk:transfer1_form' %}','Popup','400','600');">{{ transfer.get_status_display }}</a></td>
+                        <td>{{ transfer.step }}</td>
+                        <td>{{ transfer.x_nav|floatformat:4 }}</td>
+                        <td>{{ transfer.y_nav|floatformat:4 }}</td>
+                        <td>{{ transfer.beta_nav|floatformat:1 }}</td>
+                        <td>{{ transfer.get_pattern_display }}</td>
+                        <td>{% if transfer.x1 != 0 %}{{ transfer.x1|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y1 != 0 %}{{ transfer.y1|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.x2 != 0 %}{{ transfer.x2|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y2 != 0 %}{{ transfer.y2|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.x3 != 0 %}{{ transfer.x3|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y3 != 0 %}{{ transfer.y3|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.x4 != 0 %}{{ transfer.x4|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y4 != 0 %}{{ transfer.y4|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.x5 != 0 %}{{ transfer.x5|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y5 != 0 %}{{ transfer.y5|floatformat:2 }}{% endif %}</td>
+                        {% endfor %}
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header text-primary subtitle"><span>Storage Order</span></div>
+                <div class="card-body">
+                    <form name="storage-form" method="post" novalidate>
+                        {% csrf_token %}
+                        {% for hidden in storage_form.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% for field in storage_form.visible_fields %}
+                        <div class="form-group row">
+                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }} :</label>
+                            <div class="col-sm-8">
+                                {% if storage_form.is_bound %}
+                                {% if field.errors %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-invalid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-invalid select2" %}
+                                {% endif %}
+                                {% for error in field.errors %}
+                                <div class="invalid-feedback">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-valid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-valid select2" %}
+                                {% endif %}
+                                {% endif %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control" %}
+                                {% else %}
+                                {% render_field field class="form-control select2" %}
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div align="center">
+                            <button name="storage" type="submit" class="btn btn-success">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header text-primary subtitle"><span>Retrieve Order</span></div>
+                <div class="card-body">
+                    <form name="retrieval-form" method="post" novalidate>
+                        {% csrf_token %}
+                        {% for hidden in retrieval_form.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% for field in retrieval_form.visible_fields %}
+                        <div class="form-group row">
+                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }} :</label>
+                            <div class="col-sm-8">
+                                {% if retrieval_form.is_bound %}
+                                {% if field.errors %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-invalid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-invalid select2" %}
+                                {% endif %}
+                                {% for error in field.errors %}
+                                <div class="invalid-feedback">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-valid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-valid select2" %}
+                                {% endif %}
+                                {% endif %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control" %}
+                                {% else %}
+                                {% render_field field class="form-control select2" %}
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div align="center">
+                            <button name="retrieval" type="submit" class="btn btn-success">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header text-primary subtitle"><span>Move Order</span></div>
+                <div class="card-body">
+                    <form name="move-form" method="post" novalidate>
+                        {% csrf_token %}
+                        {% for hidden in move_form.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% for field in move_form.visible_fields %}
+                        <div class="form-group row">
+                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }} :</label>
+                            <div class="col-sm-8">
+                                {% if move_form.is_bound %}
+                                {% if field.errors %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-invalid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-invalid select2" %}
+                                {% endif %}
+                                {% for error in field.errors %}
+                                <div class="invalid-feedback">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-valid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-valid select2" %}
+                                {% endif %}
+                                {% endif %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control" %}
+                                {% else %}
+                                {% render_field field class="form-control select2" %}
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div align="center">
+                            <button name="move" type="submit" class="btn btn-success">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" tabindex="-1" role="dialog" id="modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+    var url_get_data_storage_form = '{% url 'wms_skk:get_data_storage_form' %}';
+    var url_get_data_retrieval_form = '{% url 'wms_skk:get_data_retrieval_form' %}';
+    var url_get_data_move_form = '{% url 'wms_skk:get_data_move_form' %}';
+    var url_page= '{% url 'wms_skk:agv' %}';
+
+</script>
+<script type="text/javascript" src="{% static 'select2/js/select2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'wms_skk/js/agv.js' %}"></script>
+<script type="text/javascript" src="{% static 'wms_skk/js/PopupCenter.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,16 @@
+.content-header p {
+    font-size: calc(18px + 0.2vh + 0.05vw);
+    color: crimson;
+}
+.border-left-primary {
+    border-left:.25rem solid #4e73df
+}
+.border-left-info {
+    border-left:.25rem solid #36b9cc
+}
+.border-left-warning {
+    border-left:.25rem solid #f6c23e
+}
+.border-left-success {
+    border-left:.25rem solid #1cc88a
+}
