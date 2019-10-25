@@ -1,0 +1,38 @@
+{% extends 'wms/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+{% load render_table from django_tables2 %}
+{% load querystring from django_tables2 %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/datatables.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db&log.css' %}">
+{% endblock %}
+
+{% block title %}{% trans 'Storage Database' %}{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex justify-content-center">
+        <p class="font-weight-bold my-0">{% trans 'Storage Database' %} {% if view.kwargs.pk != 'all' %}<small>({{ view.kwargs.pk }}){% endif %}</small></p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="card shadow">
+        <div class="card-body">
+            {% render_table storage_db %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+    var pk = '{{ view.kwargs.pk }}';
+    var json_data = '{% url 'wms:storage_db_json' pk %}';
+</script>
+<script type="text/javascript" src="{% static 'datatables/js/dataTables.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'wms/js/db_log/storage_db.js' %}"></script>
+{% endblock %}

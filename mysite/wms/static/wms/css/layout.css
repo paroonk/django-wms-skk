@@ -1,0 +1,62 @@
+.content-header p {
+    font-size: calc(18px + 0.2vh + 0.05vw);
+    color: crimson;
+}
+.layout {
+    border-collapse: separate;
+    border-spacing: 0.2vh;
+    text-align: center;
+    margin: 0 auto;
+}
+.headerFooter {
+    min-width: 2.5vh;
+    width: 2.5vh;
+    border: 0vh;
+    font-size: 1vh;
+}
+.storage {
+    min-width: 2.5vh;
+    width: 2.5vh;
+    height: 2.5vh;
+    border: 0.1vh solid lightgrey;
+    font-size: 1vh;
+    word-wrap: break-all;
+}
+.noBorder {
+    border: 0vh;
+}
+@keyframes task-blink {
+   75% { border: 0.2vh dashed black; }
+}
+@keyframes alarm-blink {
+   75% { border: 0.2vh solid red; }
+}
+.in-queue {
+    animation-name: task-blink;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+}
+.misplace {
+    animation-name: alarm-blink;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+}
+.runway {
+    height: 8vh;
+}
+.robot {
+    color: darkblue;
+    border: 0.1vh solid grey;
+    font-weight: bold;
+}
+.agv {
+    width: 1.8vh;
+    height: 1.8vh;
+}
+.modal-title {
+    font-size: calc(14px + 0.2vh + 0.05vw);
+    font-weight: bold;
+}
+th, tr {
+    font-size: calc(12px + 0.2vh + 0.05vw);
+}

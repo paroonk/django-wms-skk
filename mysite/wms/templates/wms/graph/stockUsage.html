@@ -1,0 +1,63 @@
+{% load i18n %}
+<div id="stockUsage" style="width: 100%; min-height: 480px;"></div>
+<script type="text/javascript">
+var usage_plant_list = {{ usage_plant_list|safe }};
+var qty_inventory_plant = {{ qty_inventory_plant|safe }};
+
+var usageChart = echarts.init(document.getElementById('stockUsage'));
+var qty_inventory_name = [];
+for (i = 0; i < usage_plant_list.length; i++) {
+    qty_inventory_name[i] = {
+        value: qty_inventory_plant[i],
+        name: usage_plant_list[i]
+    }
+}
+
+usageOption = {
+    tooltip: {
+        trigger: 'item',
+        formatter: '{b}<br/>{c} ({d}%)',
+        textStyle: {
+            fontSize: 12,
+        }
+    },
+    series: [
+        {
+            name: 'Inventory',
+            type: 'pie',
+            radius : ['0%', '80%'],
+            center: ['50%', '50%'],
+            data: qty_inventory_name,
+            itemStyle: {
+                emphasis: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+    ],
+    toolbox: {
+        show: true,
+        showTitle: false,
+        feature: {
+            saveAsImage: {
+                show: true,
+                title: '{% trans 'Save As Image' %}',
+                name: 'Stock Usage'
+            },
+        },
+        tooltip: {
+            show: true,
+            textStyle: {
+                fontSize: 12,
+            }
+        }
+    }
+}
+usageChart.setOption(usageOption);
+</script>
+<div class="text-center">
+    <br>
+    <br>
+</div>

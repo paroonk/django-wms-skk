@@ -1,0 +1,74 @@
+{% load i18n %}
+{% load custom_tags %}
+
+<div id="trend" style="width: 100%; min-height: 650px;"></div>
+<script type="text/javascript">
+var label_list = {{ label_list|safe }};
+var dt = {{ dt|safe }};
+var qty = {{ qty|safe }};
+
+var trendChart = echarts.init(document.getElementById('trend'));
+trendOption = {
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+        textStyle: {
+            fontSize: 12,
+        }
+    },
+    legend: {
+        data: label_list
+    },
+    xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: dt
+    },
+    yAxis: {
+        type: 'value',
+    },
+    series: [
+        {% for label in label_list %}
+        {
+            name: '{{ label }}',
+            type: 'line',
+            symbol: 'none',
+            lineStyle: {
+                width: 4
+            },
+            data: {{ qty|k:label }}
+        },
+        {% endfor %}
+    ],
+    dataZoom: [
+        {
+            type: 'slider',
+            start: 0,
+            end: 100
+        },
+        {
+            type: 'inside',
+        }
+    ],
+    toolbox: {
+        show: true,
+        showTitle: false,
+        feature: {
+            saveAsImage: {
+                show: true,
+                title: '{% trans 'Save As Image' %}',
+                name: '{{ view.kwargs.pk|upper }} {% trans 'Inventory Graph' %}'
+            },
+        },
+        tooltip: {
+            show: true,
+            textStyle: {
+                fontSize: 12,
+            }
+        }
+    }
+}
+trendChart.setOption(trendOption);
+</script>

@@ -1,0 +1,301 @@
+{% extends 'wms/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block css %}
+<link href="{% static 'select2/css/select2.min.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'select2/css/select2-bootstrap4.min.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'wms/css/agv.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block title %}{% trans 'AGV Debug' %}{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex justify-content-center">
+        <p class="font-weight-bold my-0">{% trans 'AGV Debug' %}</p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row justify-content-center refresh">
+        <div class="col-md-4">
+            <div class="card card-outline card-info shadow" id="plan-table">
+                <div class="card-header">
+                    <h3 class="card-title font-weight-bold">{% trans 'Production Plan' %}</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    {% if plan_db %}
+                    <table class="table table-sm table-hover">
+                        <tr>
+                            <th>{% trans 'Product Name' %}</th>
+                            <th>{% trans 'Lot Name' %}</th>
+                            <th>{% trans 'Total Qty (Bags)' %}</th>
+                            <th>{% trans 'Remaining Qty (Bags)' %}</th>
+                            <th>{% trans '% Complete' %}</th>
+                        </tr>
+                        {% for plan in plan_db %}
+                        <tr>
+                            <td><a href="#" onclick="PopupCenter('{% url 'wms:plan_form' plan.id %}','Popup','400','600');">{{ plan.product_name }}</a></td>
+                            <td>{% if plan.lot_name %}{{ plan.lot_name }}{% endif %}</td>
+                            <td>{{ plan.qty_total }}</td>
+                            <td>{{ plan.qty_remain }}</td>
+                            <td>{{ plan.percent_complete }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    <div align="center">
+                        <a class="btn btn-danger" href="{% url 'wms:plan_clear' %}" onclick="return confirm('{% trans 'Are you sure?' %}');">{% trans 'Clear All' %}</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-outline card-warning shadow" id="robot-table">
+                <div class="card-header">
+                    <h3 class="card-title font-weight-bold">{% trans 'Robot Queue' %}</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    {% if robot_db %}
+                    <table class="table table-sm table-hover">
+                        <tr>
+                            <th>{% trans 'Robot No.' %}</th>
+                            <th>{% trans 'Qty (Bags)' %}</th>
+                            <th>{% trans 'Status' %}</th>
+                        </tr>
+                        {% for queue in robot_db %}
+                        <tr>
+                            <td><a href="#" onclick="PopupCenter('{% url 'wms:robot_form' queue.id %}','Popup','400','600');">{{ queue.robot_no }}</a></td>
+                            <td>{{ queue.qty_act }}</td>
+                            <td>{{ queue.get_updated_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    <div align="center">
+                        <a class="btn btn-danger" href="{% url 'wms:robot_clear' %}" onclick="return confirm('{% trans 'Are you sure?' %}');">{% trans 'Clear All' %}</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-outline card-success shadow" id="queue-table">
+                <div class="card-header">
+                    <h3 class="card-title font-weight-bold">{% trans 'AGV Queue' %}</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    {% if queue_db %}
+                    <table class="table table-sm table-hover">
+                        <tr>
+                            <th>{% trans 'Product Name' %}</th>
+                            <th>{% trans 'Lot Name' %}</th>
+                            <th>{% trans 'Qty (Bags)' %}</th>
+                            <th>{% trans 'Robot No.' %}</th>
+                            <th>{% trans 'Pick Location' %}</th>
+                            <th>{% trans 'Place Location' %}</th>
+                            <th>{% trans 'Mode' %}</th>
+                        </tr>
+                        {% for queue in queue_db %}
+                        <tr>
+                            <td><a href="#" onclick="PopupCenter('{% url 'wms:queue_form' queue.id %}','Popup','400','600');">{{ queue.product_name }}</a></td>
+                            <td>{% if queue.lot_name %}{{ queue.lot_name }}{% endif %}</td>
+                            <td>{{ queue.qty_act }}</td>
+                            <td>{% if queue.robot_no %}{{ queue.robot_no }}{% endif %}</td>
+                            <td>{% if queue.pick_id %}{{ queue.pick_id }}{% endif %}</td>
+                            <td>{{ queue.place_id }}</td>
+                            <td>{{ queue.get_mode_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    <div align="center">
+                        <a class="btn btn-danger" href="{% url 'wms:queue_clear' %}" onclick="return confirm('{% trans 'Are you sure?' %}');">{% trans 'Clear All' %}</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center refresh">
+        <div class="col">
+            <div class="table-responsive" id="transfer-table">
+                <table class="table table-sm table-hover">
+                    <thead>
+                    <tr>
+                        <th>{% trans 'AGV Run' %}</th>
+                        <th>{% trans 'AGV Status' %}</th>
+                        <th>{% trans 'Step' %}</th>
+                        <th>{% trans 'X NAV' %}</th>
+                        <th>{% trans 'Y NAV' %}</th>
+                        <th>{% trans 'Beta NAV' %}</th>
+                        <th>{% trans 'Pattern' %}</th>
+                        <th>X1</th>
+                        <th>Y1</th>
+                        <th>X2</th>
+                        <th>Y2</th>
+                        <th>X3</th>
+                        <th>Y3</th>
+                        <th>X4</th>
+                        <th>Y4</th>
+                        <th>X5</th>
+                        <th>Y5</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for transfer in transfer_db %}
+                    <tr>
+                        <td>{{ transfer.get_run_display }}</td>
+                        <td><a href="#" onclick="PopupCenter('{% url 'wms:transfer_form' transfer.id %}','Popup','400','600');">{{ transfer.get_status_display }}</a></td>
+                        <td>{{ transfer.step }}</td>
+                        <td>{{ transfer.x_nav|floatformat:4 }}</td>
+                        <td>{{ transfer.y_nav|floatformat:4 }}</td>
+                        <td>{{ transfer.beta_nav|floatformat:1 }}</td>
+                        <td>{{ transfer.get_pattern_display }}</td>
+                        <td>{% if transfer.x1 != 0 %}{{ transfer.x1|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y1 != 0 %}{{ transfer.y1|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.x2 != 0 %}{{ transfer.x2|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y2 != 0 %}{{ transfer.y2|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.x3 != 0 %}{{ transfer.x3|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y3 != 0 %}{{ transfer.y3|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.x4 != 0 %}{{ transfer.x4|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y4 != 0 %}{{ transfer.y4|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.x5 != 0 %}{{ transfer.x5|floatformat:2 }}{% endif %}</td>
+                        <td>{% if transfer.y5 != 0 %}{{ transfer.y5|floatformat:2 }}{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card card-secondary">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'Robot Order' %}</h3>
+                    <div class="card-tools">
+                        <!-- Collapse Button -->
+                        <button class="btn btn-tool m-0 p-0" data-card-widget="collapse" type="button"><i class="fas fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" name="robot-form" novalidate>
+                        {% csrf_token %}
+                        {% for hidden in robot_form.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% for field in robot_form.visible_fields %}
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label" for="{{ field.id_for_label }}">{{ field.label }} :</label>
+                            <div class="col-sm-8">
+                                {% if robot_form.is_bound %}
+                                {% if field.errors %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-invalid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-invalid select2" %}
+                                {% endif %}
+                                {% for error in field.errors %}
+                                <div class="invalid-feedback">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-valid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-valid select2" %}
+                                {% endif %}
+                                {% endif %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control" %}
+                                {% else %}
+                                {% render_field field class="form-control select2" %}
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div align="center">
+                            <button class="btn btn-success" name="robot" type="submit">{% trans 'Submit' %}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-secondary">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'Manual Move AGV' %}</h3>
+                    <div class="card-tools">
+                        <!-- Collapse Button -->
+                        <button class="btn btn-tool m-0 p-0" data-card-widget="collapse" type="button"><i class="fas fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" name="manualtransfer-form" novalidate>
+                        <fieldset %} %}disabled{% endif if queue_db {%>
+                            {% csrf_token %}
+                            {% for hidden in manualtransfer_form.hidden_fields %}{{ hidden }}{% endfor %}
+                            {% for field in manualtransfer_form.visible_fields %}
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="{{ field.id_for_label }}">{{ field.label }} :</label>
+                                <div class="col-sm-8">
+                                    {% if manualtransfer_form.is_bound %}
+                                    {% if field.errors %}
+                                    {% if not field|widget_type == 'select' %}
+                                    {% render_field field class="form-control is-invalid" %}
+                                    {% else %}
+                                    {% render_field field class="form-control is-invalid select2" %}
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ error }}
+                                    </div>
+                                    {% endfor %}
+                                    {% else %}
+                                    {% if not field|widget_type == 'select' %}
+                                    {% render_field field class="form-control is-valid" %}
+                                    {% else %}
+                                    {% render_field field class="form-control is-valid select2" %}
+                                    {% endif %}
+                                    {% endif %}
+                                    {% else %}
+                                    {% if not field|widget_type == 'select' %}
+                                    {% render_field field class="form-control" %}
+                                    {% else %}
+                                    {% render_field field class="form-control select2" %}
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            <div align="center">
+                                <button class="btn btn-success" name="manualtransfer" onclick="return confirm('{% trans 'Manual transfer. Are you sure?' %}');" type="submit">{% trans 'Submit' %}</button>
+                                <br>
+                                <a class="btn btn-secondary mt-1" href="{% url 'wms:agv1_to_home' %}" onclick="return confirm('{% trans 'Back to home. Are you sure?' %}');" role="button">{% trans 'Go Home' %}</a>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal" role="dialog" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+    var url_page= '{% url 'wms:agv' %}';
+
+</script>
+<script type="text/javascript" src="{% static 'select2/js/select2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'select2/js/th.js' %}"></script>
+<script type="text/javascript" src="{% static 'wms/js/agv_debug.js' %}"></script>
+<script type="text/javascript" src="{% static 'wms/js/PopupCenter.js' %}"></script>
+{% endblock %}

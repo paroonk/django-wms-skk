@@ -1,0 +1,288 @@
+{% load static %}
+{% load i18n %}
+{% load socialaccount %}
+{% load custom_tags %}
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<!--    <script type="text/javascript" src="{% static 'pace/js/pace.min.js' %}"></script>-->
+<!--    <link rel="stylesheet" type="text/css" href="{% static 'pace/css/pace.css' %}">-->
+    <link rel="shortcut icon" type="image/png" href="{% static 'wms/images/Siam_Cement_Group_Logo.ico' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'adminlte/css/adminlte.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'fontawesome/css/all.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'wms/css/base.css' %}">
+    {% block css %}{% endblock %}
+    <title>WMS | {% block title %}{% endblock %}</title>
+</head>
+
+<body class="hold-transition sidebar-mini sidebar-collapse layout-fixed layout-navbar-fixed">
+<!-- Site Wrapper -->
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-gray-dark navbar-dark">
+        <!-- Toggle Menu Button -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center" href="#" data-widget="pushmenu"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+
+        <!-- Left Navbar -->
+        <ul class="navbar-nav">
+            <li class="nav-item {% active '/dashboard/' %}">
+                <a class="nav-link d-flex align-items-center" href="{% url 'wms:dashboard' %}" data-toggle="tooltip" title="{% trans 'Dashboard' %}"><i class="fas fa-tachometer-alt"></i></a>
+            </li>
+            <li class="nav-item {% active '/layout/' %}">
+                <a class="nav-link d-flex align-items-center" href="{% url 'wms:layout' %}" data-toggle="tooltip" title="{% trans 'Layout' %}"><i class="far fa-map"></i></a>
+            </li>
+            <li class="nav-item {% active '/agv/' %}">
+                <a class="nav-link d-flex align-items-center" href="{% url 'wms:agv' %}" data-toggle="tooltip" title="{% trans 'AGV' %}"><i class="fas fa-luggage-cart"></i></a>
+            </li>
+        </ul>
+
+        <!-- Right Navbar -->
+        <!-- Links -->
+        <span class="d-none d-md-block ml-auto">
+            <ul class="navbar-nav">
+                <li class="nav-item {% active '/layout_debug/' %}">
+                    <a class="nav-link d-flex align-items-center" href="{% url 'wms:layout_debug' %}" data-toggle="tooltip" title="{% trans 'Layout Debug' %}"><i class="far fa-map"></i></a>
+                </li>
+                <li class="nav-item {% active '/agv_debug/' %}">
+                    <a class="nav-link d-flex align-items-center" href="{% url 'wms:agv_debug' %}" data-toggle="tooltip" title="{% trans 'AGV Debug' %}"><i class="fas fa-luggage-cart"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center" href="{% url 'admin:index' %}" data-toggle="tooltip" title="{% trans 'Site Admin' %}"><i class="fas fa-user-cog"></i></a>
+                </li>
+            </ul>
+        </span>
+        <!-- Search Form -->
+        <span class="d-block d-md-none ml-auto"></span>
+        <form class="form-inline my-0" action="{% url 'wms:product_db' %}" method="get">
+            <div class="input-group input-group-sm">
+                <input class="form-control form-control-navbar" name="q" type="search" placeholder="{% trans 'Search' %}" aria-label="Search" value="{{ q }}">
+                <div class="input-group-append">
+                    <button class="btn btn-navbar" type="submit"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Datetime -->
+        <span class="d-none d-lg-block mx-0">
+            <ul class="navbar-nav">
+                <li class="nav-item d-flex align-items-center">
+                    <a id="Clock" class="nav-link" tabindex="-1" aria-disabled="true">{% now "D, j M Y, H:i:s" %}</a>
+                </li>
+            </ul>
+        </span>
+
+        {% get_current_language as LANGUAGE_CODE %}
+        <form class="form-inline my-0 ml-2" action="{% url 'set_language' %}" method="post">
+            {% csrf_token %}
+            <input name="next" type="hidden" value="{{ redirect_to }}">
+            {% if LANGUAGE_CODE == 'en' %}
+            <input name="language" type="hidden" value="th">
+            <input type="image" src="{% static 'wms/images/th-flag.png' %}" height="16px" data-toggle="tooltip" title="{% trans 'Change Language' %}">
+            {% elif LANGUAGE_CODE == 'th' %}
+            <input name="language" type="hidden" value="en">
+            <input type="image" src="{% static 'wms/images/en-flag.png' %}" height="16px" data-toggle="tooltip" title="{% trans 'Change Language' %}">
+            {% endif %}
+        </form>
+
+    </nav>
+    <!-- /.Navbar -->
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="{% url 'wms:home' %}" class="brand-link">
+            <img src="{% static 'wms/images/Siam_Cement_Group_Logo_s.png' %}"
+                 alt="Logo"
+                 class="brand-image"
+                 style="opacity: .8">
+            <span class="brand-text font-weight-light"><strong>WMS</strong> <small>{% trans 'Paper Bag SKK' %}</small></span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+
+            <!-- Sidebar User -->
+            <div class="user-panel my-2 pb-2 d-flex">
+                <div class="image">
+                    <img src="{% static 'wms/images/User_Avatar-512.png' %}" class="img-circle elevation-2" alt="User Image">
+                </div>
+                <div class="info">
+                    {% if user.is_authenticated %}
+                    <a>{% if user.first_name %}{{ user.first_name|title }}{% else %}{{ user.username|title }}{% endif %} ( </a><a href="{% url 'account_logout' %}">{% trans 'Log Out' %}</a><a> )</a>
+                    {% else %}
+                    <a href="{% url 'account_login' %}">{% trans 'Login' %}</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
+                    <!-- Age layout menu -->
+                    <li class="nav-item">
+                        <a class="nav-link {% active '/layout_age/' %}" href="{% url 'wms:layout_age' %}">
+                            <i class="nav-icon far fa-hourglass"></i>
+                            <p>{% trans 'Inventory Period' %}</p>
+                        </a>
+                    </li>
+
+                    <!-- Graph menu -->
+                    <li class="nav-item">
+                        <a class="nav-link {% active '/graph_trend/' %}" href="{% url 'wms:graph_trend' %}">
+                            <i class="nav-icon far fa-chart-bar"></i>
+                            <p>{% trans 'Graph' %}</p>
+                        </a>
+                    </li>
+
+                    <!-- Database dropdown menu -->
+                    <li class="nav-item hav-treeview {% menu_open '/db/' %}">
+                        <a class="nav-link {% active '/db/' %}" href="#">
+                            <i class="nav-icon fas fa-database"></i>
+                            <p>
+                                {% trans 'Database' %}
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/db/product/' %}" href="{% url 'wms:product_db' %}">
+                                    <i class="nav-icon fas fa-pallet"></i>
+                                    <p>{% trans 'Product' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/db/storage/' %}" href="{% url 'wms:storage_db' 'all' %}">
+                                    <i class="nav-icon fas fa-boxes"></i>
+                                    <p>{% trans 'Storage' %}</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Log Dropdown Menu -->
+                    <li class="nav-item hav-treeview {% menu_open '/log/' %}">
+                        <a class="nav-link {% active '/log/' %}" href="#">
+                            <i class="nav-icon fas fa-history"></i>
+                            <p>
+                                {% trans 'Log' %}
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/log/product/' %}" href="{% url 'wms:product_log' %}">
+                                    <i class="nav-icon fas fa-pallet"></i>
+                                    <p>{% trans 'Product' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/log/storage/' %}" href="{% url 'wms:storage_log' %}">
+                                    <i class="nav-icon fas fa-boxes"></i>
+                                    <p>{% trans 'Storage' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/log/plan/' %}" href="{% url 'wms:plan_log' %}">
+                                    <i class="nav-icon far fa-calendar-alt"></i>
+                                    <p>{% trans 'Production Plan' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/log/robot/' %}" href="{% url 'wms:robot_log' %}">
+                                    <i class="nav-icon fab fa-android"></i>
+                                    <p>{% trans 'Robot Queue' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/log/queue/' %}" href="{% url 'wms:queue_log' %}">
+                                    <i class="nav-icon fas fa-luggage-cart"></i>
+                                    <p>{% trans 'AGV Queue' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/log/transfer/1/' %}" href="{% url 'wms:transfer_log' 1 %}">
+                                    <i class="nav-icon fas fa-luggage-cart"></i>
+                                    <p>{% trans 'AGV1 Transfer' %}</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Small screen menu -->
+                    <li class="nav-item d-block d-md-none">
+                        <a class="nav-link {% active '/layout_debug/' %}" href="{% url 'wms:layout_debug' %}">
+                            <i class="nav-icon far fa-map"></i>
+                            <p>{% trans 'Layout Debug' %}</p>
+                        </a>
+                    </li>
+                    <li class="nav-item d-block d-md-none">
+                        <a class="nav-link {% active '/agv_debug/' %}" href="{% url 'wms:agv_debug' %}">
+                            <i class="nav-icon fas fa-luggage-cart"></i>
+                            <p>{% trans 'AGV Debug' %}</p>
+                        </a>
+                    </li>
+                    <li class="nav-item d-block d-md-none">
+                        <a class="nav-link" href="{% url 'admin:index' %}">
+                            <i class="nav-icon fas fa-user-cog"></i>
+                            <p>{% trans 'Site Admin' %}</p>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+            <!-- /.Sidebar Menu -->
+        </div>
+        <!-- /.Sidebar -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        {% if messages %}
+        <div class="alert alert-secondary" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            {% for message in messages %}
+            {{ message }}<br>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block body %}
+        {% endblock %}
+    </div>
+    <!-- /.Content Wrapper -->
+
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2019 <a href="http://www.scg.com/">SCG</a>.</strong> All rights reserved.
+        <div class="float-right d-none d-sm-block">
+            <b>Version</b> 2019-10-17
+        </div>
+    </footer>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.Control Sidebar -->
+</div>
+<!-- ./Site Wrapper -->
+</body>
+<script type="text/javascript" src="{% static 'jquery/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'popper/js/popper.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'adminlte/js/adminlte.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'moment/js/moment-with-locales.min.js' %}"></script>
+<script type="text/javascript">
+    var lang = "{{ LANGUAGE_CODE }}";
+</script>
+<script type="text/javascript" src="{% static 'wms/js/base.js' %}"></script>
+{% block javascript %}
+{% endblock %}
+</html>

@@ -12,8 +12,8 @@
 {% get_providers as socialaccount_providers %}
 {% if socialaccount_providers %}
 <p>
-    Please sign in with one of your existing third party accounts.
-    Or <a href="{{ signup_url }}">sign up</a> for a {{ site.name }} account and sign in below:<br>
+    Please sign in with one of your existing third party accounts or local accounts.
+<!--    Or <a href="{{ signup_url }}">sign up</a> for a {{ site.name }} account and sign in below:<br>-->
 </p>
 
 <div class="socialaccount_ballot">
@@ -43,12 +43,12 @@
         <div class="form-group">
             <label for="id_login">Account: </label>
             <input id="id_login" class="form-control" type="text" name="login" placeholder="Enter username or email" autofocus="autofocus" required/>
-            <small class="form-text text-muted ml-1">
-                No account yet?
-                <a href="{% url 'account_signup' %}" style="color:cornflowerblue;">
-                    Register a new account
-                </a>
-            </small>
+<!--            <small class="form-text text-muted ml-1">-->
+<!--                No account yet?-->
+<!--                <a href="{% url 'account_signup' %}" style="color:cornflowerblue;">-->
+<!--                    Register a new account-->
+<!--                </a>-->
+<!--            </small>-->
         </div>
         <div class="form-group mb-1">
             <label for="id_password">Password: </label>

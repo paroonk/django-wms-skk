@@ -1,0 +1,213 @@
+{% load i18n %}
+<div id="stockOverview" style="width: 100%; min-height: 480px;"></div>
+<script type="text/javascript">
+var overview_plant_list = {{ overview_plant_list|safe }};
+var product_name = {{ product_name|safe }};
+var qty_inventory = {{ qty_inventory|safe }};
+var qty_buffer = {{ qty_buffer|safe }};
+var qty_misplace = {{ qty_misplace|safe }};
+var qty_avail_storage = {{ qty_avail_storage|safe }};
+var pct_qty_inventory = {{ pct_qty_inventory|safe }};
+var pct_qty_buffer = {{ pct_qty_buffer|safe }};
+var pct_qty_misplace = {{ pct_qty_misplace|safe }};
+var pct_qty_avail_storage = {{ pct_qty_avail_storage|safe }};
+var product_color = {{ product_color|safe }};
+
+var overviewChart = echarts.init(document.getElementById('stockOverview'));
+var overviewOption = [];
+for (i = 0; i < overview_plant_list.length; i++) {
+    if (i == 0) {
+        var xAxisLabelFontSize = 9;
+        var xAxisLabelRotation = 25;
+    } else {
+        var xAxisLabelFontSize = 9;
+        var xAxisLabelRotation = 25;
+    }
+
+    var qty_inventory_color = [];
+    for (j = 0; j < product_name[i].length; j++) {
+        qty_inventory_color[j] = {
+            value: qty_inventory[i][j],
+            itemStyle: {
+                color: product_color[i][j],
+            },
+        }
+    }
+
+    var pct_qty_inventory_color = [];
+    for (j = 0; j < product_name[i].length; j++) {
+        pct_qty_inventory_color[j] = {
+            value: pct_qty_inventory[i][j],
+            itemStyle: {
+                color: product_color[i][j],
+            },
+        }
+    }
+
+    overviewOption[i] = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            },
+            textStyle: {
+                fontSize: 12,
+            }
+        },
+        legend: {
+            data: ['{% trans 'Inventory' %}','{% trans 'Buffer' %}','{% trans 'Misplace' %}','{% trans 'Available Storage' %}']
+        },
+        xAxis: {
+            data: product_name[i],
+            axisLabel : {
+                fontSize: xAxisLabelFontSize,
+                rotate: xAxisLabelRotation,
+            },
+        },
+        yAxis: {
+            type : 'value',
+            min: null,
+            max: null,
+            axisLabel : {
+                formatter: '{value} Bags'
+            }
+        },
+        color: ['#003366', 'purple', 'red', 'silver'],
+        series: [
+            {
+                name: '{% trans 'Inventory' %}',
+                type: 'bar',
+                stack: 'component',
+                data: qty_inventory_color,
+            },
+            {
+                name: '{% trans 'Buffer' %}',
+                type: 'bar',
+                stack: 'component',
+                data: qty_buffer[i]
+            },
+            {
+                name: '{% trans 'Misplace' %}',
+                type: 'bar',
+                stack: 'component',
+                data: qty_misplace[i]
+            },
+            {
+                name: '{% trans 'Available Storage' %}',
+                type: 'bar',
+                stack: 'component',
+                data: qty_avail_storage[i]
+            }
+        ],
+        toolbox: {
+            show: true,
+            showTitle: false,
+            feature: {
+                saveAsImage: {
+                    show: true,
+                    title: '{% trans 'Save As Image' %}',
+                    name: 'Stock Overview'
+                },
+            },
+            tooltip: {
+                show: true,
+                textStyle: {
+                    fontSize: 12,
+                }
+            }
+        }
+    }
+
+    overviewOption[i + overview_plant_list.length] = {
+        title: {},
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        legend: {
+            data: ['{% trans 'Inventory' %}','{% trans 'Buffer' %}','{% trans 'Misplace' %}','{% trans 'Available Storage' %}']
+        },
+        xAxis: {
+            data: product_name[i],
+            axisLabel : {
+                rotate: xAxisLabelRotation
+            }
+        },
+        yAxis: {
+            type : 'value',
+            min: 0,
+            max: 100,
+            axisLabel : {
+                formatter: '{value}%'
+            }
+        },
+        color: ['#003366', 'purple', 'red', 'silver'],
+        series: [
+            {
+                name: '{% trans 'Inventory' %}',
+                type: 'bar',
+                stack: 'component',
+                data: pct_qty_inventory_color
+            },
+            {
+                name: '{% trans 'Buffer' %}',
+                type: 'bar',
+                stack: 'component',
+                data: pct_qty_buffer[i]
+            },
+            {
+                name: '{% trans 'Misplace' %}',
+                type: 'bar',
+                stack: 'component',
+                data: pct_qty_misplace[i]
+            },
+            {
+                name: '{% trans 'Available Storage' %}',
+                type: 'bar',
+                stack: 'component',
+                data: pct_qty_avail_storage[i]
+            }
+        ],
+        toolbox: {
+            show: true,
+            showTitle: false,
+            feature: {
+                saveAsImage: {
+                    show: true,
+                    title: '{% trans 'Save As Image' %}',
+                    name: 'Stock Overview'
+                },
+            },
+            tooltip: {
+                show: true,
+                textStyle: {
+                    fontSize: 12,
+                }
+            }
+        }
+    }
+}
+</script>
+<!-- Option radio button -->
+<div class="text-center">
+    {% for plant in overview_plant_list %}
+    <div class="form-check-inline">
+        <label class="form-check-label">
+            <input type="radio" class="form-check-input" name="overview_plant_id" value="{{ plant.0 }}" {% if plant.0 == overview_plant_list.0|first %}checked{% endif %}>{{ plant.1 }}
+        </label>
+    </div>
+    {% endfor %}
+    <br>
+    <div class="form-check-inline">
+        <label class="form-check-label">
+            <input type="radio" class="form-check-input" name="overview_value_type" value="0" checked>{% trans 'Bags' %}
+        </label>
+    </div>
+    <div class="form-check-inline">
+        <label class="form-check-label">
+            <input type="radio" class="form-check-input" name="overview_value_type" value="{{ overview_plant_list|length }}">{% trans '% Total' %}
+        </label>
+    </div>
+</div>

@@ -1,0 +1,7 @@
+.content-header p {
+    font-size: calc(18px + 0.2vh + 0.05vw);
+    color: crimson;
+}
+input[name="date_filter"] {
+    min-width: 255px;
+}

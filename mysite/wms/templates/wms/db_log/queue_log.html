@@ -1,0 +1,35 @@
+{% extends 'wms/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/datatables.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db&log.css' %}">
+{% endblock %}
+
+{% block title %}{% trans 'AGV Queue Log' %}{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex justify-content-center">
+        <p class="font-weight-bold my-0">{% trans 'AGV Queue Log' %}</p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="card shadow">
+        <div class="card-body">
+            {% render_table queue_log %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+    var json_data = '{% url 'wms:queue_log_json' %}';
+</script>
+<script type="text/javascript" src="{% static 'datatables/js/dataTables.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'wms/js/db_log/queue_log.js' %}"></script>
+{% endblock %}
