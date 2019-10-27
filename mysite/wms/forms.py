@@ -166,7 +166,7 @@ class MoveOrderForm(forms.Form):
 
 class AgvProductionPlanForm(forms.ModelForm):
     product_name = forms.ModelChoiceField(label=_('Product Name'), queryset=Product.objects.none(), empty_label=None)
-    lot_name = forms.CharField(label=_('Lot Name'))
+    lot_name = forms.CharField(label=_('Lot Name'), required=False)
     qty_total = forms.IntegerField(label=_('Total Quantity (Bag)'))
     qty_remain = forms.IntegerField(label=_('Remaining Quantity (Bag)'))
 
@@ -195,9 +195,26 @@ class AgvProductionPlanForm(forms.ModelForm):
         self.fields['product_name'].queryset = Product.objects.all()
 
 
+class RobotQueueForm(forms.ModelForm):
+    robot_no = forms.ChoiceField(label=_('Robot No.'), choices=RobotQueue.robot_choices, required=False)
+    product_id = forms.ChoiceField(label=_('Product Name'), choices=RobotQueue.product_id_choices)
+    qty_act = forms.IntegerField(label=_('Actual Quantity (Bag)'))
+    updated = forms.ChoiceField(label=_('Status'), choices=RobotQueue.updated_choices, initial=1)
+
+    def clean_qty_act(self):
+        data = self.cleaned_data['qty_act']
+        if data <= 0:
+            raise forms.ValidationError(_('Quantity must be more than 0 bag.'))
+        return data
+
+    class Meta:
+        model = RobotQueue
+        fields = ['robot_no', 'product_id', 'qty_act', 'updated']
+
+
 class AgvQueueForm(forms.ModelForm):
-    mode = forms.IntegerField(label=_('Mode'))
-    robot_no = forms.IntegerField(label=_('Robot No.'))
+    mode = forms.ChoiceField(label=_('Mode'), choices=AgvQueue.mode_choices)
+    robot_no = forms.ChoiceField(label=_('Robot No.'), choices=RobotQueue.robot_choices, required=False)
     pick_id = forms.ModelChoiceField(label=_('From'), queryset=Storage.objects.none(), required=False)
     place_id = forms.ModelChoiceField(label=_('To'), queryset=Storage.objects.none())
 
@@ -229,22 +246,6 @@ class AgvQueueForm(forms.ModelForm):
         qs_queue_place_id = AgvQueue.objects.exclude(place_id=self.instance.place_id.storage_id)
         qs_avail_storage = Storage.objects.filter(have_inventory=False)
         self.fields['place_id'].queryset = qs_avail_storage
-
-
-class RobotQueueForm(forms.ModelForm):
-    robot_no = forms.ChoiceField(label=_('Robot No.'), choices=RobotQueue.robot_choices, required=False)
-    qty_act = forms.IntegerField(label=_('Actual Quantity (Bag)'))
-    updated = forms.ChoiceField(label=_('Status'), choices=RobotQueue.updated_choices, initial=1)
-
-    def clean_qty_act(self):
-        data = self.cleaned_data['qty_act']
-        if data <= 0:
-            raise forms.ValidationError(_('Quantity must be more than 0 bag.'))
-        return data
-
-    class Meta:
-        model = RobotQueue
-        fields = ['robot_no', 'qty_act', 'updated']
 
 
 class AgvTransferForm(forms.ModelForm):

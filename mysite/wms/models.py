@@ -1,7 +1,6 @@
 from computedfields.models import ComputedFieldsModel, computed
 from django.db import models
 from simple_history.models import HistoricalRecords
-from django.utils import timezone
 
 
 class Plant(ComputedFieldsModel):
@@ -221,7 +220,8 @@ class RobotStatus(ComputedFieldsModel):
 class RobotQueue(ComputedFieldsModel):
     robot_choices = [(1, 'Robot #1'), (2, 'Robot #2')]
     robot_no = models.IntegerField(choices=robot_choices, verbose_name='Robot No.')
-    product_id = models.IntegerField(blank=True, null=True, verbose_name='Product ID')
+    product_id_choices = [(0, 'แรด SKW'),]
+    product_id = models.IntegerField(choices=product_id_choices, blank=True, null=True, verbose_name='Product ID')
     qty_act = models.IntegerField(verbose_name='Actual Quantity (Bag)')
     updated_choices = [(0, 'Wait'), (1, 'Ready')]
     updated = models.IntegerField(choices=updated_choices, verbose_name='Updated')
