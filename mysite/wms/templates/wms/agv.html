@@ -62,12 +62,14 @@
                     <table class="table table-sm table-hover">
                         <tr>
                             <th>{% trans 'Robot No.' %}</th>
+                            <th>{% trans 'Product Name' %}</th>
                             <th>{% trans 'Qty (Bags)' %}</th>
                             <th>{% trans 'Status' %}</th>
                         </tr>
                         {% for queue in robot_db %}
                         <tr>
-                            <td><a href="#" onclick="PopupCenter('{% url 'wms:robot_form' queue.id %}','Popup','400','600');">{{ queue.robot_no }}</a></td>
+                            <td><a href="#" onclick="PopupCenter('{% url 'wms:robot_form' queue.id %}','Popup','400','600');">{{ queue.get_robot_no_display }}</a></td>
+                            <td>{{ queue.get_product_id_display }}</td>
                             <td>{{ queue.qty_act }}</td>
                             <td>{{ queue.get_updated_display }}</td>
                         </tr>
@@ -102,7 +104,7 @@
                             <td><a href="#" onclick="PopupCenter('{% url 'wms:queue_form' queue.id %}','Popup','400','600');">{{ queue.product_name }}</a></td>
                             <td>{% if queue.lot_name %}{{ queue.lot_name }}{% endif %}</td>
                             <td>{{ queue.qty_act }}</td>
-                            <td>{% if queue.robot_no %}{{ queue.robot_no }}{% endif %}</td>
+                            <td>{% if queue.robot_no %}{{ queue.get_robot_no_display }}{% endif %}</td>
                             <td>{% if queue.pick_id %}{{ queue.pick_id }}{% endif %}</td>
                             <td>{{ queue.place_id }}</td>
                             <td>{{ queue.get_mode_display }}</td>

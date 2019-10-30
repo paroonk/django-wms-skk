@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+
 from django.utils.translation import ugettext_lazy as _
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -172,5 +173,3 @@ LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'account_login'
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_USER_DISPLAY = lambda user: user.first_name.capitalize() if user.first_name else user.username.capitalize()
-
-TEMPUS_DOMINUS_INCLUDE_ASSETS = False

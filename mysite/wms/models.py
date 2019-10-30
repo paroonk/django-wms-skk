@@ -1,7 +1,7 @@
 from computedfields.models import ComputedFieldsModel, computed
 from django.db import models
 from simple_history.models import HistoricalRecords
-from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class Plant(ComputedFieldsModel):
@@ -50,7 +50,7 @@ class Product(ComputedFieldsModel):
 
 class Column(ComputedFieldsModel):
     column_id = models.CharField(max_length=10, primary_key=True, unique=True)
-    is_inventory_choices = [(True, 'Inventory'), (False, 'Buffer')]
+    is_inventory_choices = [(True, _('Inventory')), (False, _('Buffer'))]
     is_inventory = models.BooleanField(choices=is_inventory_choices)
     for_product = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True)
     for_buffer = models.ForeignKey(Buffer, on_delete=models.SET_NULL, blank=True, null=True)
@@ -219,11 +219,12 @@ class RobotStatus(ComputedFieldsModel):
 
 
 class RobotQueue(ComputedFieldsModel):
-    robot_choices = [(1, 'Robot #1'), (2, 'Robot #2')]
+    robot_choices = [(1, _('Robot #1')), (2, _('Robot #2'))]
     robot_no = models.IntegerField(choices=robot_choices, verbose_name='Robot No.')
-    product_id = models.IntegerField(blank=True, null=True, verbose_name='Product ID')
+    product_id_choices = [(0, 'แรด SKW'), ]
+    product_id = models.IntegerField(choices=product_id_choices, blank=True, null=True, verbose_name='Product ID')
     qty_act = models.IntegerField(verbose_name='Actual Quantity (Bag)')
-    updated_choices = [(0, 'Wait'), (1, 'Ready')]
+    updated_choices = [(0, _('Wait')), (1, _('Ready'))]
     updated = models.IntegerField(choices=updated_choices, verbose_name='Updated')
     history = HistoricalRecords()
 
@@ -239,11 +240,11 @@ class AgvQueue(ComputedFieldsModel):
     lot_name = models.CharField(max_length=100, blank=True, null=True, verbose_name='Lot Name')
     qty_act = models.IntegerField(verbose_name='Actual Quantity (Bag)')
     created_on = models.DateTimeField(blank=True, null=True, verbose_name='Created On')
-    robot_choices = [(1, 'Robot #1'), (2, 'Robot #2')]
+    robot_choices = [(1, _('Robot #1')), (2, _('Robot #2'))]
     robot_no = models.IntegerField(choices=robot_choices, blank=True, null=True, verbose_name='Robot No.')
     pick_id = models.ForeignKey(Storage, on_delete=models.CASCADE, blank=True, null=True, verbose_name='Pick ID', related_name='pick_id')
     place_id = models.ForeignKey(Storage, on_delete=models.CASCADE, blank=True, null=True, verbose_name='Place ID', related_name='place_id')
-    mode_choices = [(1, 'Storage'), (2, 'Retrieval/Move')]
+    mode_choices = [(1, _('Storage')), (2, _('Retrieval/Move'))]
     mode = models.IntegerField(choices=mode_choices, verbose_name='Mode')
     history = HistoricalRecords()
 
@@ -291,16 +292,16 @@ class AgvQueue(ComputedFieldsModel):
 
 
 class AgvTransfer(ComputedFieldsModel):
-    run_choices = [(0, 'Stop'), (1, 'Start')]
+    run_choices = [(0, _('Stop')), (1, _('Start'))]
     run = models.IntegerField(choices=run_choices, default=0)
-    status_choices = [(0, 'Wait'), (1, 'Operating')]
+    status_choices = [(0, _('Wait for queue')), (1, _('Operating queue'))]
     status = models.IntegerField(choices=status_choices, default=1, verbose_name='AGV Status')
     step_choices = [(i + 1, i + 1) for i in range(6)]
     step = models.IntegerField(choices=step_choices, default=1)
     x_nav = models.FloatField(default=0.0)
     y_nav = models.FloatField(default=0.0)
     beta_nav = models.FloatField(default=0.0)
-    pause_choices = [(0, 'Not Pause'), (1, 'Pause')]
+    pause_choices = [(0, _('Not Pause')), (1, _('Pause'))]
     pause = models.IntegerField(choices=pause_choices, default=0)
     pattern_choices = [(0.0, 'P0: ArmRun -> Rev'), (1.0, 'P1: Rev -> ArmRun'), (2.0, 'P2: ArmPrepare -> FW -> Pick(Robot)'), (3.0, 'P3: ArmPrepare -> FW -> Pick(Storage)'), (4.0, 'P4: FW -> ArmPut')]
     pattern = models.FloatField(choices=pattern_choices, default=0.0)

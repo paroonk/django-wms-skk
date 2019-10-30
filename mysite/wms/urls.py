@@ -59,7 +59,7 @@ urlpatterns = [
     path('agv/transfer_form/<slug:pk>/transfer_update/', views.transfer_update, name='transfer_update'),
 
     path('agv_debug/', views.AgvTestListView.as_view(), name='agv_debug'),
-    path('agv_debug/agv1_to_home', views.agv1_to_home, name='agv1_to_home'),
+    path('agv_debug/<int:pk>/agv_to_home', views.agv_to_home, name='agv_to_home'),
 
     path('graph_trend/', views.GraphTrendView.as_view(), name='graph_trend'),
 

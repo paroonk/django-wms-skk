@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django_pandas.io import read_frame
 from simple_history.signals import post_create_historical_record
 
@@ -13,8 +14,12 @@ from .models import *
 transfer_hold = {
     1: 0,
 }
-x_check = 999.9
-y_check = 999.9
+x_check = {
+    1: 999.9,
+}
+y_check = {
+    1: 999.9,
+}
 db_update_list = []
 db_update_initial = True
 
@@ -26,9 +31,10 @@ def datetime_now():
 def initial_data():
     # Create buffer sql variable for communication #
     try:
-        if not AgvTransfer.objects.filter(id=1).exists():
-            qs_transfer1 = AgvTransfer(id=1)
-            qs_transfer1.save()
+        for agv_no in [1]:
+            if not AgvTransfer.objects.filter(id=agv_no).exists():
+                qs_transfer = AgvTransfer(id=agv_no)
+                qs_transfer.save()
 
         for robot_no in [1, 2]:
             if not RobotStatus.objects.filter(robot_no=robot_no).exists():
@@ -39,13 +45,14 @@ def initial_data():
 
     # Clear old log #
     days_history_keep = 30
-    date_keep = timezone.now()-timezone.timedelta(days=days_history_keep)
+    date_keep = timezone.now() - timezone.timedelta(days=days_history_keep)
     # Product.history.filter(history_date__lt=date_keep).delete()
     Storage.history.filter(history_date__lt=date_keep).delete()
     AgvProductionPlan.history.filter(history_date__lt=date_keep).delete()
     RobotQueue.history.filter(history_date__lt=date_keep).delete()
     AgvQueue.history.filter(history_date__lt=date_keep).delete()
     AgvTransfer.history.filter(history_date__lt=date_keep).delete()
+
 
 def robot_check():
     try:
@@ -122,22 +129,25 @@ def robot_check():
 
 
 def transfer_check():
+    global x_check, y_check
     try:
-        if AgvTransfer.objects.filter(id=1).exists():
-            qs_transfer1 = AgvTransfer.objects.filter(id=1)
-            qs_transfer_list = [qs_transfer1]
+        for agv_no in [1]:
+            if AgvTransfer.objects.filter(id=agv_no).exists():
+                qs_transfer1 = AgvTransfer.objects.filter(id=agv_no)
+                qs_transfer_list = [qs_transfer1]
 
-            for agv_no, qs_transfer in enumerate(qs_transfer_list, 1):
-                try:
-                    obj_transfer = get_object_or_404(qs_transfer)
-                    if obj_transfer.status == 0:
-                        if agv_no == 1:
-                            qs_queue = AgvQueue.objects.all()
-                        scheduler.add_job(agv_route, 'date', run_date=timezone.now(), args=[agv_no, qs_transfer, qs_queue], id='agv_route', replace_existing=True)
-                except AgvTransfer.DoesNotExist:
-                    pass
-        else:
-            pass
+        for agv_no, qs_transfer in enumerate(qs_transfer_list, 1):
+            try:
+                obj_transfer = get_object_or_404(qs_transfer)
+                if obj_transfer.run == 1 and obj_transfer.status == 0:
+                    if agv_no == 1:
+                        qs_queue = AgvQueue.objects.all()
+                    scheduler.add_job(agv_route, 'date', run_date=timezone.now(), args=[agv_no, qs_transfer, qs_queue], id='agv_route', replace_existing=True)
+                elif obj_transfer.run == 0:
+                    x_check[agv_no] = y_check[agv_no] = 999.9
+            except AgvTransfer.DoesNotExist:
+                pass
+
     except ProgrammingError:
         pass
 
@@ -154,9 +164,8 @@ def transfer_adjust(obj_transfer):
 
 
 def transfer_update(agv_no):
-    if agv_no == 1:
-        qs_transfer = AgvTransfer.objects.filter(id=1)
-        obj_transfer = get_object_or_404(qs_transfer)
+    qs_transfer = AgvTransfer.objects.filter(id=agv_no)
+    obj_transfer = get_object_or_404(qs_transfer)
 
     obj_transfer.status = 1
     obj_transfer.changeReason = 'Delayed AGV Command'
@@ -197,7 +206,7 @@ def agv_route(agv_no, qs_transfer, qs_queue):
 
         # Check Distance
         dist_check = 2.0
-        dist_error = np.sqrt((agv_x - x_check) ** 2 + (agv_y - y_check) ** 2)
+        dist_error = np.sqrt((agv_x - x_check[agv_no]) ** 2 + (agv_y - y_check[agv_no]) ** 2)
 
         if active_queue['mode'] == 1:
             if obj_transfer.step == 1:
@@ -206,8 +215,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                 if dist_error > dist_check:
                     route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
@@ -222,8 +231,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 2, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
@@ -236,8 +245,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 1, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
@@ -247,8 +256,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                 if dist_error > dist_check:
                     route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
@@ -263,8 +272,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 4, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
@@ -280,9 +289,9 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 1, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
                     print(datetime_now() + 'Finish Order')
-                    x_check = y_check = 999.9
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = 1
                     obj_transfer.changeReason = 'Finish Order'
                     obj_transfer.save()
@@ -311,8 +320,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                 if dist_error > dist_check:
                     route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
@@ -327,8 +336,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 3, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
@@ -338,8 +347,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                 if dist_error > dist_check:
                     route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
@@ -354,8 +363,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 4, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
@@ -371,8 +380,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 1, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check, y_check, dist_error))
-                    x_check = y_check = 999.9
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
                     obj_transfer.step = 1
                     obj_transfer.changeReason = 'Finish Order'
                     obj_transfer.save()
@@ -423,7 +432,7 @@ def agv_route_home(agv_no, qs_transfer):
     route_calculate(agv_no, obj_transfer, pattern, agv_x, agv_y, target_col, target_row)
 
     obj_transfer = get_object_or_404(qs_transfer)
-    x_check = y_check = 999.9
+    x_check[agv_no] = y_check[agv_no] = 999.9
     obj_transfer.step = 1
     obj_transfer.changeReason = 'Manual Update AGV1 Transfer'
     obj_transfer.save()
@@ -442,7 +451,7 @@ def agv_route_manual(agv_no, qs_transfer, pattern, target_col, target_row):
     route_calculate(agv_no, obj_transfer, pattern, agv_x, agv_y, target_col, target_row)
 
     obj_transfer = get_object_or_404(qs_transfer)
-    x_check = y_check = 999.9
+    x_check[agv_no] = y_check[agv_no] = 999.9
     obj_transfer.step = 1
     obj_transfer.changeReason = 'Manual Update AGV1 Transfer'
     obj_transfer.save()
@@ -492,8 +501,8 @@ def route_calculate(agv_no, obj_transfer, pattern, agv_x, agv_y, target_col, tar
     agv_col, agv_row = position_cal(agv_x, agv_y)
     if agv_col == target_col and agv_row == target_row:
         obj_coor = get_object_or_404(Coordinate, layout_col=agv_col, layout_row=agv_row)
-        x_check = obj_coor.coor_x
-        y_check = obj_coor.coor_y
+        x_check[agv_no] = obj_coor.coor_x
+        y_check[agv_no] = obj_coor.coor_y
     else:
         runway_row = 9
 
@@ -532,11 +541,11 @@ def route_calculate(agv_no, obj_transfer, pattern, agv_x, agv_y, target_col, tar
             dist_compensate(df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1], dist_offset[pattern])
         df_route.reset_index(drop=True, inplace=True)
 
-        x_check, y_check = dist_compensate(df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1], -dist_offset_final)
+        x_check[agv_no], y_check[agv_no] = dist_compensate(df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1], -dist_offset_final)
 
         print(' Pattern = {}'.format(pattern))
         print(df_route.to_string(index=False))
-        print(' Target x = {:.6f}, y = {:.6f}'.format(x_check, y_check))
+        print(' Target x = {:.6f}, y = {:.6f}'.format(x_check[agv_no], y_check[agv_no]))
 
         obj_transfer.pattern = float(pattern)
         obj_transfer.qty = float(len(df_route))

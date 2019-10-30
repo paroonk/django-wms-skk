@@ -1,4 +1,5 @@
 import shlex
+from datetime import datetime
 
 import pandas as pd
 from django.contrib import messages
@@ -6,14 +7,13 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_list_or_404
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from django_pandas.io import read_frame
 from django_tables2 import SingleTableMixin
-from datetime import datetime
 
 from .forms import *
 from .sched import transfer_adjust, position_cal, agv_route_home, agv_route_manual
@@ -44,6 +44,8 @@ class DashboardView(generic.TemplateView):
         in_stock_status = '{:,}'.format(Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum']
                                         if Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] is not None else 0)
         in_stock_pct = '{:.0%}'.format(Storage.objects.filter(have_inventory=True).count() / Storage.objects.all().count() if Storage.objects.all() else 0)
+        agv_run = AgvTransfer.objects.filter(run=1).count()
+        agv_total = AgvTransfer.objects.all().count()
 
         # For Overview Graph #
         overview_plant_list = list(enumerate([_('All')] + list(Product.objects.select_related('plant').order_by().distinct().values_list('plant', flat=True))))
@@ -89,6 +91,8 @@ class DashboardView(generic.TemplateView):
             # 'current_production': current_production,
             'in_stock_status': in_stock_status,
             'in_stock_pct': in_stock_pct,
+            'agv_run': agv_run,
+            'agv_total': agv_total,
             # For Overview Graph #
             'overview_plant_list': overview_plant_list,
             'product_name': product_name,
@@ -106,6 +110,7 @@ class DashboardView(generic.TemplateView):
             'qty_inventory_plant': qty_inventory_plant,
         })
         return context
+
 
 def layout_map(obj_storage, debug=False, age=False):
     layout = {}
@@ -501,7 +506,7 @@ class StorageLogJson(BaseDatatableView):
             return timezone.localtime(row.history_date).strftime('%a, %d %b %Y, %H:%M:%S')
         else:
             return super().render_column(row, column)
-    
+
 
 @method_decorator(login_required, name='dispatch')
 class AgvProductionPlanLogView(SingleTableMixin, generic.TemplateView):
@@ -881,7 +886,10 @@ def queue_update(request, pk):
         if form.is_valid():
             obj = form.save(commit=False)
             if obj.mode == 1:
-                pass
+                obj_to = get_object_or_404(Storage, storage_id=obj.place_id)
+                obj.place_id = obj_to
+                obj.mode = 1
+                obj.updated = 0
             elif obj.mode == 2:
                 obj_from = get_object_or_404(Storage, storage_id=obj.pick_id)
                 obj_to = get_object_or_404(Storage, storage_id=obj.place_id)
@@ -889,12 +897,11 @@ def queue_update(request, pk):
                 obj.lot_name = obj_from.lot_name
                 obj.qty_act = obj_from.inv_qty
                 obj.created_on = obj_from.created_on
-                obj.robot_no = None
                 obj.pick_id = obj_from
                 obj.place_id = obj_to
                 obj.mode = 2
                 obj.updated = 0
-            obj.changeReason = 'Manual Update AGV1 Queue'
+            obj.changeReason = 'Manual Update AGV Queue'
             obj.save()
             data['form_is_valid'] = True
         else:
@@ -911,7 +918,7 @@ def queue_update(request, pk):
 @login_required
 def queue_delete(request, pk):
     obj = get_object_or_404(AgvQueue, pk=pk)
-    obj.changeReason = 'Manual Delete AGV1 Queue'
+    obj.changeReason = 'Manual Delete AGV Queue'
     obj.delete()
     return redirect('wms:auto_close')
 
@@ -920,7 +927,7 @@ def queue_delete(request, pk):
 def queue_clear(request):
     qs = AgvQueue.objects.all()
     for obj in qs:
-        obj.changeReason = 'Manual Delete AGV1 Queue'
+        obj.changeReason = 'Manual Delete AGV Queue'
         obj.delete()
     return redirect(request.META.get('HTTP_REFERER'))
 
@@ -982,7 +989,7 @@ def transfer_update(request, pk):
         form = AgvTransferForm(request.POST, instance=obj)
         if form.is_valid():
             obj = form.save(commit=False)
-            obj.changeReason = 'Manual Update AGV1 Transfer'
+            obj.changeReason = 'Manual Update AGV Transfer'
             obj.save()
             data['form_is_valid'] = True
         else:
@@ -1046,7 +1053,7 @@ class AgvTestListView(generic.TemplateView):
             form = ManualTransferForm(request.POST)
             if form.is_valid():
                 agv_no = 1
-                qs_transfer = AgvTransfer.objects.filter(id=1)
+                qs_transfer = AgvTransfer.objects.filter(id=agv_no)
                 pattern = float(request.POST.get('pattern', None))
                 robot_no = int(request.POST.get('robot_no_manual', None))
                 obj_storage = get_object_or_404(Storage, storage_id=request.POST.get('place_id', None))
@@ -1068,9 +1075,9 @@ class AgvTestListView(generic.TemplateView):
 
 
 @login_required
-def agv1_to_home(request):
-    agv_no = 1
-    qs_transfer = AgvTransfer.objects.filter(id=1)
+def agv_to_home(request, pk):
+    agv_no = pk
+    qs_transfer = AgvTransfer.objects.filter(id=agv_no)
     agv_route_home(agv_no, qs_transfer)
 
     return redirect(request.META.get('HTTP_REFERER'))
@@ -1125,7 +1132,7 @@ class GraphTrendView(generic.TemplateView):
                 for dt in dt_list:
                     condition = Q(history_date__lte=dt, product_name=product)
                     df_qty.loc[dt, product] = Product.history.filter(condition).order_by('-history_date').first().qty_total if Product.history.filter(condition).exists() else 0
-            df_qty[plant] = df_qty.loc[:, product_list].sum(axis=1)
+                df_qty[product] = df_qty.loc[:, product_list].sum(axis=1)
 
         dt = [timezone.localtime(dt).strftime('%d/%m/%y %H:%M') for dt in dt_list]
         qty = {'{}'.format(label): df_qty[label].to_list() for label in label_list}
