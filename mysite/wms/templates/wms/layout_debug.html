@@ -25,7 +25,7 @@
                     <tr>
                         <th class="headerFooter font-weight-bold"></th>
                         {% for header in header_1 %}
-                        <th class="headerFooter font-weight-bold" colspan="4">{{ header }}</th>
+                        <th class="headerFooter font-weight-bold" colspan="2">{{ header }}</th>
                         {% endfor %}
                     </tr>
                     <tr>
@@ -40,45 +40,45 @@
                     <tr>
                         <td class="headerFooter font-weight-normal">{{ index }}</td>
                         {% for col in layout_col reversed %}
-                        {% if layout|k:col|k:row|k:'storage_for' %}
-                        {% if layout|k:col|k:row|k:'is_inventory' %}
-                        <td bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
-                            class="js-update-col storage"
-                            data-html="true"
-                            data-toggle="tooltip"
-                            data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}" title="
-                                                    <div align='center'>
-                                                    {{ layout|k:col|k:row|k:'storage_id' }}<br>
-                                                    {{ layout|k:col|k:row|k:'storage_for' }}<br>
-                                                    </div>">
-                            <font color="{{ layout|k:col|k:row|k:'font_color' }}"></font>
-                        </td>
-                        {% else %}
-                        <td bgcolor="white"
-                            class="js-update-col storage"
-                            data-html="true"
-                            data-toggle="tooltip"
-                            data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}" title="
-                                                    <div align='center'>
-                                                    {{ layout|k:col|k:row|k:'storage_id' }}<br>
-                                                    {{ layout|k:col|k:row|k:'storage_for' }}<br>
-                                                    </div>">
-                            <font color="black"></font>
-                        </td>
-                        {% endif %}
-                        {% else %}
-                        {% if col == 46 and row >= 5 and row <= 7 or col == 39 and row >= 5 and row <= 7 %}
-                        {% if col == 46 and row == 5 %}
-                        <td class="storage robot" rowspan="2">Ro bot #1</td>
-                        {% elif col == 39 and row == 5 %}
-                        <td class="storage robot" rowspan="2">Ro bot #2</td>
-                        {% endif %}
-                        {% else %}
-                        <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
-                        {% endif %}
-                        {% endif %}
+                            {% if layout|k:col|k:row|k:'storage_for' %}
+                                {% if layout|k:col|k:row|k:'is_inventory' %}
+                                <td bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
+                                    class="js-update-col storage"
+                                    data-html="true"
+                                    data-toggle="tooltip"
+                                    data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}" title="
+                                                            <div align='center'>
+                                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
+                                                            </div>">
+                                </td>
+                                {% else %}
+                                <td bgcolor="white"
+                                    class="js-update-col storage"
+                                    data-html="true"
+                                    data-toggle="tooltip"
+                                    data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}" title="
+                                                            <div align='center'>
+                                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
+                                                            </div>">
+                                </td>
+                                {% endif %}
+                            {% else %}
+                                {% if col == 10 and row >= 5 and row <= 7 or col == 14 and row >= 5 and row <= 7 or col == 18 and row >= 5 and row <= 7 %}
+                                    {% if col == 10 and row == 5 %}
+                                    <td rowspan="2" class="storage robot">Ro bot #2</td>
+                                    {% elif col == 14 and row == 5 %}
+                                    <td rowspan="2" class="storage robot">Ro bot #1</td>
+                                    {% elif col == 18 and row == 5 %}
+                                    <td rowspan="2" class="storage robot">Ro bot #3</td>
+                                    {% endif %}
+                                {% else %}
+                                <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
+                                {% endif %}
+                            {% endif %}
                         {% endfor %}
-                        <td class="headerFooter font-weight-normal">{% if row >= 10 %}{{ index }}{% endif %}</td>
+                        <td class="headerFooter font-weight-normal">{% if row >= 11 %}{{ index }}{% endif %}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -92,7 +92,7 @@
                     <tr>
                         <td class="headerFooter font-weight-bold"></td>
                         {% for footer in footer_1 %}
-                        <td class="headerFooter font-weight-bold" colspan="4">{{ footer }}</td>
+                        <td class="headerFooter font-weight-bold" colspan="2">{{ footer }}</td>
                         {% endfor %}
                     </tr>
                     </tfoot>

@@ -27,73 +27,79 @@
                     <tr>
                         <th class="headerFooter font-weight-bold"></th>
                         {% for header in header_1 %}
-                        <th class="headerFooter font-weight-bold" colspan="4">{{ header }}</th>
+                        <th class="headerFooter font-weight-bold" colspan="2">{{ header }}</th>
                         {% endfor %}
                     </tr>
                     <tr>
                         <th class="headerFooter font-weight-normal"></th>
                         {% for header, header_col in zip_header_2 %}
-                        <th class="headerFooter font-weight-normal js-update-invcol" data-url="{% url 'wms:invcol_update' header_col %}">{{ header }}</th>
+                            {% if header_col %}
+                            <th class="headerFooter font-weight-normal js-update-invcol" data-url="{% url 'wms:invcol_update' header_col %}">{{ header }}</th>
+                            {% else %}
+                            <th class="headerFooter font-weight-normal">{{ header }}</th>
+                            {% endif %}
                         {% endfor %}
                     </tr>
                     </thead>
                     <tbody>
                     {% for index, row in zip_row %}
                     <tr>
-                        <td class="headerFooter">{{ index }}</td>
+                        <td class="headerFooter font-weight-normal">{{ index }}</td>
                         {% for col in layout_col reversed %}
-                        {% if layout|k:col|k:row|k:'storage_for' %}
-                        {% if layout|k:col|k:row|k:'have_inventory' %}
-                        <td class="js-update-inv storage{% if layout|k:col|k:row|k:'storage_id' in in_queue %} in-queue{% endif %}
-                            {% if layout|k:col|k:row|k:'misplace' %} misplace{% endif %}"
-                            data-url="{% url 'wms:inv_update' layout|k:col|k:row|k:'storage_id' %}"
-                            bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
-                            data-toggle="tooltip"
-                            data-html="true" title="
-                                            <div align='center'>
-                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
-                                            {{ layout|k:col|k:row|k:'inv_product' }}<br>
-                                            </div>
-                                            <br>
-                                            <div align='left'>
-                                            {% trans 'Quantity' %} : {{ layout|k:col|k:row|k:'inv_qty' }}<br>
-                                            {% if layout|k:col|k:row|k:'lot_name' %}{% trans 'Lot Name' %}: {{ layout|k:col|k:row|k:'lot_name' }}<br>{% endif %}
-                                            {% trans 'Created' %}: {{ layout|k:col|k:row|k:'created_on'|date:'d/m/y H:i' }}<br>
-                                            {% trans 'Updated' %}: {{ layout|k:col|k:row|k:'updated_on'|date:'d/m/y H:i' }}<br>
-                                            {% trans 'Age' %}: {{ layout|k:col|k:row|k:'created_on'|naturaltime }}<br>
-                                            </div>">
-                            <font color="{{ layout|k:col|k:row|k:'font_color' }}"></font>
-                        </td>
-                        {% else %}
-                        <td class="js-create-inv storage{% if layout|k:col|k:row|k:'storage_id' in in_queue %} in-queue{% endif %}"
-                            data-url="{% url 'wms:inv_create' layout|k:col|k:row|k:'storage_id' %}"
-                            bgcolor="{% if layout|k:col|k:row|k:'is_inventory' %}#EEE{% else %}white{% endif %}"
-                            data-toggle="tooltip"
-                            data-html="true" title="
-                                            <div align='center'>
-                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
-                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
-                                            </div>">
-                            <font color="black"></font>
-                        </td>
-                        {% endif %}
-                        {% else %}
-                        {% if col == 46 and row >= 5 and row <= 7 or col == 39 and row >= 5 and row <= 7 %}
-                        {% if col == 46 and row == 5 %}
-                        <td rowspan="2" class="storage robot">Ro bot #1</td>
-                        {% elif col == 39 and row == 5 %}
-                        <td rowspan="2" class="storage robot">Ro bot #2</td>
-                        {% elif col == 46 and row == 7 %}
-                        <td id="robotQty1" rowspan="1" class="storage noBorder"></td>
-                        {% elif col == 39 and row == 7 %}
-                        <td id="robotQty2" rowspan="1" class="storage noBorder"></td>
-                        {% endif %}
-                        {% else %}
-                        <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
-                        {% endif %}
-                        {% endif %}
+                            {% if layout|k:col|k:row|k:'storage_for' %}
+                                {% if layout|k:col|k:row|k:'have_inventory' %}
+                                <td class="js-update-inv storage{% if layout|k:col|k:row|k:'storage_id' in in_queue %} in-queue{% endif %}
+                                    {% if layout|k:col|k:row|k:'misplace' %} misplace{% endif %}"
+                                    data-url="{% url 'wms:inv_update' layout|k:col|k:row|k:'storage_id' %}"
+                                    bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
+                                    data-toggle="tooltip"
+                                    data-html="true" title="
+                                                    <div align='center'>
+                                                    {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                                    {{ layout|k:col|k:row|k:'inv_product' }}<br>
+                                                    </div>
+                                                    <br>
+                                                    <div align='left'>
+                                                    {% trans 'Quantity' %} : {{ layout|k:col|k:row|k:'inv_qty' }}<br>
+                                                    {% if layout|k:col|k:row|k:'lot_name' %}{% trans 'Lot Name' %}: {{ layout|k:col|k:row|k:'lot_name' }}<br>{% endif %}
+                                                    {% trans 'Created' %}: {{ layout|k:col|k:row|k:'created_on'|date:'d/m/y H:i' }}<br>
+                                                    {% trans 'Updated' %}: {{ layout|k:col|k:row|k:'updated_on'|date:'d/m/y H:i' }}<br>
+                                                    {% trans 'Age' %}: {{ layout|k:col|k:row|k:'created_on'|naturaltime }}<br>
+                                                    </div>">
+                                </td>
+                                {% else %}
+                                <td class="js-create-inv storage{% if layout|k:col|k:row|k:'storage_id' in in_queue %} in-queue{% endif %}"
+                                    data-url="{% url 'wms:inv_create' layout|k:col|k:row|k:'storage_id' %}"
+                                    bgcolor="{% if layout|k:col|k:row|k:'is_inventory' %}#EEE{% else %}white{% endif %}"
+                                    data-toggle="tooltip"
+                                    data-html="true" title="
+                                                    <div align='center'>
+                                                    {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                                    {{ layout|k:col|k:row|k:'storage_for' }}<br>
+                                                    </div>">
+                                </td>
+                                {% endif %}
+                            {% else %}
+                                {% if col == 10 and row >= 5 and row <= 7 or col == 14 and row >= 5 and row <= 7 or col == 18 and row >= 5 and row <= 7 %}
+                                    {% if col == 10 and row == 5 %}
+                                    <td rowspan="2" class="storage robot">Ro bot #2</td>
+                                    {% elif col == 14 and row == 5 %}
+                                    <td rowspan="2" class="storage robot">Ro bot #1</td>
+                                    {% elif col == 18 and row == 5 %}
+                                    <td rowspan="2" class="storage robot">Ro bot #3</td>
+                                    {% elif col == 10 and row == 7 %}
+                                    <td id="robotQty2" rowspan="1" class="storage noBorder"></td>
+                                    {% elif col == 14 and row == 7 %}
+                                    <td id="robotQty1" rowspan="1" class="storage noBorder"></td>
+                                    {% elif col == 18 and row == 7 %}
+                                    <td id="robotQty3" rowspan="1" class="storage noBorder"></td>
+                                    {% endif %}
+                                {% else %}
+                                <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
+                                {% endif %}
+                            {% endif %}
                         {% endfor %}
-                        <td class="headerFooter">{% if row >= 10 %}{{ index }}{% endif %}</td>
+                        <td class="headerFooter font-weight-normal">{% if row >= 11 %}{{ index }}{% endif %}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -101,13 +107,17 @@
                     <tr>
                         <td class="headerFooter font-weight-normal"></td>
                         {% for footer, footer_col in zip_footer_2 %}
-                        <th class="headerFooter font-weight-normal js-update-invcol" data-url="{% url 'wms:invcol_update' footer_col %}">{{ footer }}</th>
+                            {% if footer_col %}
+                            <th class="headerFooter font-weight-normal js-update-invcol" data-url="{% url 'wms:invcol_update' footer_col %}">{{ footer }}</th>
+                            {% else %}
+                            <th class="headerFooter font-weight-normal">{{ footer }}</th>
+                            {% endif %}
                         {% endfor %}
                     </tr>
                     <tr>
                         <td class="headerFooter font-weight-bold"></td>
                         {% for footer in footer_1 %}
-                        <td class="headerFooter font-weight-bold" colspan="4">{{ footer }}</td>
+                        <td class="headerFooter font-weight-bold" colspan="2">{{ footer }}</td>
                         {% endfor %}
                     </tr>
                     </tfoot>
@@ -165,7 +175,7 @@
             </div>
         </div>
     </div>
-    <div id="modal-inv" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal fade" id="modal-inv" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content"></div>
         </div>

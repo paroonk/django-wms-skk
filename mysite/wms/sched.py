@@ -11,15 +11,17 @@ from simple_history.signals import post_create_historical_record
 
 from .models import *
 
-transfer_hold = {
-    1: 0,
-}
-x_check = {
-    1: 999.9,
-}
-y_check = {
-    1: 999.9,
-}
+agv_list = [1, 2]
+robot_list = [1, 2, 3]
+
+transfer_hold = {}
+x_check = {}
+y_check = {}
+for i in agv_list:
+    transfer_hold[i] = 0
+    x_check[i] = 999.9
+    y_check[i] = 999.9
+
 db_update_list = []
 db_update_initial = True
 
@@ -32,12 +34,12 @@ def initial_data():
     try:
 
         # Create buffer sql variable for communication #
-        for agv_no in [1]:
+        for agv_no in agv_list:
             if not AgvTransfer.objects.filter(id=agv_no).exists():
                 qs_transfer = AgvTransfer(id=agv_no)
                 qs_transfer.save()
 
-        for robot_no in [1, 2]:
+        for robot_no in robot_list:
             if not RobotStatus.objects.filter(robot_no=robot_no).exists():
                 qs_robot = RobotStatus(robot_no=robot_no)
                 qs_robot.save()
@@ -133,7 +135,7 @@ def robot_check():
 def transfer_check():
     global x_check, y_check
     try:
-        for agv_no in [1]:
+        for agv_no in agv_list:
             if AgvTransfer.objects.filter(id=agv_no).exists():
                 qs_transfer1 = AgvTransfer.objects.filter(id=agv_no)
                 qs_transfer_list = [qs_transfer1]
@@ -144,7 +146,7 @@ def transfer_check():
                 if obj_transfer.run == 1 and obj_transfer.status == 0:
                     if agv_no == 1:
                         qs_queue = AgvQueue.objects.all()
-                    scheduler.add_job(agv_route, 'date', run_date=timezone.now(), args=[agv_no, qs_transfer, qs_queue], id='agv_route', replace_existing=True)
+                        scheduler.add_job(agv_route, 'date', run_date=timezone.now(), args=[agv_no, qs_transfer, qs_queue], id='agv_route', replace_existing=True)
                 elif obj_transfer.run == 0:
                     x_check[agv_no] = y_check[agv_no] = 999.9
             except AgvTransfer.DoesNotExist:

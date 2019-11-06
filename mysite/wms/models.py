@@ -113,13 +113,13 @@ class Storage(ComputedFieldsModel):
     def area(self):
         return str(self.storage_id)[0:3]
 
-    @computed(models.CharField(max_length=3, verbose_name='Column No.'))
+    @computed(models.CharField(max_length=1, verbose_name='Column No.'))
     def col(self):
-        return str(self.storage_id)[3:6]
+        return str(self.storage_id)[3:4]
 
-    @computed(models.CharField(max_length=3, verbose_name='Row No.'))
+    @computed(models.CharField(max_length=2, verbose_name='Row No.'))
     def row(self):
-        return str(self.storage_id)[6:9]
+        return str(self.storage_id)[4:6]
 
     @computed(models.FloatField(verbose_name='Coordinate X'), depends=['coor_id#layout_col', 'coor_id#layout_row', 'coor_id#coor_x', 'coor_id#coor_y'])
     def coor_x(self):
@@ -170,7 +170,7 @@ class Storage(ComputedFieldsModel):
 
     def save(self, *args, **kwargs):
         try:
-            self.column_id = Column.objects.get(column_id=str(self.storage_id)[0:6])
+            self.column_id = Column.objects.get(column_id=str(self.storage_id)[0:4])
         except:
             self.column_id = None
         try:

@@ -36,8 +36,6 @@ def redirect_home(request):
 class DashboardView(generic.TemplateView):
     template_name = 'wms/dashboard.html'
 
-    obj = Product.objects.order_by().distinct().values_list('plant__plant_id', flat=True)
-
     def get_context_data(self, **kwargs):
         # production_target = '{:,}'.format(1200000)
         # current_production = '{:,}'.format(550000)
@@ -48,7 +46,7 @@ class DashboardView(generic.TemplateView):
         agv_total = AgvTransfer.objects.all().count()
 
         # For Overview Graph #
-        overview_plant_list = list(enumerate([_('All')] + list(Product.objects.select_related('plant').order_by().distinct().values_list('plant', flat=True))))
+        overview_plant_list = list(enumerate([_('All')] + list(Product.objects.select_related('plant').order_by('plant_id').distinct().values_list('plant', flat=True))))
         product_name = {}
         product_color = {}
         qty_inventory = {}
@@ -78,7 +76,7 @@ class DashboardView(generic.TemplateView):
 
         # For Usage Graph #
         qty_inventory_plant = []
-        usage_plant_list = list(enumerate(list(Product.objects.order_by().distinct().values_list('plant', flat=True))))
+        usage_plant_list = list(enumerate(list(Product.objects.order_by('plant_id').distinct().values_list('plant', flat=True))))
         for i, plant in usage_plant_list:
             qty_inventory_plant.append(
                 Storage.objects.filter(column_id__is_inventory=True, column_id__for_product__plant__plant_id=plant).aggregate(models.Sum('inv_qty'))['inv_qty__sum'])
@@ -117,13 +115,14 @@ def layout_map(obj_storage, debug=False, age=False):
     layout_col = []
     layout_row = []
 
-    skips = {40, 45}
-    col_range = range(31, 97)
-    row_range = range(1, 21)
-    for col in (x for x in col_range if x not in skips):
+    col_range = range(1, 80)
+    col_skips = {9, 13, 17}
+    row_range = range(1, 22)
+    row_skips = {8, 10}
+    for col in (x for x in col_range if x not in col_skips):
         layout_col.append(col)
         layout[col] = {}
-        for row in row_range:
+        for row in (y for y in row_range if y not in row_skips):
             if col == layout_col[0]:
                 layout_row.append(row)
             layout[col][row] = {}
@@ -162,32 +161,35 @@ def layout_map(obj_storage, debug=False, age=False):
     header_col = []
     footer_2 = []
     footer_col = []
-    for i in range(64):
+    for i in range(76):
 
-        # if divmod(i, 4)[1] == 0:
-        #     if 11 - divmod(i, 4)[0] > 0:
-        #         header_1.append('B{:02d}'.format(11 - divmod(i, 4)[0]))
-        #     footer_1.append('A{:02d}'.format(16 - divmod(i, 4)[0]))
-        #
-        # if 11 - divmod(i, 4)[0] > 0:
-        #     header_2.append('C{:02d}'.format(4 - divmod(i, 4)[1]))
-        #     # header_2_col.append('C{:02d}'.format(4 - divmod(i, 4)[1]))
-        # footer_2.append('C{:02d}'.format(4 - divmod(i, 4)[1]))
+        quotient = divmod(i, 2)[0]
+        remainder = divmod(i, 2)[1]
 
-        if 11 - divmod(i, 4)[0] > 0:
-            if divmod(i, 4)[1] == 0:
-                header_1.append('B{:02d}'.format(11 - divmod(i, 4)[0]))
-            header_2.append('C{:02d}'.format(4 - divmod(i, 4)[1]))
-            header_col.append('B{:02d}C{:02d}'.format(11 - divmod(i, 4)[0], 4 - divmod(i, 4)[1]))
-            zip_header_2 = zip(header_2, header_col)
+        if quotient <= 21 and quotient != 16:
+            col_no = quotient + 1 if quotient < 16 else quotient
+            col_label = 'A' if remainder == 0 else 'B'
+            if remainder == 0:
+                header_1.append('Y{:02d}'.format(col_no))
+            header_2.append('{}'.format(col_label))
+            header_col.append('Y{:02d}{}'.format(col_no, col_label))
+        elif quotient == 16:
+            if remainder == 0:
+                header_1.append('')
+            header_2.append('')
+            header_col.append('')
 
-        if divmod(i, 4)[1] == 0:
-            footer_1.append('A{:02d}'.format(16 - divmod(i, 4)[0]))
-        footer_2.append('C{:02d}'.format(4 - divmod(i, 4)[1]))
-        footer_col.append('A{:02d}C{:02d}'.format(16 - divmod(i, 4)[0], 4 - divmod(i, 4)[1]))
-        zip_footer_2 = zip(footer_2, footer_col)
+        col_no = 38 - quotient
+        col_label = 'B' if remainder == 0 else 'A'
+        if remainder == 0:
+            footer_1.append('X{:02d}'.format(col_no))
+        footer_2.append('{}'.format(col_label))
+        footer_col.append('X{:02d}{}'.format(col_no, col_label))
 
-    index = ['R{:02d}'.format(i + 1) for i in range(8)] + [''] + ['R{}'.format(11 - i) for i in range(11)]
+    zip_header_2 = zip(header_2, header_col)
+    zip_footer_2 = zip(footer_2, footer_col)
+
+    index = ['{:02d}'.format(i + 1) for i in range(7)] + [''] + ['{:02d}'.format(11 - i) for i in range(11)]
     zip_row = zip(index, layout_row)
 
     return layout, header_1, zip_header_2, footer_1, zip_footer_2, layout_col, zip_row
@@ -348,12 +350,13 @@ def invcol_update(request, pk):
     else:
         if qs_storage.filter(have_inventory=True).exists():
             obj = qs_storage.filter(have_inventory=True).first()
+            obj.created_on = timezone.localtime(obj.created_on).strftime('%d/%m/%Y %H:%M:%S')
         else:
             obj = qs_storage.first()
             if obj.column_id.is_inventory:
                 obj.inv_product = obj.column_id.for_product
                 obj.inv_qty = obj.inv_product.qty_limit if obj.inv_product else 0
-            obj.created_on = timezone.now()
+            obj.created_on = timezone.localtime().strftime('%d/%m/%Y %H:%M:%S')
 
         form_data = {
             'column_id': pk,
@@ -820,8 +823,10 @@ def get_data_agv_position(request):
         data['agv_beta'] = int(agv_beta)
         obj_robot1 = get_object_or_404(RobotStatus, robot_no=1)
         obj_robot2 = get_object_or_404(RobotStatus, robot_no=2)
+        obj_robot3 = get_object_or_404(RobotStatus, robot_no=3)
         data['robot_qty1'] = int(obj_robot1.qty_act) if obj_robot1.qty_act else 0
         data['robot_qty2'] = int(obj_robot2.qty_act) if obj_robot2.qty_act else 0
+        data['robot_qty3'] = int(obj_robot3.qty_act) if obj_robot3.qty_act else 0
     return JsonResponse(data)
 
 

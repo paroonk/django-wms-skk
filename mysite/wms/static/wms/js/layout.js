@@ -70,7 +70,7 @@ $(document).ready(function () {
     old_row = old_column = 0
     old_data = $('#layout-table tbody tr').eq(old_row).find('td').eq(old_column).text();
 
-    var agv_row, agv_col, agv_beta, robot_qty1, robot_qty2, agv_src;
+    var agv_row, agv_col, agv_beta, robot_qty1, robot_qty2, robot_qty3, agv_src;
     setInterval(function() {
         $.ajax( {
             url: url_get_data_agv_position,
@@ -82,6 +82,7 @@ $(document).ready(function () {
                 agv_beta = data.agv_beta;
                 robot_qty1 = data.robot_qty1
                 robot_qty2 = data.robot_qty2
+                robot_qty3 = data.robot_qty3
             }
         });
 
@@ -110,6 +111,7 @@ $(document).ready(function () {
 
         $('#robotQty1').html(robot_qty1);
         $('#robotQty2').html(robot_qty2);
+        $('#robotQty3').html(robot_qty3);
 
 //        agv_col += 1;
 //        if (agv_col == 40) { agv_col = 41; }
