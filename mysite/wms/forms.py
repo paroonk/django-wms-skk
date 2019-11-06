@@ -11,7 +11,7 @@ class InventoryForm(forms.ModelForm):
     inv_product = forms.ModelChoiceField(label=_('Inventory Product'), queryset=Product.objects.none(), empty_label=None)
     inv_qty = forms.IntegerField(label=_('Inventory Quantity (Bag)'))
     lot_name = forms.CharField(label=_('Lot Name'), required=False)
-    created_on = forms.DateTimeField(label=_('Created On'), required=False)
+    created_on = forms.DateTimeField(label=_('Created On'), input_formats=['%d/%m/%Y %H:%M:%S', ], required=False)
 
     def clean_inv_qty(self):
         data = self.cleaned_data['inv_qty']

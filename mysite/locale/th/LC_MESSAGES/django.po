@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-30 11:30+0700\n"
+"POT-Creation-Date: 2019-11-06 09:11+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: .\mysite\settings.py:133
+#: .\mysite\settings.py:132
 msgid "English"
 msgstr "อังกฤษ"
 
-#: .\mysite\settings.py:134
+#: .\mysite\settings.py:133
 msgid "Thai"
 msgstr "ไทย"
 
@@ -69,7 +69,7 @@ msgstr "เป็นสินค้าคงคลัง?"
 msgid "Product"
 msgstr "สินค้า"
 
-#: .\wms\forms.py:52 .\wms\models.py:53
+#: .\wms\forms.py:52 .\wms\models.py:54
 #: .\wms\templates\wms\graph\stockOverview.html:58
 #: .\wms\templates\wms\graph\stockOverview.html:84
 #: .\wms\templates\wms\graph\stockOverview.html:130
@@ -220,7 +220,7 @@ msgstr "สถานะเอจีวี"
 msgid "Step"
 msgstr "ขั้น"
 
-#: .\wms\forms.py:254 .\wms\models.py:311
+#: .\wms\forms.py:254 .\wms\models.py:312
 msgid "Pause"
 msgstr "หยุด"
 
@@ -238,7 +238,7 @@ msgid "This field is required in {}"
 msgstr "ฟิลด์นี้จำเป็นสำหรับ {}"
 
 #: .\wms\forms.py:286 .\wms\views.py:51 .\wms\views.py:63 .\wms\views.py:66
-#: .\wms\views.py:1114 .\wms\views.py:1124
+#: .\wms\views.py:1116 .\wms\views.py:1126
 msgid "All"
 msgstr "ทั้งหมด"
 
@@ -254,55 +254,55 @@ msgstr "วันที่"
 msgid "Number of Data"
 msgstr "จำนวนข้อมูล"
 
-#: .\wms\models.py:53 .\wms\templates\wms\graph\stockOverview.html:58
+#: .\wms\models.py:54 .\wms\templates\wms\graph\stockOverview.html:58
 #: .\wms\templates\wms\graph\stockOverview.html:78
 #: .\wms\templates\wms\graph\stockOverview.html:130
 #: .\wms\templates\wms\graph\stockOverview.html:149
 msgid "Inventory"
 msgstr "สินค้าคงคลัง"
 
-#: .\wms\models.py:229 .\wms\models.py:250
+#: .\wms\models.py:230 .\wms\models.py:251
 msgid "Robot #1"
 msgstr "โรบอท #1"
 
-#: .\wms\models.py:229 .\wms\models.py:250
+#: .\wms\models.py:230 .\wms\models.py:251
 msgid "Robot #2"
 msgstr "โรบอท #2"
 
-#: .\wms\models.py:234
+#: .\wms\models.py:235
 msgid "Wait"
 msgstr "รอ"
 
-#: .\wms\models.py:234
+#: .\wms\models.py:235
 msgid "Ready"
 msgstr "พร้อม"
 
-#: .\wms\models.py:254 .\wms\templates\wms\base.html:163
+#: .\wms\models.py:255 .\wms\templates\wms\base.html:163
 #: .\wms\templates\wms\base.html:188
 msgid "Storage"
 msgstr "พื้นที่เก็บสินค้า"
 
-#: .\wms\models.py:254
+#: .\wms\models.py:255
 msgid "Retrieval/Move"
 msgstr "เก็บและเคลื่อนย้าย"
 
-#: .\wms\models.py:302
+#: .\wms\models.py:303
 msgid "Stop"
 msgstr "หยุดเดิน"
 
-#: .\wms\models.py:302
+#: .\wms\models.py:303
 msgid "Start"
 msgstr "ทำงาน"
 
-#: .\wms\models.py:304
+#: .\wms\models.py:305
 msgid "Wait for queue"
 msgstr "รอคิวงาน"
 
-#: .\wms\models.py:304
+#: .\wms\models.py:305
 msgid "Operating queue"
 msgstr "ทำคิวงาน"
 
-#: .\wms\models.py:311
+#: .\wms\models.py:312
 msgid "Not Pause"
 msgstr "ไม่หยุด"
 
@@ -509,8 +509,8 @@ msgid "Change Language"
 msgstr "เปลี่ยนภาษา"
 
 #: .\wms\templates\wms\base.html:105
-msgid "Paper Bag SKW"
-msgstr "โรงถุงเขาวง"
+msgid "Paper Bag SKK"
+msgstr "โรงถุงแก่งคอย"
 
 #: .\wms\templates\wms\base.html:118
 msgid "Log Out"

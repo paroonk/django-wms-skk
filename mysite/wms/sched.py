@@ -29,8 +29,9 @@ def datetime_now():
 
 
 def initial_data():
-    # Create buffer sql variable for communication #
     try:
+
+        # Create buffer sql variable for communication #
         for agv_no in [1]:
             if not AgvTransfer.objects.filter(id=agv_no).exists():
                 qs_transfer = AgvTransfer(id=agv_no)
@@ -40,18 +41,19 @@ def initial_data():
             if not RobotStatus.objects.filter(robot_no=robot_no).exists():
                 qs_robot = RobotStatus(robot_no=robot_no)
                 qs_robot.save()
+
+        # Clear old log #
+        days_history_keep = 30
+        date_keep = timezone.now() - timezone.timedelta(days=days_history_keep)
+        # Product.history.filter(history_date__lt=date_keep).delete()
+        Storage.history.filter(history_date__lt=date_keep).delete()
+        AgvProductionPlan.history.filter(history_date__lt=date_keep).delete()
+        RobotQueue.history.filter(history_date__lt=date_keep).delete()
+        AgvQueue.history.filter(history_date__lt=date_keep).delete()
+        AgvTransfer.history.filter(history_date__lt=date_keep).delete()
+
     except ProgrammingError:
         pass
-
-    # Clear old log #
-    days_history_keep = 30
-    date_keep = timezone.now() - timezone.timedelta(days=days_history_keep)
-    # Product.history.filter(history_date__lt=date_keep).delete()
-    Storage.history.filter(history_date__lt=date_keep).delete()
-    AgvProductionPlan.history.filter(history_date__lt=date_keep).delete()
-    RobotQueue.history.filter(history_date__lt=date_keep).delete()
-    AgvQueue.history.filter(history_date__lt=date_keep).delete()
-    AgvTransfer.history.filter(history_date__lt=date_keep).delete()
 
 
 def robot_check():

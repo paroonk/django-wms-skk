@@ -276,7 +276,7 @@ def inv_create(request, pk):
         if obj.column_id.is_inventory:
             obj.inv_product = obj.column_id.for_product
             obj.inv_qty = obj.inv_product.qty_limit if obj.inv_product else 0
-        obj.created_on = timezone.now()
+        obj.created_on = timezone.localtime().strftime('%d/%m/%Y %H:%M:%S')
         form = InventoryForm(instance=obj)
 
     template_name = 'wms/layout/inv_create.html'
@@ -300,6 +300,7 @@ def inv_update(request, pk):
         else:
             data['form_is_valid'] = False
     else:
+        obj.created_on = timezone.localtime(obj.created_on).strftime('%d/%m/%Y %H:%M:%S')
         form = InventoryForm(instance=obj)
 
     template_name = 'wms/layout/inv_update.html'
@@ -1089,9 +1090,10 @@ class GraphTrendView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         dt_stop = datetime.now()
         dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        dt_format = '%d/%m/%y %H:%M'
         form_data = {
             'label': 'all',
-            'date_filter': '{} - {}'.format(dt_start.strftime('%d/%m/%y %H:%M'), dt_stop.strftime('%d/%m/%y %H:%M')),
+            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
             'data': 25,
         }
 
@@ -1099,8 +1101,8 @@ class GraphTrendView(generic.TemplateView):
             form_data['label'] = self.request.GET.get('label')
         if self.request.GET.get('date_filter'):
             date_filter = self.request.GET.get('date_filter').split(' - ')
-            dt_start, dt_stop = [datetime.strptime(dt, '%d/%m/%y %H:%M') for dt in date_filter]
-            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime('%d/%m/%y %H:%M'), dt_stop.strftime('%d/%m/%y %H:%M'))
+            dt_start, dt_stop = [dt.strptime(dt_format) for dt in date_filter]
+            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
         if self.request.GET.get('data'):
             if self.request.GET.get('data') != '' and int(self.request.GET.get('data')) > 0:
                 form_data['data'] = int(self.request.GET.get('data'))
@@ -1134,7 +1136,7 @@ class GraphTrendView(generic.TemplateView):
                     df_qty.loc[dt, product] = Product.history.filter(condition).order_by('-history_date').first().qty_total if Product.history.filter(condition).exists() else 0
                 df_qty[product] = df_qty.loc[:, product_list].sum(axis=1)
 
-        dt = [timezone.localtime(dt).strftime('%d/%m/%y %H:%M') for dt in dt_list]
+        dt = [timezone.localtime(dt).strftime(dt_format) for dt in dt_list]
         qty = {'{}'.format(label): df_qty[label].to_list() for label in label_list}
 
         context = super().get_context_data(**kwargs)
