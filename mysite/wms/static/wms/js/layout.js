@@ -71,7 +71,7 @@ $(document).ready(function () {
     old_data = $('#layout-table tbody tr').eq(old_row).find('td').eq(old_column).text();
 
     var agv_row, agv_col, agv_beta, robot_qty1, robot_qty2, robot_qty3, agv_src;
-    setInterval(function() {
+    var update_agv = function() {
         $.ajax( {
             url: url_get_data_agv_position,
             type: 'GET',
@@ -90,7 +90,7 @@ $(document).ready(function () {
         else if (agv_beta >= 45 && agv_beta < 135) { agv_src = agv_bot; }
         else if (agv_beta >= 135 && agv_beta < 225) { agv_src = agv_right; }
         else if (agv_beta >= 225 && agv_beta < 315) { agv_src = agv_top; }
-    
+
         if (agv_col == 40) { agv_col = 39; }
         else if (agv_col == 45) { agv_col = 46; }
         if (agv_col <= 39) { columnIndex = 95 - agv_col; }
@@ -106,8 +106,9 @@ $(document).ready(function () {
         old_row = rowIndex;
         old_column = columnIndex;
         old_data = $('#layout-table tbody tr').eq(old_row).find('td').eq(old_column).text();
-        var agv = "<div class='agv'><img src=" + agv_src + " style='z-index: 1;, max-width:100%; max-height:100%;'></div>"
+        var agv = "<div class='agv' data-toggle='tooltip' title='1'><img src=" + agv_src + " style='z-index: 1;, max-width:100%; max-height:100%;'></div>"
         $('#layout-table tbody tr').eq(rowIndex).find('td').eq(columnIndex).append(agv);
+        $('#layout-table tbody tr [data-toggle="tooltip"]').tooltip();
 
         $('#robotQty1').html(robot_qty1);
         $('#robotQty2').html(robot_qty2);
@@ -121,8 +122,9 @@ $(document).ready(function () {
 //            agv_row += 1;
 //            if (row == 21) { agv_row = 1; }
 //        }
-
-    }, 2000)
+    }
+    update_agv();
+    setInterval(update_agv, 2000)
 
     setInterval(function() {
         if (document.hasFocus() || true) {
