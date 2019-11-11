@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-06 09:11+0700\n"
+"POT-Creation-Date: 2019-11-11 13:12+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: .\mysite\settings.py:132
+#: .\mysite\settings.py:129
 msgid "English"
 msgstr "อังกฤษ"
 
-#: .\mysite\settings.py:133
+#: .\mysite\settings.py:130
 msgid "Thai"
 msgstr "ไทย"
 
@@ -46,7 +46,7 @@ msgstr "จำนวนสินค้าคงคลัง (ถุง)"
 #: .\wms\forms.py:13 .\wms\forms.py:35 .\wms\forms.py:82 .\wms\forms.py:131
 #: .\wms\forms.py:169 .\wms\templates\wms\agv.html:33
 #: .\wms\templates\wms\agv.html:95 .\wms\templates\wms\agv_debug.html:33
-#: .\wms\templates\wms\agv_debug.html:95 .\wms\templates\wms\layout.html:60
+#: .\wms\templates\wms\agv_debug.html:95 .\wms\templates\wms\layout.html:64
 #: .\wms\templates\wms\layout_age.html:58
 msgid "Lot Name"
 msgstr "ชื่อล็อต"
@@ -69,7 +69,7 @@ msgstr "เป็นสินค้าคงคลัง?"
 msgid "Product"
 msgstr "สินค้า"
 
-#: .\wms\forms.py:52 .\wms\models.py:54
+#: .\wms\forms.py:52 .\wms\models.py:53
 #: .\wms\templates\wms\graph\stockOverview.html:58
 #: .\wms\templates\wms\graph\stockOverview.html:84
 #: .\wms\templates\wms\graph\stockOverview.html:130
@@ -211,21 +211,21 @@ msgstr "ฟิลด์นี้จำเป็นสำหรับคำสั
 
 #: .\wms\forms.py:252 .\wms\templates\wms\agv.html:129
 #: .\wms\templates\wms\agv_debug.html:129 .\wms\templates\wms\dashboard.html:70
-#: .\wms\templates\wms\layout.html:126
+#: .\wms\templates\wms\layout.html:136
 msgid "AGV Status"
 msgstr "สถานะเอจีวี"
 
 #: .\wms\forms.py:253 .\wms\templates\wms\agv.html:130
-#: .\wms\templates\wms\agv_debug.html:130 .\wms\templates\wms\layout.html:127
+#: .\wms\templates\wms\agv_debug.html:130 .\wms\templates\wms\layout.html:137
 msgid "Step"
 msgstr "ขั้น"
 
-#: .\wms\forms.py:254 .\wms\models.py:312
+#: .\wms\forms.py:254 .\wms\models.py:304
 msgid "Pause"
 msgstr "หยุด"
 
 #: .\wms\forms.py:255 .\wms\forms.py:264 .\wms\templates\wms\agv.html:134
-#: .\wms\templates\wms\agv_debug.html:134 .\wms\templates\wms\layout.html:131
+#: .\wms\templates\wms\agv_debug.html:134 .\wms\templates\wms\layout.html:141
 msgid "Pattern"
 msgstr "แพทเทิร์น"
 
@@ -237,8 +237,8 @@ msgstr "เอจีวีคันที่"
 msgid "This field is required in {}"
 msgstr "ฟิลด์นี้จำเป็นสำหรับ {}"
 
-#: .\wms\forms.py:286 .\wms\views.py:51 .\wms\views.py:63 .\wms\views.py:66
-#: .\wms\views.py:1116 .\wms\views.py:1126
+#: .\wms\forms.py:286 .\wms\views.py:49 .\wms\views.py:61 .\wms\views.py:64
+#: .\wms\views.py:1122 .\wms\views.py:1132
 msgid "All"
 msgstr "ทั้งหมด"
 
@@ -254,55 +254,59 @@ msgstr "วันที่"
 msgid "Number of Data"
 msgstr "จำนวนข้อมูล"
 
-#: .\wms\models.py:54 .\wms\templates\wms\graph\stockOverview.html:58
+#: .\wms\models.py:53 .\wms\templates\wms\graph\stockOverview.html:58
 #: .\wms\templates\wms\graph\stockOverview.html:78
 #: .\wms\templates\wms\graph\stockOverview.html:130
 #: .\wms\templates\wms\graph\stockOverview.html:149
 msgid "Inventory"
 msgstr "สินค้าคงคลัง"
 
-#: .\wms\models.py:230 .\wms\models.py:251
+#: .\wms\models.py:222 .\wms\models.py:243
 msgid "Robot #1"
 msgstr "โรบอท #1"
 
-#: .\wms\models.py:230 .\wms\models.py:251
+#: .\wms\models.py:222 .\wms\models.py:243
 msgid "Robot #2"
 msgstr "โรบอท #2"
 
-#: .\wms\models.py:235
+#: .\wms\models.py:227
 msgid "Wait"
 msgstr "รอ"
 
-#: .\wms\models.py:235
+#: .\wms\models.py:227
 msgid "Ready"
 msgstr "พร้อม"
 
-#: .\wms\models.py:255 .\wms\templates\wms\base.html:163
+#: .\wms\models.py:247 .\wms\templates\wms\base.html:163
 #: .\wms\templates\wms\base.html:188
 msgid "Storage"
 msgstr "พื้นที่เก็บสินค้า"
 
-#: .\wms\models.py:255
+#: .\wms\models.py:247
 msgid "Retrieval/Move"
 msgstr "เก็บและเคลื่อนย้าย"
 
-#: .\wms\models.py:303
+#: .\wms\models.py:295
 msgid "Stop"
 msgstr "หยุดเดิน"
 
-#: .\wms\models.py:303
+#: .\wms\models.py:295
 msgid "Start"
 msgstr "ทำงาน"
 
-#: .\wms\models.py:305
+#: .\wms\models.py:297
 msgid "Wait for queue"
 msgstr "รอคิวงาน"
 
-#: .\wms\models.py:305
+#: .\wms\models.py:297
+msgid "Sending command"
+msgstr "กำลังส่งคำสั่ง"
+
+#: .\wms\models.py:297
 msgid "Operating queue"
 msgstr "ทำคิวงาน"
 
-#: .\wms\models.py:312
+#: .\wms\models.py:304
 msgid "Not Pause"
 msgstr "ไม่หยุด"
 
@@ -368,22 +372,22 @@ msgid "Place Location"
 msgstr "ไปยัง"
 
 #: .\wms\templates\wms\agv.html:128 .\wms\templates\wms\agv_debug.html:128
-#: .\wms\templates\wms\layout.html:125
+#: .\wms\templates\wms\layout.html:135
 msgid "AGV Run"
 msgstr "การทำงานเอจีวี"
 
 #: .\wms\templates\wms\agv.html:131 .\wms\templates\wms\agv_debug.html:131
-#: .\wms\templates\wms\layout.html:128
+#: .\wms\templates\wms\layout.html:138
 msgid "X NAV"
 msgstr "พิกัด X"
 
 #: .\wms\templates\wms\agv.html:132 .\wms\templates\wms\agv_debug.html:132
-#: .\wms\templates\wms\layout.html:129
+#: .\wms\templates\wms\layout.html:139
 msgid "Y NAV"
 msgstr "พิกัด Y"
 
 #: .\wms\templates\wms\agv.html:133 .\wms\templates\wms\agv_debug.html:133
-#: .\wms\templates\wms\layout.html:130
+#: .\wms\templates\wms\layout.html:140
 msgid "Beta NAV"
 msgstr "มุม"
 
@@ -395,7 +399,7 @@ msgstr "คำสั่งเก็บสินค้า"
 #: .\wms\templates\wms\agv.html:328 .\wms\templates\wms\agv_debug.html:222
 #: .\wms\templates\wms\agv_debug.html:276
 #: .\wms\templates\wms\graph_trend.html:29
-#: .\wms\templates\wms\graph_trend.html:51 .\wms\templates\wms\layout.html:178
+#: .\wms\templates\wms\graph_trend.html:51 .\wms\templates\wms\layout.html:188
 msgid "Submit"
 msgstr "ส่งคำสั่ง"
 
@@ -416,7 +420,7 @@ msgstr "แก้ไขแผนการผลิต"
 #: .\wms\templates\wms\agv\queue_update.html:35
 #: .\wms\templates\wms\agv\robot_update.html:35
 #: .\wms\templates\wms\agv\transfer_update.html:35
-#: .\wms\templates\wms\graph_trend.html:52 .\wms\templates\wms\layout.html:179
+#: .\wms\templates\wms\graph_trend.html:52 .\wms\templates\wms\layout.html:189
 #: .\wms\templates\wms\layout\inv_create.html:38
 #: .\wms\templates\wms\layout\inv_update.html:39
 #: .\wms\templates\wms\layout\invcol_update.html:38
@@ -638,31 +642,31 @@ msgstr "ร้อยละ (%%)"
 msgid "Inventory Graph"
 msgstr "กราฟสินค้าคงคลัง"
 
-#: .\wms\templates\wms\graph_trend.html:53 .\wms\templates\wms\layout.html:180
+#: .\wms\templates\wms\graph_trend.html:53 .\wms\templates\wms\layout.html:190
 msgid "Custom Range"
 msgstr "กำหนดเอง"
 
-#: .\wms\templates\wms\graph_trend.html:55 .\wms\templates\wms\layout.html:182
+#: .\wms\templates\wms\graph_trend.html:55 .\wms\templates\wms\layout.html:192
 msgid "Today"
 msgstr "วันนี้"
 
-#: .\wms\templates\wms\graph_trend.html:56 .\wms\templates\wms\layout.html:183
+#: .\wms\templates\wms\graph_trend.html:56 .\wms\templates\wms\layout.html:193
 msgid "Yesterday"
 msgstr "เมื่อวาน"
 
-#: .\wms\templates\wms\graph_trend.html:57 .\wms\templates\wms\layout.html:184
+#: .\wms\templates\wms\graph_trend.html:57 .\wms\templates\wms\layout.html:194
 msgid "Last 7 Days"
 msgstr "7 วันที่ผ่านมา"
 
-#: .\wms\templates\wms\graph_trend.html:58 .\wms\templates\wms\layout.html:185
+#: .\wms\templates\wms\graph_trend.html:58 .\wms\templates\wms\layout.html:195
 msgid "Last 30 Days"
 msgstr "30 วันที่ผ่านมา"
 
-#: .\wms\templates\wms\graph_trend.html:59 .\wms\templates\wms\layout.html:186
+#: .\wms\templates\wms\graph_trend.html:59 .\wms\templates\wms\layout.html:196
 msgid "This Month"
 msgstr "เดือนนี้"
 
-#: .\wms\templates\wms\graph_trend.html:60 .\wms\templates\wms\layout.html:187
+#: .\wms\templates\wms\graph_trend.html:60 .\wms\templates\wms\layout.html:197
 msgid "Last Month"
 msgstr "เดือนที่แล้ว"
 
@@ -670,19 +674,19 @@ msgstr "เดือนที่แล้ว"
 msgid "Warehouse Layout"
 msgstr "แผนผัง"
 
-#: .\wms\templates\wms\layout.html:59 .\wms\templates\wms\layout_age.html:57
+#: .\wms\templates\wms\layout.html:63 .\wms\templates\wms\layout_age.html:57
 msgid "Quantity"
 msgstr "จำนวน"
 
-#: .\wms\templates\wms\layout.html:61 .\wms\templates\wms\layout_age.html:59
+#: .\wms\templates\wms\layout.html:65 .\wms\templates\wms\layout_age.html:59
 msgid "Created"
 msgstr "ผลิต"
 
-#: .\wms\templates\wms\layout.html:62 .\wms\templates\wms\layout_age.html:60
+#: .\wms\templates\wms\layout.html:66 .\wms\templates\wms\layout_age.html:60
 msgid "Updated"
 msgstr "แก้ไข"
 
-#: .\wms\templates\wms\layout.html:63 .\wms\templates\wms\layout_age.html:61
+#: .\wms\templates\wms\layout.html:67 .\wms\templates\wms\layout_age.html:61
 msgid "Age"
 msgstr "อายุ"
 

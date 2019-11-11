@@ -294,7 +294,7 @@ class AgvQueue(ComputedFieldsModel):
 class AgvTransfer(ComputedFieldsModel):
     run_choices = [(0, _('Stop')), (1, _('Start'))]
     run = models.IntegerField(choices=run_choices, default=0)
-    status_choices = [(0, _('Wait for queue')), (1, _('Operating queue'))]
+    status_choices = [(0, _('Wait for queue')), (1, _('Sending command')), (2, _('Operating queue'))]
     status = models.IntegerField(choices=status_choices, default=1, verbose_name='AGV Status')
     step_choices = [(i + 1, i + 1) for i in range(6)]
     step = models.IntegerField(choices=step_choices, default=1)
