@@ -167,24 +167,26 @@ def layout_map(obj_storage, debug=False, age=False):
         remainder = divmod(i, 2)[1]
 
         if quotient <= 21 and quotient != 16:
-            col_no = quotient + 1 if quotient < 16 else quotient
-            col_label = 'A' if remainder == 0 else 'B'
+            col_no = 'Y{:02d}'.format(quotient + 1 if quotient < 16 else quotient)
+            col_label = '{}'.format('A' if remainder == 0 else 'B')
             if remainder == 0:
-                header_1.append('Y{:02d}'.format(col_no))
-            header_2.append('{}'.format(col_label))
-            header_col.append('Y{:02d}{}'.format(col_no, col_label))
+                header_1.append(col_no)
+            header_2.append(col_label)
+            header_col.append(col_no + col_label)
         elif quotient == 16:
+            col_no = ''
+            col_label = ''
             if remainder == 0:
-                header_1.append('')
-            header_2.append('')
-            header_col.append('')
+                header_1.append(col_no)
+            header_2.append(col_label)
+            header_col.append(col_no + col_label)
 
-        col_no = 38 - quotient
-        col_label = 'B' if remainder == 0 else 'A'
+        col_no = 'X{:02d}'.format(38 - quotient)
+        col_label = '{}'.format('B' if remainder == 0 else 'A')
         if remainder == 0:
-            footer_1.append('X{:02d}'.format(col_no))
-        footer_2.append('{}'.format(col_label))
-        footer_col.append('X{:02d}{}'.format(col_no, col_label))
+            footer_1.append(col_no)
+        footer_2.append(col_label)
+        footer_col.append(col_no + col_label)
 
     zip_header_2 = zip(header_2, header_col)
     zip_footer_2 = zip(footer_2, footer_col)
@@ -195,6 +197,7 @@ def layout_map(obj_storage, debug=False, age=False):
     return layout, header_1, zip_header_2, footer_1, zip_footer_2, layout_col, zip_row
 
 
+@method_decorator(login_required, name='dispatch')
 class LayoutView(generic.TemplateView):
     template_name = 'wms/layout.html'
 
@@ -219,6 +222,7 @@ class LayoutView(generic.TemplateView):
         return context
 
 
+@method_decorator(login_required, name='dispatch')
 class LayoutDebugView(generic.TemplateView):
     template_name = 'wms/layout_debug.html'
 

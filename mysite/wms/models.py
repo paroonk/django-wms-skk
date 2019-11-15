@@ -1,7 +1,7 @@
 from computedfields.models import ComputedFieldsModel, computed
 from django.db import models
-from simple_history.models import HistoricalRecords
 from django.utils.translation import gettext_lazy as _
+from simple_history.models import HistoricalRecords
 
 
 class Plant(ComputedFieldsModel):
