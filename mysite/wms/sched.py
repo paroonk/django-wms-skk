@@ -25,6 +25,10 @@ for i in agv_list:
 db_update_list = []
 db_update_initial = True
 
+# Home Location #
+home_col = 48
+home_row = 9
+
 
 def datetime_now():
     return timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M:%S   ')
@@ -32,7 +36,6 @@ def datetime_now():
 
 def initial_data():
     try:
-
         # Create buffer sql variable for communication #
         for agv_no in agv_list:
             if not AgvTransfer.objects.filter(id=agv_no).exists():
@@ -48,7 +51,7 @@ def initial_data():
         days_history_keep = 30
         date_keep = timezone.now() - timezone.timedelta(days=days_history_keep)
         # Product.history.filter(history_date__lt=date_keep).delete()
-        Storage.history.filter(history_date__lt=date_keep).delete()
+        # Storage.history.filter(history_date__lt=date_keep).delete()
         AgvProductionPlan.history.filter(history_date__lt=date_keep).delete()
         RobotQueue.history.filter(history_date__lt=date_keep).delete()
         AgvQueue.history.filter(history_date__lt=date_keep).delete()
@@ -64,70 +67,79 @@ def robot_check():
         if qs_robot:
             qs_plan = AgvProductionPlan.objects.all()
             if qs_plan:
-                scheduler.pause_job(job_id='robot_check')
+                class Found(Exception):
+                    pass
 
-                obj_robot = qs_robot.first()
-                obj_plan = qs_plan.select_related('product_name').first()
+                try:
+                    scheduler.pause_job(job_id='robot_check')
+                    for i in qs_plan.select_related('product_name'):
+                        for j in qs_robot:
+                            if i.product_name.product_name == j.get_product_id_display():
+                                raise Found
+                except Found:
+                    obj_plan = i
+                    obj_robot = j
 
-                # Only store to pre-assigned storage and don't have any inventory before it #
-                qs_avail_storage = Storage.objects.filter(storage_for=obj_plan.product_name.product_name)
-                qs_occupied = qs_avail_storage.filter(Q(have_inventory=True) | Q(storage_id__in=AgvQueue.objects.all().values('place_id')))
-                for column_id in qs_occupied.order_by().distinct().values_list('column_id', flat=True):
-                    occupied_outer = qs_occupied.filter(column_id=column_id).order_by('row').last()
-                    if occupied_outer:
-                        qs_avail_storage = qs_avail_storage.exclude(column_id=column_id, row__lte=occupied_outer.row)
+                    # Only store to pre-assigned storage and don't have any inventory before it #
+                    qs_avail_storage = Storage.objects.filter(storage_for=obj_plan.product_name.product_name)
+                    qs_occupied = qs_avail_storage.filter(Q(have_inventory=True) | Q(storage_id__in=AgvQueue.objects.all().values('place_id')))
+                    for column_id in qs_occupied.order_by().distinct().values_list('column_id', flat=True):
+                        occupied_outer = qs_occupied.filter(column_id=column_id).order_by('row').last()
+                        if occupied_outer:
+                            qs_avail_storage = qs_avail_storage.exclude(column_id=column_id, row__lte=occupied_outer.row)
 
-                avail_storage_zone_a = qs_avail_storage.filter(zone='A').order_by('area', 'col', 'row')
-                avail_storage_zone_b = qs_avail_storage.filter(zone='B').order_by('-area', '-col', 'row')
-                pk_avail_storage_list = list(avail_storage_zone_a.values_list('storage_id', flat=True)) + list(avail_storage_zone_b.values_list('storage_id', flat=True))
-                if pk_avail_storage_list:
-                    # Find last storage column for obj_to
-                    column_zone_a = Storage.objects.filter(storage_for=obj_plan.product_name.product_name, zone='A').order_by('area', 'col')
-                    column_zone_b = Storage.objects.filter(storage_for=obj_plan.product_name.product_name, zone='B').order_by('-area', '-col')
-                    column_id_list = list(column_zone_a.distinct().values_list('column_id', flat=True)) + list(column_zone_b.distinct().values_list('column_id', flat=True))
-                    df_created_on = pd.DataFrame(columns=['column_id', 'created_on']).set_index('column_id')
-                    for column_id in column_id_list:
-                        qs_last_inventory_in_column = Storage.objects.filter(column_id=column_id, have_inventory=True)
-                        if qs_last_inventory_in_column.exists():
-                            last_inventory_in_column = qs_last_inventory_in_column.order_by('-row')[0]
-                            df_created_on.loc[column_id] = [last_inventory_in_column.created_on]
-                    if len(df_created_on) > 0:
-                        last_column_id = list(df_created_on.sort_values(by=['created_on'], ascending=False).index)[0]
-                        last_column_id_index = column_id_list.index(last_column_id)
-                        column_id_list = column_id_list[last_column_id_index:] + column_id_list[:last_column_id_index]
+                    avail_storage_zone_a = qs_avail_storage.filter(zone='A').order_by('area', 'col', 'row')
+                    avail_storage_zone_b = qs_avail_storage.filter(zone='B').order_by('-area', '-col', 'row')
+                    pk_avail_storage_list = list(avail_storage_zone_a.values_list('storage_id', flat=True)) + list(avail_storage_zone_b.values_list('storage_id', flat=True))
+                    if pk_avail_storage_list:
+                        # Find last storage column for obj_to
+                        column_zone_a = Storage.objects.filter(storage_for=obj_plan.product_name.product_name, zone='A').order_by('area', 'col')
+                        column_zone_b = Storage.objects.filter(storage_for=obj_plan.product_name.product_name, zone='B').order_by('-area', '-col')
+                        column_id_list = list(column_zone_a.distinct().values_list('column_id', flat=True)) + list(column_zone_b.distinct().values_list('column_id', flat=True))
+                        df_created_on = pd.DataFrame(columns=['column_id', 'created_on']).set_index('column_id')
                         for column_id in column_id_list:
-                            if Storage.objects.filter(storage_id__in=pk_avail_storage_list, column_id=column_id).exists():
-                                obj_to = Storage.objects.filter(storage_id__in=pk_avail_storage_list, column_id=column_id).order_by('row').first()
-                                break
-                            # Find next available column for obj_to if last storage column is full
-                    else:
-                        obj_to = Storage.objects.filter(storage_id=pk_avail_storage_list[0]).first()
+                            qs_last_inventory_in_column = Storage.objects.filter(column_id=column_id, have_inventory=True)
+                            if qs_last_inventory_in_column.exists():
+                                last_inventory_in_column = qs_last_inventory_in_column.order_by('-row')[0]
+                                df_created_on.loc[column_id] = [last_inventory_in_column.created_on]
+                        if len(df_created_on) > 0:
+                            last_column_id = list(df_created_on.sort_values(by=['created_on'], ascending=False).index)[0]
+                            last_column_id_index = column_id_list.index(last_column_id)
+                            column_id_list = column_id_list[last_column_id_index:] + column_id_list[:last_column_id_index]
+                            for column_id in column_id_list:
+                                if Storage.objects.filter(storage_id__in=pk_avail_storage_list, column_id=column_id).exists():
+                                    obj_to = Storage.objects.filter(storage_id__in=pk_avail_storage_list, column_id=column_id).order_by('row').first()
+                                    break
+                                # Find next available column for obj_to if last storage column is full
+                        else:
+                            obj_to = Storage.objects.filter(storage_id=pk_avail_storage_list[0]).first()
 
-                    obj_queue = AgvQueue()
-                    obj_queue.product_name = obj_plan.product_name
-                    obj_queue.lot_name = obj_plan.lot_name
-                    obj_queue.qty_act = obj_robot.qty_act
-                    obj_queue.created_on = timezone.now()
-                    obj_queue.robot_no = obj_robot.robot_no
-                    obj_queue.pick_id = None
-                    obj_queue.place_id = obj_to
-                    obj_queue.mode = 1
-                    obj_queue.updated = 0
-                    obj_queue.changeReason = 'New AGV Queue'
-                    obj_queue.save()
+                        obj_queue = AgvQueue()
+                        obj_queue.product_name = obj_plan.product_name
+                        obj_queue.lot_name = obj_plan.lot_name
+                        obj_queue.qty_act = obj_robot.qty_act
+                        obj_queue.created_on = timezone.now()
+                        obj_queue.robot_no = obj_robot.robot_no
+                        obj_queue.pick_id = None
+                        obj_queue.place_id = obj_to
+                        obj_queue.mode = 1
+                        obj_queue.updated = 0
+                        obj_queue.changeReason = 'New AGV Queue'
+                        obj_queue.save()
 
-                    obj_robot.changeReason = 'Update Robot Queue (Move to transfer)'
-                    obj_robot.delete()
+                        obj_robot.changeReason = 'Update Robot Queue (Move to transfer)'
+                        obj_robot.delete()
 
-                    obj_plan.qty_remain = obj_plan.qty_remain - obj_robot.qty_act
-                    if int(obj_plan.qty_remain) <= 0:
-                        obj_plan.changeReason = 'Finish Production Plan'
-                        obj_plan.delete()
-                    else:
-                        obj_plan.changeReason = 'Update Production Plan (Move to queue)'
-                        obj_plan.save()
-
-                scheduler.resume_job(job_id='robot_check')
+                        obj_plan.qty_remain = obj_plan.qty_remain - obj_robot.qty_act
+                        if int(obj_plan.qty_remain) <= 0:
+                            obj_plan.qty_remain = 0
+                            obj_plan.changeReason = 'Finish Production Plan'
+                            obj_plan.delete()
+                        else:
+                            obj_plan.changeReason = 'Update Production Plan (Move to queue)'
+                            obj_plan.save()
+                finally:
+                    scheduler.resume_job(job_id='robot_check')
     except ProgrammingError:
         pass
 
@@ -184,7 +196,7 @@ def transfer_reset_hold(agv_no):
 
 
 def agv_route(agv_no, qs_transfer, qs_queue):
-    global transfer_hold, x_check, y_check
+    global transfer_hold, x_check, y_check, home_col, home_row
 
     scheduler.pause_job(job_id='transfer_check')
 
@@ -212,8 +224,8 @@ def agv_route(agv_no, qs_transfer, qs_queue):
         dist_check = 2.0
         dist_error = np.sqrt((agv_x - x_check[agv_no]) ** 2 + (agv_y - y_check[agv_no]) ** 2)
 
-        if active_queue['mode'] == 1:
-            if obj_transfer.step == 1:
+        if obj_transfer.step == 1:
+            if active_queue['mode'] == 1:
                 target_col = 45 if active_queue['robot_no'] == 1 else 40
                 target_row = runway_row
                 if dist_error > dist_check:
@@ -224,10 +236,22 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
-            elif obj_transfer.step == 2:
+            elif active_queue['mode'] == 2:
+                target_col = active_queue['pick_col']
+                target_row = runway_row
+                if dist_error > dist_check:
+                    route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
+                else:
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
+                    obj_transfer.step = obj_transfer.step + 1
+                    obj_transfer.changeReason = 'Next Step'
+                    obj_transfer.save()
+        elif obj_transfer.step == 2:
+            if active_queue['mode'] == 1:
                 target_col = 45 if active_queue['robot_no'] == 1 else 40
                 target_row = robot_row
-                if dist_error > (dist_check + 2.0):
+                if dist_error > (dist_check + 3.0):
                     obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=runway_row)
                     col_offset = 1 if (agv_x < obj_coor.coor_x) else -1
                     obj_coor = get_object_or_404(Coordinate, layout_col=target_col + col_offset, layout_row=runway_row)
@@ -240,7 +264,24 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
-            elif obj_transfer.step == 3:
+            elif active_queue['mode'] == 2:
+                target_col = active_queue['pick_col']
+                target_row = active_queue['pick_row']
+                if dist_error > (dist_check + 3.0):
+                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=runway_row)
+                    col_offset = 1 if (agv_x < obj_coor.coor_x) else -1
+                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col + col_offset, layout_row=runway_row)
+                    fix_x = obj_coor.coor_x
+                    fix_y = obj_coor.coor_y
+                    route_calculate(agv_no, obj_transfer, 3, fix_x, fix_y, target_col, target_row)
+                else:
+                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                    x_check[agv_no] = y_check[agv_no] = 999.9
+                    obj_transfer.step = obj_transfer.step + 1
+                    obj_transfer.changeReason = 'Next Step'
+                    obj_transfer.save()
+        elif obj_transfer.step == 3:
+            if active_queue['mode'] == 1:
                 target_col = 45 if active_queue['robot_no'] == 1 else 40
                 target_row = runway_row
                 if dist_error > dist_check:
@@ -254,52 +295,120 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     obj_transfer.step = obj_transfer.step + 1
                     obj_transfer.changeReason = 'Next Step'
                     obj_transfer.save()
-            elif obj_transfer.step == 4:
-                target_col = active_queue['place_col']
+            elif active_queue['mode'] == 2:
+                target_col = active_queue['pick_col']
                 target_row = runway_row
                 if dist_error > dist_check:
-                    route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
-                else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
-            elif obj_transfer.step == 5:
-                target_col = active_queue['place_col']
-                target_row = active_queue['place_row']
-                if dist_error > dist_check:
-                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=runway_row)
-                    col_offset = 1 if (agv_x < obj_coor.coor_x) else -1
-                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col + col_offset, layout_row=runway_row)
-                    fix_x = obj_coor.coor_x
-                    fix_y = obj_coor.coor_y
-                    route_calculate(agv_no, obj_transfer, 4, fix_x, fix_y, target_col, target_row)
-                else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
-            elif obj_transfer.step == 6:
-                target_col = active_queue['place_col']
-                if active_queue['place_row'] > runway_row:
-                    target_row = runway_row + 1 if active_queue['place_row'] - 2 > runway_row else runway_row
-                elif active_queue['place_row'] < runway_row:
-                    target_row = runway_row - 1 if active_queue['place_row'] + 2 < runway_row else runway_row
-                if dist_error > dist_check:
-                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=active_queue['place_row'])
+                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=active_queue['pick_row'])
                     fix_x = obj_coor.coor_x
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 1, fix_x, fix_y, target_col, target_row)
                 else:
                     print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    print(datetime_now() + 'Finish Order')
                     x_check[agv_no] = y_check[agv_no] = 999.9
+                    obj_transfer.step = obj_transfer.step + 1
+                    obj_transfer.changeReason = 'Next Step'
+                    obj_transfer.save()
+        elif obj_transfer.step == 4:
+            target_col = active_queue['place_col']
+            target_row = runway_row
+            if dist_error > dist_check:
+                route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
+            else:
+                print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                x_check[agv_no] = y_check[agv_no] = 999.9
+                obj_transfer.step = obj_transfer.step + 1
+                obj_transfer.changeReason = 'Next Step'
+                obj_transfer.save()
+        elif obj_transfer.step == 5:
+            target_col = active_queue['place_col']
+            target_row = active_queue['place_row']
+            if dist_error > dist_check:
+                obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=runway_row)
+                col_offset = 1 if (agv_x < obj_coor.coor_x) else -1
+                obj_coor = get_object_or_404(Coordinate, layout_col=target_col + col_offset, layout_row=runway_row)
+                fix_x = obj_coor.coor_x
+                fix_y = obj_coor.coor_y
+                route_calculate(agv_no, obj_transfer, 4, fix_x, fix_y, target_col, target_row)
+            else:
+                print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                x_check[agv_no] = y_check[agv_no] = 999.9
+                obj_transfer.step = obj_transfer.step + 1
+                obj_transfer.changeReason = 'Next Step'
+                obj_transfer.save()
+        elif obj_transfer.step == 6:
+            target_col = active_queue['place_col']
+            if active_queue['place_row'] > runway_row:
+                target_row = runway_row + 1 if active_queue['place_row'] - 2 > runway_row else runway_row
+            elif active_queue['place_row'] < runway_row:
+                target_row = runway_row - 1 if active_queue['place_row'] + 2 < runway_row else runway_row
+            if dist_error > dist_check:
+                obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=active_queue['place_row'])
+                fix_x = obj_coor.coor_x
+                fix_y = obj_coor.coor_y
+                route_calculate(agv_no, obj_transfer, 1, fix_x, fix_y, target_col, target_row)
+            else:
+                print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                x_check[agv_no] = y_check[agv_no] = 999.9
+                if target_row == runway_row:
+                    obj_transfer.step = obj_transfer.step + 1
+                    obj_transfer.changeReason = 'Next Step'
+                    obj_transfer.save()
+                else:
+                    print(datetime_now() + 'Finish Order')
                     obj_transfer.step = 1
                     obj_transfer.changeReason = 'Finish Order'
                     obj_transfer.save()
 
+                    if active_queue['mode'] == 1:
+                        obj_storage = get_object_or_404(Storage, storage_id=active_queue['place_id'])
+                        obj_storage.inv_product = get_object_or_404(Product, product_name=active_queue['product_name'])
+                        obj_storage.inv_qty = active_queue['qty_act']
+                        obj_storage.lot_name = active_queue['lot_name']
+                        obj_storage.created_on = active_queue['created_on']
+                        obj_storage.updated_on = timezone.now()
+                        obj_storage.changeReason = 'New inventory (Storage Order)'
+                        obj_storage.save()
+
+                        obj_queue = get_object_or_404(qs_queue, place_id=active_queue['place_id'])
+                        obj_queue.changeReason = 'Finish AGV Queue'
+                        obj_queue.delete()
+                    elif active_queue['mode'] == 2:
+                        obj_storage = get_object_or_404(Storage, storage_id=active_queue['place_id'])
+                        obj_storage.inv_product = get_object_or_404(Product, product_name=active_queue['product_name'])
+                        obj_storage.inv_qty = active_queue['qty_act']
+                        obj_storage.lot_name = active_queue['lot_name']
+                        obj_storage.created_on = active_queue['created_on']
+                        obj_storage.updated_on = timezone.now()
+                        obj_storage.changeReason = 'New inventory (Retrieve/Move Order)'
+                        obj_storage.save()
+
+                        obj_storage = get_object_or_404(Storage, storage_id=active_queue['pick_id'])
+                        obj_storage.inv_product = None
+                        obj_storage.inv_qty = None
+                        obj_storage.lot_name = None
+                        obj_storage.created_on = None
+                        obj_storage.updated_on = timezone.now()
+                        obj_storage.changeReason = 'Remove inventory (Retrieve/Move Order)'
+                        obj_storage.save()
+
+                        obj_queue = get_object_or_404(qs_queue, place_id=active_queue['place_id'])
+                        obj_queue.changeReason = 'Finish AGV Queue'
+                        obj_queue.delete()
+        elif obj_transfer.step == 7:
+            target_col = home_col
+            target_row = home_row
+            if dist_error > dist_check:
+                route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
+            else:
+                print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+                print(datetime_now() + 'Finish Order')
+                x_check[agv_no] = y_check[agv_no] = 999.9
+                obj_transfer.step = 1
+                obj_transfer.changeReason = 'Finish Order'
+                obj_transfer.save()
+
+                if active_queue['mode'] == 1:
                     obj_storage = get_object_or_404(Storage, storage_id=active_queue['place_id'])
                     obj_storage.inv_product = get_object_or_404(Product, product_name=active_queue['product_name'])
                     obj_storage.inv_qty = active_queue['qty_act']
@@ -312,84 +421,7 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     obj_queue = get_object_or_404(qs_queue, place_id=active_queue['place_id'])
                     obj_queue.changeReason = 'Finish AGV Queue'
                     obj_queue.delete()
-            else:
-                obj_transfer.step = 1
-                obj_transfer.changeReason = 'Step Error, Reset To Step 1'
-                obj_transfer.save()
-
-        elif active_queue['mode'] == 2:
-            if obj_transfer.step == 1:
-                target_col = active_queue['pick_col']
-                target_row = runway_row
-                if dist_error > dist_check:
-                    route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
-                else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
-            elif obj_transfer.step == 2:
-                target_col = active_queue['pick_col']
-                target_row = active_queue['pick_row']
-                if dist_error > dist_check:
-                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=runway_row)
-                    col_offset = 1 if (agv_x < obj_coor.coor_x) else -1
-                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col + col_offset, layout_row=runway_row)
-                    fix_x = obj_coor.coor_x
-                    fix_y = obj_coor.coor_y
-                    route_calculate(agv_no, obj_transfer, 3, fix_x, fix_y, target_col, target_row)
-                else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
-            elif obj_transfer.step == 3:
-                target_col = active_queue['place_col']
-                target_row = runway_row
-                if dist_error > dist_check:
-                    route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
-                else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
-            elif obj_transfer.step == 4:
-                target_col = active_queue['place_col']
-                target_row = active_queue['place_row']
-                if dist_error > dist_check:
-                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=runway_row)
-                    col_offset = 1 if (agv_x < obj_coor.coor_x) else -1
-                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col + col_offset, layout_row=runway_row)
-                    fix_x = obj_coor.coor_x
-                    fix_y = obj_coor.coor_y
-                    route_calculate(agv_no, obj_transfer, 4, fix_x, fix_y, target_col, target_row)
-                else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
-            elif obj_transfer.step == 5:
-                target_col = active_queue['place_col']
-                if active_queue['place_row'] > runway_row:
-                    target_row = runway_row + 1 if active_queue['place_row'] - 2 > runway_row else runway_row
-                elif active_queue['place_row'] < runway_row:
-                    target_row = runway_row - 1 if active_queue['place_row'] + 2 < runway_row else runway_row
-                if dist_error > dist_check:
-                    obj_coor = get_object_or_404(Coordinate, layout_col=target_col, layout_row=active_queue['place_row'])
-                    fix_x = obj_coor.coor_x
-                    fix_y = obj_coor.coor_y
-                    route_calculate(agv_no, obj_transfer, 1, fix_x, fix_y, target_col, target_row)
-                else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = 1
-                    obj_transfer.changeReason = 'Finish Order'
-                    obj_transfer.save()
-
+                elif active_queue['mode'] == 2:
                     obj_storage = get_object_or_404(Storage, storage_id=active_queue['place_id'])
                     obj_storage.inv_product = get_object_or_404(Product, product_name=active_queue['product_name'])
                     obj_storage.inv_qty = active_queue['qty_act']
@@ -411,35 +443,35 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     obj_queue = get_object_or_404(qs_queue, place_id=active_queue['place_id'])
                     obj_queue.changeReason = 'Finish AGV Queue'
                     obj_queue.delete()
-            else:
-                obj_transfer.step = 1
-                obj_transfer.changeReason = 'Step Error, Reset To Step 1'
-                obj_transfer.save()
-                print('Step Error, Reset To Step 1')
+        else:
+            print('Step Error, Reset To Step 1')
+            obj_transfer.step = 1
+            obj_transfer.changeReason = 'Step Error, Reset To Step 1'
+            obj_transfer.save()
 
     scheduler.resume_job(job_id='transfer_check')
 
 
 def agv_route_home(agv_no, qs_transfer):
-    global x_check, y_check
+    global x_check, y_check, home_col, home_row
 
     scheduler.pause_job(job_id='transfer_check')
 
     obj_transfer = get_object_or_404(qs_transfer)
-    pattern = 0.0
+    pattern = 1.0
     agv_x, agv_y, agv_beta = transfer_adjust(obj_transfer)
     agv_col, agv_row = position_cal(agv_x, agv_y)
-    # Home Location #
-    target_col = 33
-    target_row = 7 if agv_row != 7 else 8
+    target_col = home_col
+    target_row = home_row
 
-    route_calculate(agv_no, obj_transfer, pattern, agv_x, agv_y, target_col, target_row)
+    if agv_row != target_row or agv_col != target_col:
+        route_calculate(agv_no, obj_transfer, pattern, agv_x, agv_y, target_col, target_row)
 
-    obj_transfer = get_object_or_404(qs_transfer)
-    x_check[agv_no] = y_check[agv_no] = 999.9
-    obj_transfer.step = 1
-    obj_transfer.changeReason = 'Manual Update AGV1 Transfer'
-    obj_transfer.save()
+        obj_transfer = get_object_or_404(qs_transfer)
+        x_check[agv_no] = y_check[agv_no] = 999.9
+        obj_transfer.step = 1
+        obj_transfer.changeReason = 'Manual Update AGV Transfer'
+        obj_transfer.save()
 
     scheduler.resume_job(job_id='transfer_check')
 
@@ -457,7 +489,7 @@ def agv_route_manual(agv_no, qs_transfer, pattern, target_col, target_row):
     obj_transfer = get_object_or_404(qs_transfer)
     x_check[agv_no] = y_check[agv_no] = 999.9
     obj_transfer.step = 1
-    obj_transfer.changeReason = 'Manual Update AGV1 Transfer'
+    obj_transfer.changeReason = 'Manual Update AGV Transfer'
     obj_transfer.save()
 
     scheduler.resume_job(job_id='transfer_check')
@@ -467,11 +499,14 @@ def position_cal(agv_x, agv_y):
     df_route = pd.DataFrame()
     df_coordinate = read_frame(Coordinate.objects.all(), index_col='coor_id', verbose=False)
     df_coordinate['dist'] = np.sqrt((agv_x - df_coordinate['coor_x']) ** 2 + (agv_y - df_coordinate['coor_y']) ** 2)
-    index = df_coordinate.nsmallest(1, 'dist', keep='first').index.values
-    df_coordinate.drop('dist', 1, inplace=True)
-    df_route = df_route.append(df_coordinate.loc[index], sort=False)
-    agv_col, agv_row, x, y = df_route.iloc[-1]
-    return agv_col, agv_row
+    try:
+        index = df_coordinate.nsmallest(1, 'dist', keep='first').index.values
+        df_coordinate.drop('dist', 1, inplace=True)
+        df_route = df_route.append(df_coordinate.loc[index], sort=False)
+        agv_col, agv_row, x, y = df_route.iloc[-1]
+        return agv_col, agv_row
+    except TypeError:
+        return None, None
 
 
 def dist_compensate(x1, y1, x2, y2, dist_offset):
@@ -545,7 +580,8 @@ def route_calculate(agv_no, obj_transfer, pattern, agv_x, agv_y, target_col, tar
             dist_compensate(df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1], dist_offset[pattern])
         df_route.reset_index(drop=True, inplace=True)
 
-        x_check[agv_no], y_check[agv_no] = dist_compensate(df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1], -dist_offset_final)
+        x_check[agv_no], y_check[agv_no] = dist_compensate(df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1],
+                                                           -dist_offset_final)
 
         print(' Pattern = {}'.format(pattern))
         print(df_route.to_string(index=False))
@@ -602,7 +638,8 @@ def update_product_db():
                         qs_avail_storage = qs_avail_storage.exclude(column_id=column_id, row__lte=occupied_outer.row)
                 obj.qty_storage_avail = (qs_avail_storage.count() * obj.qty_limit) - storage_plan
 
-                qs_avail_inventory = Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name).exclude(storage_id__in=AgvQueue.objects.filter(mode=2).values('pick_id'))
+                qs_avail_inventory = Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name).exclude(
+                    storage_id__in=AgvQueue.objects.filter(mode=2).values('pick_id'))
                 condition_misplace = ~Q(inv_product=obj.product_name) & Q(storage_for=obj.product_name) & Q(have_inventory=True)
                 condition_new = Q(have_inventory=True) & Q(created_on__gte=timezone.now() - timezone.timedelta(days=7))
                 qs_exclude = Storage.objects.filter(condition_misplace | condition_new)

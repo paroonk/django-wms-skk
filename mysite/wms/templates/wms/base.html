@@ -1,7 +1,4 @@
-{% load static %}
-{% load i18n %}
-{% load socialaccount %}
-{% load custom_tags %}
+{% load static i18n custom_tags socialaccount  %}
 
 <html>
 
@@ -60,7 +57,7 @@
         </span>
         <!-- Search Form -->
         <span class="d-block d-md-none ml-auto"></span>
-        <form class="form-inline my-0" action="{% url 'wms:product_db' %}" method="get">
+        <form class="form-inline my-0" action="{% url 'wms:db_product' %}" method="get">
             <div class="input-group input-group-sm">
                 <input class="form-control form-control-navbar" name="q" type="search" placeholder="{% trans 'Search' %}" aria-label="Search" value="{{ q }}">
                 <div class="input-group-append">
@@ -135,7 +132,7 @@
 
                     <!-- Graph menu -->
                     <li class="nav-item">
-                        <a class="nav-link {% active '/graph_trend/' %}" href="{% url 'wms:graph_trend' %}">
+                        <a class="nav-link {% active '/historygraph/' %}" href="{% url 'wms:historygraph' %}">
                             <i class="nav-icon far fa-chart-bar"></i>
                             <p>{% trans 'Graph' %}</p>
                         </a>
@@ -152,13 +149,13 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a class="nav-link text-sm {% active '/db/product/' %}" href="{% url 'wms:product_db' %}">
+                                <a class="nav-link text-sm {% active '/db/product/' %}" href="{% url 'wms:db_product' %}">
                                     <i class="nav-icon fas fa-pallet"></i>
                                     <p>{% trans 'Product' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-sm {% active '/db/storage/' %}" href="{% url 'wms:storage_db' 'all' %}">
+                                <a class="nav-link text-sm {% active '/db/storage/' %}" href="{% url 'wms:db_storage' 'all' %}">
                                     <i class="nav-icon fas fa-boxes"></i>
                                     <p>{% trans 'Storage' %}</p>
                                 </a>
@@ -177,37 +174,37 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a class="nav-link text-sm {% active '/log/product/' %}" href="{% url 'wms:product_log' %}">
+                                <a class="nav-link text-sm {% active '/log/product/' %}" href="{% url 'wms:log_product' %}">
                                     <i class="nav-icon fas fa-pallet"></i>
                                     <p>{% trans 'Product' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-sm {% active '/log/storage/' %}" href="{% url 'wms:storage_log' %}">
+                                <a class="nav-link text-sm {% active '/log/storage/' %}" href="{% url 'wms:log_storage' %}">
                                     <i class="nav-icon fas fa-boxes"></i>
                                     <p>{% trans 'Storage' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-sm {% active '/log/plan/' %}" href="{% url 'wms:plan_log' %}">
+                                <a class="nav-link text-sm {% active '/log/agvproductionplan/' %}" href="{% url 'wms:log_agvproductionplan' %}">
                                     <i class="nav-icon far fa-calendar-alt"></i>
                                     <p>{% trans 'Production Plan' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-sm {% active '/log/robot/' %}" href="{% url 'wms:robot_log' %}">
+                                <a class="nav-link text-sm {% active '/log/robotqueue/' %}" href="{% url 'wms:log_robotqueue' %}">
                                     <i class="nav-icon fab fa-android"></i>
                                     <p>{% trans 'Robot Queue' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-sm {% active '/log/queue/' %}" href="{% url 'wms:queue_log' %}">
+                                <a class="nav-link text-sm {% active '/log/agvqueue/' %}" href="{% url 'wms:log_agvqueue' %}">
                                     <i class="nav-icon fas fa-luggage-cart"></i>
                                     <p>{% trans 'AGV Queue' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-sm {% active '/log/transfer/1/' %}" href="{% url 'wms:transfer_log' 1 %}">
+                                <a class="nav-link text-sm {% active '/log/agvtransfer/1/' %}" href="{% url 'wms:log_agvtransfer' 1 %}">
                                     <i class="nav-icon fas fa-luggage-cart"></i>
                                     <p>{% trans 'AGV1 Transfer' %}</p>
                                 </a>
@@ -280,7 +277,7 @@
 <script type="text/javascript" src="{% static 'adminlte/js/adminlte.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'moment/js/moment-with-locales.min.js' %}"></script>
 <script type="text/javascript">
-    var lang = "{{ LANGUAGE_CODE }}";
+    var lang = "{{ LANGUAGE_CODE }}"
 </script>
 <script type="text/javascript" src="{% static 'wms/js/base.js' %}"></script>
 {% block javascript %}

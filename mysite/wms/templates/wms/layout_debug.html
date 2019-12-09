@@ -1,7 +1,5 @@
 {% extends 'wms/base.html' %}
-{% load static %}
-{% load i18n %}
-{% load custom_tags %}
+{% load static i18n custom_tags %}
 
 {% block css %}
 <link href="{% static 'wms/css/layout.css' %}" rel="stylesheet" type="text/css">
@@ -22,86 +20,86 @@
             <div class="table-responsive">
                 <table class="layout" id="layout-table">
                     <thead>
-                    <tr>
-                        <th class="headerFooter font-weight-bold"></th>
-                        {% for header in header_1 %}
-                        <th class="headerFooter font-weight-bold" colspan="2">{{ header }}</th>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th class="headerFooter font-weight-normal"></th>
-                        {% for header, header_col in zip_header_2 %}
-                        <th class="headerFooter font-weight-normal">{{ header }}</th>
-                        {% endfor %}
-                    </tr>
+                        <tr>
+                            <th class="headerFooter font-weight-bold"></th>
+                            {% for header in header_1 %}
+                            <th class="headerFooter font-weight-bold" colspan="2">{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <th class="headerFooter font-weight-normal"></th>
+                            {% for header, header_col in zip_header_2 %}
+                            <th class="headerFooter font-weight-normal">{{ header }}</th>
+                            {% endfor %}
+                        </tr>
                     </thead>
                     <tbody>
-                    {% for index, row in zip_row %}
-                    <tr>
-                        <td class="headerFooter font-weight-normal">{{ index }}</td>
-                        {% for col in layout_col reversed %}
-                            {% if layout|k:col|k:row|k:'storage_for' %}
-                                {% if layout|k:col|k:row|k:'is_inventory' %}
-                                <td bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
-                                    class="js-update-col storage"
-                                    data-html="true"
-                                    data-toggle="tooltip"
-                                    data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}" title="
-                                                            <div align='center'>
-                                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
-                                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
-                                                            </div>">
-                                </td>
-                                {% else %}
-                                <td bgcolor="white"
-                                    class="js-update-col storage"
-                                    data-html="true"
-                                    data-toggle="tooltip"
-                                    data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}" title="
-                                                            <div align='center'>
-                                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
-                                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
-                                                            </div>">
-                                </td>
-                                {% endif %}
-                            {% else %}
-                                {% if col == 10 and row >= 5 and row <= 7 or col == 14 and row >= 5 and row <= 7 or col == 18 and row >= 5 and row <= 7 %}
-                                    {% if col == 10 and row == 5 %}
-                                    <td rowspan="2" class="storage robot">Ro bot #2</td>
-                                    {% elif col == 14 and row == 5 %}
-                                    <td rowspan="2" class="storage robot">Ro bot #1</td>
-                                    {% elif col == 18 and row == 5 %}
-                                    <td rowspan="2" class="storage robot">Ro bot #3</td>
+                        {% for index, row in zip_row %}
+                        <tr>
+                            <td class="headerFooter font-weight-normal">{{ index }}</td>
+                            {% for col in layout_col reversed %}
+                                {% if layout|k:col|k:row|k:'storage_for' %}
+                                    {% if layout|k:col|k:row|k:'is_inventory' %}
+                                    <td bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
+                                        class="js-col-update-button storage"
+                                        data-html="true"
+                                        data-toggle="tooltip"
+                                        data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}"
+                                        title="<div align='center'>
+                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
+                                            </div>">
+                                    </td>
+                                    {% else %}
+                                    <td bgcolor="white"
+                                        class="js-col-update-button storage"
+                                        data-html="true"
+                                        data-toggle="tooltip"
+                                        data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}"
+                                        title="<div align='center'>
+                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
+                                            </div>">
+                                    </td>
                                     {% endif %}
                                 {% else %}
-                                <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
+                                    {% if col == 10 and row >= 5 and row <= 7 or col == 14 and row >= 5 and row <= 7 or col == 18 and row >= 5 and row <= 7 %}
+                                        {% if col == 10 and row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #2</td>
+                                        {% elif col == 14 and row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
+                                        {% elif col == 18 and row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #3</td>
+                                        {% endif %}
+                                    {% else %}
+                                    <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
+                            {% endfor %}
+                            <td class="headerFooter font-weight-normal">{% if row >= 11 %}{{ index }}{% endif %}</td>
+                        </tr>
                         {% endfor %}
-                        <td class="headerFooter font-weight-normal">{% if row >= 11 %}{{ index }}{% endif %}</td>
-                    </tr>
-                    {% endfor %}
                     </tbody>
                     <tfoot>
-                    <tr>
-                        <td class="headerFooter font-weight-normal"></td>
-                        {% for footer, footer_col in zip_footer_2 %}
-                        <td class="headerFooter font-weight-normal">{{ footer }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td class="headerFooter font-weight-bold"></td>
-                        {% for footer in footer_1 %}
-                        <td class="headerFooter font-weight-bold" colspan="2">{{ footer }}</td>
-                        {% endfor %}
-                    </tr>
+                        <tr>
+                            <td class="headerFooter font-weight-normal"></td>
+                            {% for footer, footer_col in zip_footer_2 %}
+                            <td class="headerFooter font-weight-normal">{{ footer }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="headerFooter font-weight-bold"></td>
+                            {% for footer in footer_1 %}
+                            <td class="headerFooter font-weight-bold" colspan="2">{{ footer }}</td>
+                            {% endfor %}
+                        </tr>
                     </tfoot>
                 </table>
                 <br>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="modal-col" role="dialog" tabindex="-1">
+    <div class="modal fade" id="modal-id" role="dialog" tabindex="-1">
         <div class="modal-dialog" role="document">
             <div class="modal-content"></div>
         </div>

@@ -1,7 +1,5 @@
 {% extends 'wms/base.html' %}
-{% load static %}
-{% load i18n %}
-{% load widget_tweaks %}
+{% load static i18n widget_tweaks %}
 
 {% block css %}
 <link href="{% static 'select2/css/select2.min.css' %}" rel="stylesheet" type="text/css">
@@ -21,151 +19,201 @@
 <section class="content">
     <div class="row justify-content-center refresh">
         <div class="col-md-4">
-            <div class="card card-outline card-info shadow" id="plan-table">
+            <div class="card card-outline card-info shadow" id="agvproductionplan-table">
                 <div class="card-header">
                     <h3 class="card-title font-weight-bold">{% trans 'Production Plan' %}</h3>
                 </div>
                 <div class="card-body table-responsive">
-                    {% if plan_db %}
-                    <table class="table table-sm table-hover">
-                        <tr>
-                            <th>{% trans 'Product Name' %}</th>
-                            <th>{% trans 'Lot Name' %}</th>
-                            <th>{% trans 'Total Qty (Bags)' %}</th>
-                            <th>{% trans 'Remaining Qty (Bags)' %}</th>
-                            <th>{% trans '% Complete' %}</th>
-                        </tr>
-                        {% for plan in plan_db %}
-                        <tr>
-                            <td><a href="#" onclick="PopupCenter('{% url 'wms:plan_form' plan.id %}','Popup','400','600');">{{ plan.product_name }}</a></td>
-                            <td>{% if plan.lot_name %}{{ plan.lot_name }}{% endif %}</td>
-                            <td>{{ plan.qty_total }}</td>
-                            <td>{{ plan.qty_remain }}</td>
-                            <td>{{ plan.percent_complete }}</td>
-                        </tr>
-                        {% endfor %}
-                    </table>
-                    <div align="center">
-                        <a class="btn btn-danger" href="{% url 'wms:plan_clear' %}" onclick="return confirm('{% trans 'Are you sure?' %}');">{% trans 'Clear All' %}</a>
-                    </div>
-                    {% endif %}
+                    <script type="text/javascript">
+                    var api_agvproductionplan = '{% url 'wms:agvproductionplan-list' %}'
+                    url_agvproductionplan_form = []
+                    {% for item in agvproductionplan %}
+                        url_agvproductionplan_form[{{ item.id }}] = "{% url 'wms:agvproductionplan_form' item.id %}"
+                    {% endfor %}
+                    function render_agvproductionplan(response) {
+                        $("#agvproductionplan-table .table-responsive").empty()
+                        if (Object.keys(response).length > 0) {
+                            var data = "<table class='table table-sm table-hover'>" +
+                                "<th>{% trans 'Product Name' %}</th>" +
+                                "<th>{% trans 'Lot Name' %}</th>" +
+                                "<th>{% trans 'Total Qty (Bags)' %}</th>" +
+                                "<th>{% trans 'Remaining Qty (Bags)' %}</th>" +
+                                "<th>{% trans '% Complete' %}</th>" +
+                                "</tr>" +
+                                "</thead>" +
+                                "<tbody>"
+                            $.each(response, function (key, value) {
+                                data += "<tr>" +
+                                "<td><a href='#' onclick=PopupCenter('" + url_agvproductionplan_form[value.id] + "','Popup','400','600')>" + value.product_name + "</a></td>" +
+                                "<td>" + value.lot_name + "</td>" +
+                                "<td>" + value.qty_total + "</td>" +
+                                "<td>" + value.qty_remain + "</td>" +
+                                "<td>" + value.percent_complete + "</td>" +
+                                "</tr>"
+                            })
+                            data += "</tbody>" +
+                                "</table>" +
+                                "<div align='center'>" +
+                                "<a class='btn btn-danger' href='{% url 'wms:agvproductionplan_clear' %}' onclick=return confirm('{% trans 'Are you sure?' %}')>{% trans 'Clear All' %}</a>" +
+                                "</div>"
+                            $("#agvproductionplan-table .table-responsive").append(data)
+                        }
+                    }
+                    </script>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card card-outline card-warning shadow" id="robot-table">
+            <div class="card card-outline card-warning shadow" id="robotqueue-table">
                 <div class="card-header">
                     <h3 class="card-title font-weight-bold">{% trans 'Robot Queue' %}</h3>
                 </div>
                 <div class="card-body table-responsive">
-                    {% if robot_db %}
-                    <table class="table table-sm table-hover">
-                        <tr>
-                            <th>{% trans 'Robot No.' %}</th>
-                            <th>{% trans 'Product Name' %}</th>
-                            <th>{% trans 'Qty (Bags)' %}</th>
-                            <th>{% trans 'Status' %}</th>
-                        </tr>
-                        {% for queue in robot_db %}
-                        <tr>
-                            <td><a href="#" onclick="PopupCenter('{% url 'wms:robot_form' queue.id %}','Popup','400','600');">{{ queue.robot_no }}</a></td>
-                            <td>{{ queue.get_product_id_display }}</td>
-                            <td>{{ queue.qty_act }}</td>
-                            <td>{{ queue.get_updated_display }}</td>
-                        </tr>
-                        {% endfor %}
-                    </table>
-                    <div align="center">
-                        <a class="btn btn-danger" href="{% url 'wms:robot_clear' %}" onclick="return confirm('{% trans 'Are you sure?' %}');">{% trans 'Clear All' %}</a>
-                    </div>
-                    {% endif %}
+                    <script type="text/javascript">
+                    var api_robotqueue = '{% url 'wms:robotqueue-list' %}'
+                    url_robotqueue_form = []
+                    {% for item in robotqueue %}
+                        url_robotqueue_form[{{ item.id }}] = "{% url 'wms:robotqueue_form' item.id %}"
+                    {% endfor %}
+                    function render_robotqueue(response) {
+                        $("#robotqueue-table .table-responsive").empty()
+                        if (Object.keys(response).length > 0) {
+                            var data = "<table class='table table-sm table-hover'>" +
+                                "<th>{% trans 'Robot No.' %}</th>" +
+                                "<th>{% trans 'Product Name' %}</th>" +
+                                "<th>{% trans 'Qty (Bags)' %}</th>" +
+                                "<th>{% trans 'Status' %}</th>" +
+                                "</tr>" +
+                                "</thead>" +
+                                "<tbody>"
+                            $.each(response, function (key, value) {
+                                data += "<tr>" +
+                                    "<td><a href='#' onclick=PopupCenter('" + url_robotqueue_form[value.id] + "','Popup','400','600')>" + value.robot_no + "</a></td>" +
+                                    "<td>" + value.product_id + "</td>" +
+                                    "<td>" + value.qty_act + "</td>" +
+                                    "<td>" + value.updated + "</td>" +
+                                    "</tr>"
+                            })
+                            data += "</tbody>" +
+                                "</table>" +
+                                "<div align='center'>" +
+                                "<a class='btn btn-danger' href='{% url 'wms:robotqueue_clear' %}' onclick=return confirm('{% trans 'Are you sure?' %}')>{% trans 'Clear All' %}</a>" +
+                                "</div>"
+                            $("#robotqueue-table .table-responsive").append(data)
+                        }
+                    }
+                    </script>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card card-outline card-success shadow" id="queue-table">
+            <div class="card card-outline card-success shadow" id="agvqueue-table">
                 <div class="card-header">
                     <h3 class="card-title font-weight-bold">{% trans 'AGV Queue' %}</h3>
                 </div>
                 <div class="card-body table-responsive">
-                    {% if queue_db %}
-                    <table class="table table-sm table-hover">
-                        <tr>
-                            <th>{% trans 'Product Name' %}</th>
-                            <th>{% trans 'Lot Name' %}</th>
-                            <th>{% trans 'Qty (Bags)' %}</th>
-                            <th>{% trans 'Robot No.' %}</th>
-                            <th>{% trans 'Pick Location' %}</th>
-                            <th>{% trans 'Place Location' %}</th>
-                            <th>{% trans 'Mode' %}</th>
-                        </tr>
-                        {% for queue in queue_db %}
-                        <tr>
-                            <td><a href="#" onclick="PopupCenter('{% url 'wms:queue_form' queue.id %}','Popup','400','600');">{{ queue.product_name }}</a></td>
-                            <td>{% if queue.lot_name %}{{ queue.lot_name }}{% endif %}</td>
-                            <td>{{ queue.qty_act }}</td>
-                            <td>{% if queue.robot_no %}{{ queue.get_robot_no_display }}{% endif %}</td>
-                            <td>{% if queue.pick_id %}{{ queue.pick_id }}{% endif %}</td>
-                            <td>{{ queue.place_id }}</td>
-                            <td>{{ queue.get_mode_display }}</td>
-                        </tr>
-                        {% endfor %}
-                    </table>
-                    <div align="center">
-                        <a class="btn btn-danger" href="{% url 'wms:queue_clear' %}" onclick="return confirm('{% trans 'Are you sure?' %}');">{% trans 'Clear All' %}</a>
-                    </div>
-                    {% endif %}
+                    <script type="text/javascript">
+                    var api_agvqueue = '{% url 'wms:agvqueue-list' %}'
+                    url_agvqueue_form = []
+                    {% for item in agvqueue %}
+                        url_agvqueue_form[{{ item.id }}] = "{% url 'wms:agvqueue_form' item.id %}"
+                    {% endfor %}
+                    function render_agvqueue(response) {
+                        $("#agvqueue-table .table-responsive").empty()
+                        if (Object.keys(response).length > 0) {
+                            var data = "<table class='table table-sm table-hover'>" +
+                                "<th>{% trans 'Product Name' %}</th>" +
+                                "<th>{% trans 'Lot Name' %}</th>" +
+                                "<th>{% trans 'Qty (Bags)' %}</th>" +
+                                "<th>{% trans 'Robot No.' %}</th>" +
+                                "<th>{% trans 'Pick Location' %}</th>" +
+                                "<th>{% trans 'Place Location' %}</th>" +
+                                "<th>{% trans 'Mode' %}</th>" +
+                                "</tr>" +
+                                "</thead>" +
+                                "<tbody>"
+                            $.each(response, function (key, value) {
+                                data += "<tr>" +
+                                    "<td><a href='#' onclick=PopupCenter('" + url_agvqueue_form[value.id] + "','Popup','400','600')>" + value.product_name + "</a></td>" +
+                                    "<td>" + value.lot_name + "</td>" +
+                                    "<td>" + value.qty_act + "</td>" +
+                                    "<td>" + value.robot_no + "</td>" +
+                                    "<td>" + value.pick_id + "</td>" +
+                                    "<td>" + value.place_id + "</td>" +
+                                    "<td>" + value.mode + "</td>" +
+                                    "</tr>"
+                            })
+                            data += "</tbody>" +
+                                "</table>" +
+                                "<div align='center'>" +
+                                "<a class='btn btn-danger' href='{% url 'wms:agvqueue_clear' %}' onclick=return confirm('{% trans 'Are you sure?' %}')>{% trans 'Clear All' %}</a>" +
+                                "</div>"
+                            $("#agvqueue-table .table-responsive").append(data)
+                        }
+                    }
+                    </script>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row justify-content-center refresh">
+    <div class="row justify-content-center">
         <div class="col">
-            <div class="table-responsive" id="transfer-table">
+            <div class="table-responsive" id="agvtransfer-table">
                 <table class="table table-sm table-hover">
                     <thead>
-                    <tr>
-                        <th>{% trans 'AGV Run' %}</th>
-                        <th>{% trans 'AGV Status' %}</th>
-                        <th>{% trans 'Step' %}</th>
-                        <th>{% trans 'X NAV' %}</th>
-                        <th>{% trans 'Y NAV' %}</th>
-                        <th>{% trans 'Beta NAV' %}</th>
-                        <th>{% trans 'Pattern' %}</th>
-                        <th>X1</th>
-                        <th>Y1</th>
-                        <th>X2</th>
-                        <th>Y2</th>
-                        <th>X3</th>
-                        <th>Y3</th>
-                        <th>X4</th>
-                        <th>Y4</th>
-                        <th>X5</th>
-                        <th>Y5</th>
-                    </tr>
+                        <tr>
+                            <th>{% trans 'AGV Run' %}</th>
+                            <th>{% trans 'AGV Status' %}</th>
+                            <th>{% trans 'Step' %}</th>
+                            <th>{% trans 'X NAV' %}</th>
+                            <th>{% trans 'Y NAV' %}</th>
+                            <th>{% trans 'Beta NAV' %}</th>
+                            <th>{% trans 'Pattern' %}</th>
+                            <th>X1</th>
+                            <th>Y1</th>
+                            <th>X2</th>
+                            <th>Y2</th>
+                            <th>X3</th>
+                            <th>Y3</th>
+                            <th>X4</th>
+                            <th>Y4</th>
+                            <th>X5</th>
+                            <th>Y5</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {% for transfer in transfer_db %}
-                    <tr>
-                        <td>{{ transfer.get_run_display }}</td>
-                        <td><a href="#" onclick="PopupCenter('{% url 'wms:transfer_form' transfer.id %}','Popup','400','600');">{{ transfer.get_status_display }}</a></td>
-                        <td>{{ transfer.step }}</td>
-                        <td>{{ transfer.x_nav|floatformat:4 }}</td>
-                        <td>{{ transfer.y_nav|floatformat:4 }}</td>
-                        <td>{{ transfer.beta_nav|floatformat:1 }}</td>
-                        <td>{{ transfer.get_pattern_display }}</td>
-                        <td>{% if transfer.x1 != 0 %}{{ transfer.x1|floatformat:2 }}{% endif %}</td>
-                        <td>{% if transfer.y1 != 0 %}{{ transfer.y1|floatformat:2 }}{% endif %}</td>
-                        <td>{% if transfer.x2 != 0 %}{{ transfer.x2|floatformat:2 }}{% endif %}</td>
-                        <td>{% if transfer.y2 != 0 %}{{ transfer.y2|floatformat:2 }}{% endif %}</td>
-                        <td>{% if transfer.x3 != 0 %}{{ transfer.x3|floatformat:2 }}{% endif %}</td>
-                        <td>{% if transfer.y3 != 0 %}{{ transfer.y3|floatformat:2 }}{% endif %}</td>
-                        <td>{% if transfer.x4 != 0 %}{{ transfer.x4|floatformat:2 }}{% endif %}</td>
-                        <td>{% if transfer.y4 != 0 %}{{ transfer.y4|floatformat:2 }}{% endif %}</td>
-                        <td>{% if transfer.x5 != 0 %}{{ transfer.x5|floatformat:2 }}{% endif %}</td>
-                        <td>{% if transfer.y5 != 0 %}{{ transfer.y5|floatformat:2 }}{% endif %}</td>
-                    </tr>
-                    {% endfor %}
+                        <script type="text/javascript">
+                        var api_agvtransfer = '{% url 'wms:agvtransfer-list' %}'
+                        url_agvtransfer_form = []
+                        {% for item in agvtransfer %}
+                            url_agvtransfer_form[{{ item.id }}] = "{% url 'wms:agvtransfer_form' item.id %}"
+                        {% endfor %}
+                        function render_agvtransfer(response) {
+                            $("#agvtransfer-table tbody").empty()
+                            $.each(response, function (key, value) {
+                                var data = "<tr>" +
+                                    "<td>" + value.run + "</td>" +
+                                    "<td><a href='#' onclick=PopupCenter('" + url_agvtransfer_form[value.id] + "','Popup','400','600')>" + value.status + "</a></td>" +
+                                    "<td>" + value.step + "</td>" +
+                                    "<td>" + value.x_nav + "</td>" +
+                                    "<td>" + value.y_nav + "</td>" +
+                                    "<td>" + value.beta_nav + "</td>" +
+                                    "<td>" + value.pattern + "</td>" +
+                                    "<td>" + value.x1 + "</td>" +
+                                    "<td>" + value.y1 + "</td>" +
+                                    "<td>" + value.x2 + "</td>" +
+                                    "<td>" + value.y2 + "</td>" +
+                                    "<td>" + value.x3 + "</td>" +
+                                    "<td>" + value.y3 + "</td>" +
+                                    "<td>" + value.x4 + "</td>" +
+                                    "<td>" + value.y4 + "</td>" +
+                                    "<td>" + value.x5 + "</td>" +
+                                    "<td>" + value.y5 + "</td>" +
+                                    "</tr>"
+                                $("#agvtransfer-table tbody").append(data)
+                            })
+                        }
+                        </script>
                     </tbody>
                 </table>
             </div>
@@ -236,7 +284,7 @@
                 </div>
                 <div class="card-body">
                     <form method="post" name="manualtransfer-form" novalidate>
-                        <fieldset %} %}disabled{% endif if queue_db {%>
+                        <fieldset %} %}disabled{% endif if queue {%>
                             {% csrf_token %}
                             {% for hidden in manualtransfer_form.hidden_fields %}{{ hidden }}{% endfor %}
                             {% for field in manualtransfer_form.visible_fields %}
@@ -273,9 +321,9 @@
                             </div>
                             {% endfor %}
                             <div align="center">
-                                <button class="btn btn-success" name="manualtransfer" onclick="return confirm('{% trans 'Manual transfer. Are you sure?' %}');" type="submit">{% trans 'Submit' %}</button>
+                                <button class="btn btn-success" name="manualtransfer" onclick="return confirm('{% trans 'Manual transfer. Are you sure?' %}')" type="submit">{% trans 'Submit' %}</button>
                                 <br>
-                                <a class="btn btn-secondary mt-1" id="agv_to_home" onclick="return confirm('{% trans 'Back to home. Are you sure?' %}');" role="button">{% trans 'Go Home' %}</a>
+                                <a class="btn btn-secondary mt-1" id="agv_to_home" onclick="return confirm('{% trans 'Back to home. Are you sure?' %}')" role="button">{% trans 'Go Home' %}</a>
                             </div>
                         </fieldset>
                     </form>
@@ -293,9 +341,11 @@
 
 {% block javascript %}
 <script type="text/javascript">
-    var url_page= '{% url 'wms:agv_debug' %}';
-    var url_agv_to_home = '{% url 'wms:agv_to_home' 0 %}';
-
+    url_agv_to_home = []
+    {% for item in agvtransfer %}
+        url_agv_to_home[{{ item.id }}] = "{% url 'wms:agv_to_home' item.id %}"
+    {% endfor %}
+    console.log(url_agv_to_home)
 </script>
 <script type="text/javascript" src="{% static 'select2/js/select2.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'select2/js/th.js' %}"></script>

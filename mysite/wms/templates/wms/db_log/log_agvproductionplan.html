@@ -1,0 +1,101 @@
+{% extends 'wms/base.html' %}
+{% load static i18n custom_tags widget_tweaks %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/dataTables.bootstrap4.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/buttons.bootstrap4.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'daterangepicker/css/daterangepicker.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db&log.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db_log/log.css' %}">
+{% endblock %}
+
+{% block title %}{% trans 'Production Plan Log' %}{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex justify-content-center">
+        <p class="font-weight-bold my-0">{% trans 'Production Plan Log' %}</p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row justify-content-center">
+        <form method="get" class="form-inline" action="{{ request.path }}">
+            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+            {% for field in form.visible_fields %}
+            <label class="text-secondary mx-1" for="{{ field.id_for_label }}">{{ field.label }}:</label>
+            {% render_field field class="form-control mr-sm-2" %}
+            {% endfor %}
+            <button class="btn btn-secondary" type="submit">{% trans 'Submit' %}</button>
+        </form>
+    </div>
+    <div class="card shadow">
+        <div class="card-body">
+            <table id="datatable" class="table" style="width:100%" data-server-side="true"
+                   data-ajax="{% url 'wms:agvproductionplanlog-list' %}?format=datatables{% if form.date_filter.value %}&date_filter={{ form.date_filter.value }}{% endif %}">
+                <thead>
+                    <tr>
+                        {% for data, name, class_name in fields %}
+                        {% get_verbose_name instance data as verbose_name %}
+                        <th data-data="{{ data }}" data-name="{{ name }}" data-class-name="{{ class_name }}">{% trans verbose_name %}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'datatables/js/jszip.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'datatables/js/jquery.dataTables.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'datatables/js/dataTables.bootstrap4.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'datatables/js/dataTables.buttons.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'datatables/js/buttons.bootstrap4.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'datatables/js/buttons.colVis.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'datatables/js/buttons.html5.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'datatables/js/buttons.print.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    var table = $('#datatable').DataTable({
+        dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" + "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-12'l>>" + "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        buttons: [
+            { extend: 'colvis', text: '<span class="fas fa-eye" data-toggle="tooltip" title="Column Visible"></span>' },
+            { extend: 'excelHtml5', text: '<span class="fas fa-file-excel" data-toggle="tooltip" title="Export Excel"></span>' },
+            { extend: 'print', text: '<span class="fas fa-print" data-toggle="tooltip" title="Print"></span>' }
+        ],
+        order: [[0, 'desc']],
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+        searching: true,
+        processing: true,
+        stateSave: false,
+    })
+
+    $('[data-toggle="tooltip"]').tooltip()
+
+    /* Date Range Picker */
+    $('input[name="date_filter"]').daterangepicker({
+        maxDate: moment(),
+        timePicker: true,
+        timePicker24Hour: true,
+        alwaysShowCalendars: true,
+        locale: {
+            format: 'D/M/YY HH:mm',
+            applyLabel: '{% trans 'Submit' %}',
+            cancelLabel: '{% trans 'Close' %}',
+            customRangeLabel: '{% trans 'Custom Range' %}',
+        },
+        ranges: {
+            '{% trans 'Today' %}': [moment().subtract(1, 'days'), moment()],
+            '{% trans 'Yesterday' %}': [moment().subtract(2, 'days'), moment().subtract(1, 'days')],
+            '{% trans 'Last 7 Days' %}': [moment().subtract(7, 'days'), moment()],
+            '{% trans 'Last 30 Days' %}': [moment().subtract(30, 'days'), moment()],
+            '{% trans 'This Month' %}': [moment().startOf('month'), moment().endOf('month')],
+            '{% trans 'Last Month' %}': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        },
+    })
+})
+</script>
+{% endblock %}

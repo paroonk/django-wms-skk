@@ -11,3 +11,6 @@ th, tr, .form-inline .form-group input, .form-inline button, .form-inline a, .fo
 th {
     color: #007bff;
 }
+input[name="date_filter"] {
+    min-width: 255px;
+}

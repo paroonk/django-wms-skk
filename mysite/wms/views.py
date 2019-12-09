@@ -1,25 +1,23 @@
-import shlex
 from datetime import datetime
 
-import pandas as pd
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
+from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_list_or_404
 from django.template.loader import render_to_string
-from django.utils import timezone
-from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
-from django_datatables_view.base_datatable_view import BaseDatatableView
-from django_pandas.io import read_frame
-from django_tables2 import SingleTableMixin
+from drf_multiple_model.pagination import MultipleModelLimitOffsetPagination
+from drf_multiple_model.views import ObjectMultipleModelAPIView
+from rest_framework import viewsets
+from rest_framework.response import Response
 
 from .forms import *
-from .sched import transfer_adjust, position_cal, agv_route_home, agv_route_manual
-from .tables import *
+from .serializers import *
 
 
+######################################################################################################################################################
 def permission_denied(request):
     messages.add_message(request, messages.INFO, "You don't have authorization to view this page. Please sign in with authorized user account.")
     return redirect(request.META.get('HTTP_REFERER'))
@@ -33,12 +31,16 @@ def redirect_home(request):
     return redirect('wms:dashboard')
 
 
+######################################################################################################################################################
+class AutoCloseView(generic.TemplateView):
+    template_name = 'wms/auto_close.html'
+
+
+######################################################################################################################################################
 class DashboardView(generic.TemplateView):
     template_name = 'wms/dashboard.html'
 
     def get_context_data(self, **kwargs):
-        # production_target = '{:,}'.format(1200000)
-        # current_production = '{:,}'.format(550000)
         in_stock_status = '{:,}'.format(Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum']
                                         if Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] is not None else 0)
         in_stock_pct = '{:.0%}'.format(Storage.objects.filter(have_inventory=True).count() / Storage.objects.all().count() if Storage.objects.all() else 0)
@@ -47,32 +49,6 @@ class DashboardView(generic.TemplateView):
 
         # For Overview Graph #
         overview_plant_list = list(enumerate([_('All')] + list(Product.objects.select_related('plant').order_by('plant_id').distinct().values_list('plant', flat=True))))
-        product_name = {}
-        product_color = {}
-        qty_inventory = {}
-        qty_buffer = {}
-        qty_misplace = {}
-        qty_avail_storage = {}
-        pct_qty_inventory = {}
-        pct_qty_buffer = {}
-        pct_qty_misplace = {}
-        pct_qty_avail_storage = {}
-        for i, plant in overview_plant_list:
-            if plant != _('All'):
-                product_name[i] = list(Product.objects.select_related('plant').filter(plant__plant_id=plant).values_list('product_name', flat=True))
-                obj_list = get_list_or_404(Product, product_name__in=product_name[i])
-            elif plant == _('All'):
-                product_name[i] = list(Product.objects.select_related('plant').all().values_list('product_name', flat=True))
-                obj_list = Product.objects.all()
-            product_color[i] = [obj.bg_color for obj in obj_list]
-            qty_inventory[i] = [(obj.qty_inventory if obj.qty_inventory else 0) for obj in obj_list]
-            qty_buffer[i] = [(obj.qty_buffer if obj.qty_buffer else 0) for obj in obj_list]
-            qty_misplace[i] = [(obj.qty_misplace if obj.qty_misplace else 0) for obj in obj_list]
-            qty_avail_storage[i] = [(obj.qty_storage - obj.qty_total if obj.qty_storage else 0) for obj in obj_list]
-            pct_qty_inventory[i] = [(round(obj.qty_inventory / obj.qty_storage * 100, 2) if obj.qty_storage else 0) for obj in obj_list]
-            pct_qty_buffer[i] = [(round(obj.qty_buffer / obj.qty_storage * 100, 2) if obj.qty_storage else 0) for obj in obj_list]
-            pct_qty_misplace[i] = [(round(obj.qty_misplace / obj.qty_storage * 100, 2) if obj.qty_storage else 0) for obj in obj_list]
-            pct_qty_avail_storage[i] = [(round((obj.qty_storage - obj.qty_total) / obj.qty_storage * 100, 2) if obj.qty_storage else 0) for obj in obj_list]
 
         # For Usage Graph #
         qty_inventory_plant = []
@@ -85,24 +61,12 @@ class DashboardView(generic.TemplateView):
 
         context = super().get_context_data(**kwargs)
         context.update({
-            # 'production_target': production_target,
-            # 'current_production': current_production,
             'in_stock_status': in_stock_status,
             'in_stock_pct': in_stock_pct,
             'agv_run': agv_run,
             'agv_total': agv_total,
             # For Overview Graph #
             'overview_plant_list': overview_plant_list,
-            'product_name': product_name,
-            'product_color': product_color,
-            'qty_inventory': qty_inventory,
-            'qty_buffer': qty_buffer,
-            'qty_misplace': qty_misplace,
-            'qty_avail_storage': qty_avail_storage,
-            'pct_qty_inventory': pct_qty_inventory,
-            'pct_qty_buffer': pct_qty_buffer,
-            'pct_qty_misplace': pct_qty_misplace,
-            'pct_qty_avail_storage': pct_qty_avail_storage,
             # For Usage Graph #
             'usage_plant_list': usage_plant_list,
             'qty_inventory_plant': qty_inventory_plant,
@@ -110,6 +74,7 @@ class DashboardView(generic.TemplateView):
         return context
 
 
+######################################################################################################################################################
 def layout_map(obj_storage, debug=False, age=False):
     layout = {}
     layout_col = []
@@ -197,7 +162,8 @@ def layout_map(obj_storage, debug=False, age=False):
     return layout, header_1, zip_header_2, footer_1, zip_footer_2, layout_col, zip_row
 
 
-@method_decorator(login_required, name='dispatch')
+######################################################################################################################################################
+# @method_decorator(login_required, name='dispatch')
 class LayoutView(generic.TemplateView):
     template_name = 'wms/layout.html'
 
@@ -205,7 +171,6 @@ class LayoutView(generic.TemplateView):
         obj_storage = Storage.objects.select_related('column_id', 'column_id__for_product', 'inv_product').all()
         layout, header_1, zip_header_2, footer_1, zip_footer_2, layout_col, zip_row = layout_map(obj_storage)
         in_queue = list(set(AgvQueue.objects.all().values_list('pick_id', flat=True)) | set(AgvQueue.objects.all().values_list('place_id', flat=True)))
-        transfer_db = AgvTransfer.objects.all()
 
         context = super().get_context_data(**kwargs)
         context.update({
@@ -217,12 +182,13 @@ class LayoutView(generic.TemplateView):
             'layout_col': layout_col,
             'zip_row': zip_row,
             'in_queue': in_queue,
-            'transfer_db': transfer_db,
+            'agvtransfer': AgvTransfer.objects.all(),
         })
         return context
 
 
-@method_decorator(login_required, name='dispatch')
+######################################################################################################################################################
+# @method_decorator(login_required, name='dispatch')
 class LayoutDebugView(generic.TemplateView):
     template_name = 'wms/layout_debug.html'
 
@@ -243,6 +209,7 @@ class LayoutDebugView(generic.TemplateView):
         return context
 
 
+######################################################################################################################################################
 class LayoutAgeView(generic.TemplateView):
     template_name = 'wms/layout_age.html'
 
@@ -263,7 +230,8 @@ class LayoutAgeView(generic.TemplateView):
         return context
 
 
-@login_required
+######################################################################################################################################################
+# @login_required
 def inv_create(request, pk):
     obj = get_object_or_404(Storage, pk=pk)
     data = {}
@@ -291,7 +259,7 @@ def inv_create(request, pk):
     return JsonResponse(data)
 
 
-@login_required
+# @login_required
 def inv_update(request, pk):
     obj = get_object_or_404(Storage, pk=pk)
     data = {}
@@ -315,7 +283,7 @@ def inv_update(request, pk):
     return JsonResponse(data)
 
 
-@login_required
+# @login_required
 def inv_delete(request, pk):
     obj = get_object_or_404(Storage, pk=pk)
     obj.inv_product = None
@@ -325,10 +293,11 @@ def inv_delete(request, pk):
     obj.updated_on = timezone.now()
     obj.changeReason = 'Manual Delete Inventory'
     obj.save()
-    return redirect('wms:layout')
+    return redirect(request.META.get('HTTP_REFERER'))
 
 
-@login_required
+######################################################################################################################################################
+# @login_required
 def invcol_update(request, pk):
     qs_storage = get_object_or_404(Column, pk=pk).storage_set.all()
     data = {}
@@ -377,7 +346,7 @@ def invcol_update(request, pk):
     return JsonResponse(data)
 
 
-@login_required
+# @login_required
 def invcol_delete(request, pk):
     qs_storage = get_object_or_404(Column, pk=pk).storage_set.all()
     for obj in qs_storage:
@@ -388,10 +357,11 @@ def invcol_delete(request, pk):
         obj.updated_on = timezone.now()
         obj.changeReason = 'Manual Delete Inventory'
         obj.save()
-    return redirect('wms:layout')
+    return redirect(request.META.get('HTTP_REFERER'))
 
 
-@login_required
+######################################################################################################################################################
+# @login_required
 def col_update(request, pk):
     obj = get_object_or_404(Column, pk=pk)
     data = {}
@@ -412,197 +382,9 @@ def col_update(request, pk):
     return JsonResponse(data)
 
 
-@method_decorator(login_required, name='dispatch')
-class ProductDatabaseView(SingleTableMixin, generic.TemplateView):
-    template_name = 'wms/db_log/product_db.html'
-    context_table_name = 'product_db'
-    table_class = ProductDatabaseTable
-    table_data = Product.objects.none()
-    table_pagination = False
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'q': self.request.GET.get('q', '')
-        })
-        return context
-
-
-@method_decorator(login_required, name='dispatch')
-class ProductDatabaseJson(BaseDatatableView):
-    model = Product
-
-    def filter_queryset(self, qs):
-        search = self.request.GET.get('search[value]', None)
-        if search:
-            conditions = ~Q(pk=None)
-            qq = shlex.split(search)
-            for q in qq:
-                conditions &= Q(product_name__icontains=q) | Q(plant__plant_id__icontains=q)
-            qs = qs.filter(conditions)
-        return qs
-
-
-@method_decorator(login_required, name='dispatch')
-class StorageDatabaseView(SingleTableMixin, generic.TemplateView):
-    template_name = 'wms/db_log/storage_db.html'
-    context_table_name = 'storage_db'
-    table_class = StorageDatabaseTable
-    table_data = Storage.objects.none()
-    table_pagination = False
-
-
-@method_decorator(login_required, name='dispatch')
-class StorageDatabaseJson(BaseDatatableView):
-    def get_initial_queryset(self):
-        pk = self.kwargs['pk']
-        if pk in list(Product.objects.all().values_list('product_name', flat=True)):
-            return Storage.objects.filter(have_inventory=True, inv_product__product_name=pk)
-        elif pk in list(Plant.objects.all().values_list('plant_id', flat=True)):
-            return Storage.objects.filter(have_inventory=True, inv_product__plant=pk)
-        else:
-            return Storage.objects.all()
-
-    def filter_queryset(self, qs):
-        search = self.request.GET.get('search[value]', None)
-        if search:
-            conditions = ~Q(pk=None)
-            qq = shlex.split(search)
-            for q in qq:
-                conditions &= Q(storage_id__icontains=q) | Q(inv_product__product_name__icontains=q) | Q(lot_name__icontains=q)
-            qs = qs.filter(conditions)
-        return qs
-
-
-@method_decorator(login_required, name='dispatch')
-class ProductLogView(SingleTableMixin, generic.TemplateView):
-    template_name = 'wms/db_log/product_log.html'
-    context_table_name = 'product_log'
-    table_class = ProductLogTable
-    table_data = Product.history.none()
-    table_pagination = False
-
-
-@method_decorator(login_required, name='dispatch')
-class ProductLogJson(BaseDatatableView):
-    def get_initial_queryset(self):
-        return Product.history.all()
-
-    def render_column(self, row, column):
-        if column in ['history_date']:
-            return timezone.localtime(row.history_date).strftime('%a, %d %b %Y, %H:%M:%S')
-        else:
-            return super().render_column(row, column)
-
-
-@method_decorator(login_required, name='dispatch')
-class StorageLogView(SingleTableMixin, generic.TemplateView):
-    template_name = 'wms/db_log/storage_log.html'
-    context_table_name = 'storage_log'
-    table_class = StorageLogTable
-    table_data = Storage.history.none()
-    table_pagination = False
-
-
-@method_decorator(login_required, name='dispatch')
-class StorageLogJson(BaseDatatableView):
-    def get_initial_queryset(self):
-        return Storage.history.all()
-
-    def render_column(self, row, column):
-        if column in ['history_date']:
-            return timezone.localtime(row.history_date).strftime('%a, %d %b %Y, %H:%M:%S')
-        else:
-            return super().render_column(row, column)
-
-
-@method_decorator(login_required, name='dispatch')
-class AgvProductionPlanLogView(SingleTableMixin, generic.TemplateView):
-    template_name = 'wms/db_log/plan_log.html'
-    context_table_name = 'plan_log'
-    table_class = AgvProductionPlanLogTable
-    table_data = AgvProductionPlan.history.none()
-    table_pagination = False
-
-
-@method_decorator(login_required, name='dispatch')
-class AgvProductionPlanLogJson(BaseDatatableView):
-    def get_initial_queryset(self):
-        return AgvProductionPlan.history.all()
-
-    def render_column(self, row, column):
-        if column in ['history_date']:
-            return timezone.localtime(row.history_date).strftime('%a, %d %b %Y, %H:%M:%S')
-        else:
-            return super().render_column(row, column)
-
-
-@method_decorator(login_required, name='dispatch')
-class RobotQueueLogView(SingleTableMixin, generic.TemplateView):
-    template_name = 'wms/db_log/robot_log.html'
-    context_table_name = 'robot_log'
-    table_class = RobotQueueLogTable
-    table_data = RobotQueue.history.none()
-    table_pagination = False
-
-
-@method_decorator(login_required, name='dispatch')
-class RobotQueueLogJson(BaseDatatableView):
-    def get_initial_queryset(self):
-        return RobotQueue.history.all()
-
-    def render_column(self, row, column):
-        if column in ['history_date']:
-            return timezone.localtime(row.history_date).strftime('%a, %d %b %Y, %H:%M:%S')
-        else:
-            return super().render_column(row, column)
-
-
-@method_decorator(login_required, name='dispatch')
-class AgvQueueLogView(SingleTableMixin, generic.TemplateView):
-    template_name = 'wms/db_log/queue_log.html'
-    context_table_name = 'queue_log'
-    table_class = AgvQueueLogTable
-    table_data = AgvQueue.history.none()
-    table_pagination = False
-
-
-@method_decorator(login_required, name='dispatch')
-class AgvQueueLogJson(BaseDatatableView):
-    def get_initial_queryset(self):
-        return AgvQueue.history.all()
-
-    def render_column(self, row, column):
-        if column in ['history_date', 'created_on']:
-            return timezone.localtime(row.history_date).strftime('%a, %d %b %Y, %H:%M:%S')
-        else:
-            return super().render_column(row, column)
-
-
-@method_decorator(login_required, name='dispatch')
-class AgvTransferLogView(SingleTableMixin, generic.TemplateView):
-    template_name = 'wms/db_log/transfer_log.html'
-    context_table_name = 'transfer_log'
-    table_class = AgvTransferLogTable
-    table_data = AgvTransfer.history.none()
-    table_pagination = False
-
-
-@method_decorator(login_required, name='dispatch')
-class AgvTransferLogJson(BaseDatatableView):
-    def get_initial_queryset(self):
-        pk = self.kwargs['pk']
-        return AgvTransfer.history.filter(id=pk)
-
-    def render_column(self, row, column):
-        if column in ['history_date']:
-            return timezone.localtime(row.history_date).strftime('%a, %d %b %Y, %H:%M:%S')
-        else:
-            return super().render_column(row, column)
-
-
-@method_decorator([login_required, groups_required('Staff')], name='dispatch')
-class AgvListView(generic.TemplateView):
+######################################################################################################################################################
+# @method_decorator([login_required, groups_required('Staff')], name='dispatch')
+class AgvView(generic.TemplateView):
     template_name = 'wms/agv.html'
 
     def get_context_data(self, **kwargs):
@@ -614,10 +396,10 @@ class AgvListView(generic.TemplateView):
         if 'move_form' not in context:
             context['move_form'] = MoveOrderForm()
         context.update({
-            'plan_db': AgvProductionPlan.objects.all(),
-            'robot_db': RobotQueue.objects.all(),
-            'queue_db': AgvQueue.objects.all(),
-            'transfer_db': AgvTransfer.objects.all()
+            'agvproductionplan': AgvProductionPlan.objects.all(),
+            'robotqueue': RobotQueue.objects.all(),
+            'agvqueue': AgvQueue.objects.all(),
+            'agvtransfer': AgvTransfer.objects.all()
         })
 
         return context
@@ -682,22 +464,87 @@ class AgvListView(generic.TemplateView):
         return render(request, self.template_name, self.get_context_data(**context))
 
 
-@login_required
+######################################################################################################################################################
+# @method_decorator([login_required, groups_required('Staff')], name='dispatch')
+class AgvTestView(generic.TemplateView):
+    template_name = 'wms/agv_debug.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'storage_form' not in context:
+            context['storage_form'] = StorageOrderForm()
+        if 'robot_form' not in context:
+            context['robot_form'] = RobotQueueForm()
+        if 'manualtransfer_form' not in context:
+            context['manualtransfer_form'] = ManualTransferForm()
+        context.update({
+            'agvproductionplan': AgvProductionPlan.objects.all(),
+            'robotqueue': RobotQueue.objects.all(),
+            'agvqueue': AgvQueue.objects.all(),
+            'agvtransfer': AgvTransfer.objects.all()
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        context = {}
+        if 'storage' in request.POST:
+            form = StorageOrderForm(request.POST)
+            if form.is_valid():
+                obj = AgvProductionPlan(product_name=Product.objects.get(product_name=request.POST.get('product_name', None)))
+                obj.qty_total = obj.qty_remain = request.POST.get('qty_bag', None)
+                obj.lot_name = request.POST.get('lot_name', None)
+                obj.changeReason = 'New Production Plan'
+                obj.save()
+                return redirect(request.META.get('HTTP_REFERER'))
+            else:
+                context['storage_form'] = form
+        if 'robot' in request.POST:
+            form = RobotQueueForm(request.POST)
+            if form.is_valid():
+                obj = RobotQueue()
+                obj.robot_no = request.POST.get('robot_no', None)
+                obj.product_id = request.POST.get('product_id', None)
+                obj.qty_act = request.POST.get('qty_act', None)
+                obj.updated = request.POST.get('updated', None)
+                obj.changeReason = 'Manual Create Robot Queue'
+                obj.save()
+                return redirect(request.META.get('HTTP_REFERER'))
+            else:
+                context['robot_form'] = form
+        if 'manualtransfer' in request.POST:
+            form = ManualTransferForm(request.POST)
+            if form.is_valid():
+                agv_no = int(request.POST.get('agv_no', None))
+                qs_transfer = AgvTransfer.objects.filter(id=agv_no)
+                pattern = float(request.POST.get('pattern', None))
+                target_col = int(request.POST.get('layout_col', None))
+                target_row = int(request.POST.get('layout_row', None))
+                agv_route_manual(agv_no, qs_transfer, pattern, target_col, target_row)
+
+                return redirect(request.META.get('HTTP_REFERER'))
+            else:
+                context['manualtransfer_form'] = form
+
+        return render(request, self.template_name, self.get_context_data(**context))
+
+
+######################################################################################################################################################
+# @login_required
 def get_data_storage_form(request):
     data = {}
-    if request.method == 'POST':
-        obj = get_object_or_404(Product, product_name=request.POST.get('product_name_storage', None))
+    if request.method == 'GET':
+        obj = get_object_or_404(Product, product_name=request.GET.get('product_name_storage', None))
         data['qty_storage'] = obj.qty_storage
         data['qty_storage_avail'] = obj.qty_storage_avail
         data['qty_limit'] = obj.qty_limit
     return JsonResponse(data)
 
 
-@login_required
+# @login_required
 def get_data_retrieval_form(request):
     data = {}
-    if request.method == 'POST':
-        obj = get_object_or_404(Product.objects.select_related('plant'), product_name=request.POST.get('product_name_retrieve', None))
+    if request.method == 'GET':
+        obj = get_object_or_404(Product.objects.select_related('plant'), product_name=request.GET.get('product_name_retrieve', None))
 
         # Calculate inventory qty, exclude in queue #
         qs_inventory = Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name).exclude(storage_id__in=AgvQueue.objects.filter(mode=2).values('pick_id'))
@@ -779,11 +626,11 @@ def get_data_retrieval_form(request):
         data['buffer_list'] = pk_avail_buffer_list
 
         # Calculate retrieve qty #
-        if request.POST.get('qty_bag', None) == '':
+        if request.GET.get('qty_bag', None) == '':
             data['qty_act_bag'] = 0
             data['qty_act_pallet'] = 0
         else:
-            qty_bag = int(request.POST.get('qty_bag', None))
+            qty_bag = int(request.GET.get('qty_bag', None))
             qty_act_bag = 0
             pk_retrieve_list = []
             for pk in pk_avail_inventory_list:
@@ -801,50 +648,284 @@ def get_data_retrieval_form(request):
     return JsonResponse(data)
 
 
-@login_required
+# @login_required
 def get_data_move_form(request):
     data = {}
-    if request.method == 'POST':
-        if Storage.objects.select_related('inv_product').filter(storage_id=request.POST.get('move_from', None)).exists():
-            obj_from = get_object_or_404(Storage.objects.select_related('inv_product'), storage_id=request.POST.get('move_from', None))
+    if request.method == 'GET':
+        if Storage.objects.select_related('inv_product').filter(storage_id=request.GET.get('move_from', None)).exists():
+            obj_from = get_object_or_404(Storage.objects.select_related('inv_product'), storage_id=request.GET.get('move_from', None))
             data['product_name_move'] = obj_from.inv_product.product_name if obj_from.inv_product else None
             data['qty_bag'] = obj_from.inv_qty
             data['lot_name'] = obj_from.lot_name
-            obj_to = get_object_or_404(Storage, storage_id=request.POST.get('move_to', None))
+            obj_to = get_object_or_404(Storage, storage_id=request.GET.get('move_to', None))
             data['storage_for'] = obj_to.storage_for
     return JsonResponse(data)
 
 
-@login_required
-def get_data_agv_position(request):
-    data = {}
-    if request.method == 'GET':
-        obj_transfer = get_object_or_404(AgvTransfer, id=1)
-        agv_x, agv_y, agv_beta = transfer_adjust(obj_transfer)
-        agv_col, agv_row = position_cal(agv_x, agv_y)
-        data['agv_col'] = agv_col
-        data['agv_row'] = agv_row
-        data['agv_beta'] = int(agv_beta)
-        obj_robot1 = get_object_or_404(RobotStatus, robot_no=1)
-        obj_robot2 = get_object_or_404(RobotStatus, robot_no=2)
-        obj_robot3 = get_object_or_404(RobotStatus, robot_no=3)
-        data['robot_qty1'] = int(obj_robot1.qty_act) if obj_robot1.qty_act else 0
-        data['robot_qty2'] = int(obj_robot2.qty_act) if obj_robot2.qty_act else 0
-        data['robot_qty3'] = int(obj_robot3.qty_act) if obj_robot3.qty_act else 0
-    return JsonResponse(data)
+######################################################################################################################################################
+# @method_decorator(login_required, name='dispatch')
+class HistoryGraphView(generic.TemplateView):
+    template_name = 'wms/historygraph.html'
+
+    def get_context_data(self, **kwargs):
+        dt_stop = datetime.now()
+        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        dt_format = '%d/%m/%y %H:%M'
+        form_data = {
+            'label': 'all',
+            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
+            'data': 25,
+        }
+
+        form_data['label'] = self.request.GET.get('label')
+        date_filter = self.request.GET.get('date_filter')
+        if date_filter:
+            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
+            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
+        data = self.request.GET.get('data')
+        if data:
+            form_data['data'] = int(data)
+
+        context = super().get_context_data(**kwargs)
+        context['form'] = HistoryGraphForm(initial=form_data)
+        return context
 
 
-class AutoCloseView(generic.TemplateView):
-    template_name = 'wms/auto_close.html'
+######################################################################################################################################################
+# @method_decorator(login_required, name='dispatch')
+class ProductView(generic.TemplateView):
+    template_name = 'wms/db_log/db_product.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = ['product_name', 'name_eng', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+        name = ['product_name', 'name_eng', 'plant.plant_id', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+        class_name = ['text-left', 'text-left', 'text-center', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right']
+        context.update({
+            'instance': Product,
+            'fields': zip(data, name, class_name),
+            'q': self.request.GET.get('q', '')
+        })
+        return context
 
 
-@method_decorator(login_required, name='dispatch')
-class PlanFormView(generic.TemplateView):
-    template_name = 'wms/agv/plan_form.html'
+# @method_decorator(login_required, name='dispatch')
+class StorageView(generic.TemplateView):
+    template_name = 'wms/db_log/db_storage.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'name_eng', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
+        name = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product.product_name', 'name_eng', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
+        class_name = ['text-left', 'text-center', 'text-left', 'text-center', 'text-left', 'text-left', 'text-right', 'text-left', 'text-left', 'text-left']
+        context.update({
+            'instance': Storage,
+            'fields': zip(data, name, class_name),
+        })
+        return context
 
 
-@login_required
-def plan_update(request, pk):
+######################################################################################################################################################
+# @method_decorator(login_required, name='dispatch')
+class ProductHistoryView(generic.TemplateView):
+    template_name = 'wms/db_log/log_product.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+        name = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right']
+
+        dt_stop = datetime.now()
+        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        dt_format = '%d/%m/%y %H:%M'
+        form_data = {
+            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
+        }
+        date_filter = self.request.GET.get('date_filter', None)
+        if date_filter:
+            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
+            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
+
+        context['form'] = LogFilterForm(initial=form_data)
+        context.update({
+            'instance': Product.history.model,
+            'fields': zip(data, name, class_name),
+        })
+        return context
+
+
+# @method_decorator(login_required, name='dispatch')
+class StorageHistoryView(generic.TemplateView):
+    template_name = 'wms/db_log/log_storage.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = ['history_date', 'history_type', 'history_change_reason', 'storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty']
+        name = ['history_date', 'history_type', 'history_change_reason', 'storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product.product_name', 'inv_qty']
+        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-center', 'text-left', 'text-center', 'text-left', 'text-right']
+
+        dt_stop = datetime.now()
+        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        dt_format = '%d/%m/%y %H:%M'
+        form_data = {
+            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
+        }
+        date_filter = self.request.GET.get('date_filter', None)
+        if date_filter:
+            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
+            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
+
+        context['form'] = LogFilterForm(initial=form_data)
+        context.update({
+            'instance': Storage.history.model,
+            'fields': zip(data, name, class_name),
+        })
+        return context
+
+
+# @method_decorator(login_required, name='dispatch')
+class AgvProductionPlanHistoryView(generic.TemplateView):
+    template_name = 'wms/db_log/log_agvproductionplan.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'qty_total', 'qty_remain', 'lot_name']
+        name = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name.product_name', 'qty_total', 'qty_remain', 'lot_name']
+        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-right', 'text-left']
+
+        dt_stop = datetime.now()
+        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        dt_format = '%d/%m/%y %H:%M'
+        form_data = {
+            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
+        }
+        date_filter = self.request.GET.get('date_filter', None)
+        if date_filter:
+            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
+            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
+
+        context['form'] = LogFilterForm(initial=form_data)
+        context.update({
+            'instance': AgvProductionPlan.history.model,
+            'fields': zip(data, name, class_name),
+        })
+        return context
+
+
+# @method_decorator(login_required, name='dispatch')
+class RobotQueueHistoryView(generic.TemplateView):
+    template_name = 'wms/db_log/log_robotqueue.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = ['history_date', 'history_type', 'history_change_reason', 'robot_no', 'product_id', 'qty_act']
+        name = ['history_date', 'history_type', 'history_change_reason', 'robot_no', 'product_id', 'qty_act']
+        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right']
+
+        dt_stop = datetime.now()
+        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        dt_format = '%d/%m/%y %H:%M'
+        form_data = {
+            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
+        }
+        date_filter = self.request.GET.get('date_filter', None)
+        if date_filter:
+            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
+            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
+
+        context['form'] = LogFilterForm(initial=form_data)
+        context.update({
+            'instance': RobotQueue.history.model,
+            'fields': zip(data, name, class_name),
+        })
+        return context
+
+
+# @method_decorator(login_required, name='dispatch')
+class AgvQueueHistoryView(generic.TemplateView):
+    template_name = 'wms/db_log/log_agvqueue.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
+        name = ['history_date', 'history_type', 'history_change_reason', 'product_name.product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id.storage_id', 'place_id.storage_id', 'mode']
+        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center']
+
+        dt_stop = datetime.now()
+        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        dt_format = '%d/%m/%y %H:%M'
+        form_data = {
+            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
+        }
+        date_filter = self.request.GET.get('date_filter', None)
+        if date_filter:
+            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
+            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
+
+        context['form'] = LogFilterForm(initial=form_data)
+        context.update({
+            'instance': AgvQueue.history.model,
+            'fields': zip(data, name, class_name),
+        })
+        return context
+
+
+# @method_decorator(login_required, name='dispatch')
+class AgvTransferHistoryView(generic.TemplateView):
+    template_name = 'wms/db_log/log_agvtransfer.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = ['history_date', 'history_type', 'history_change_reason', 'run', 'status', 'step', 'pause', 'pattern']
+        name = ['history_date', 'history_type', 'history_change_reason', 'run', 'status', 'step', 'pause', 'pattern']
+        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center', 'text-left', 'text-left']
+
+        dt_stop = datetime.now()
+        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        dt_format = '%d/%m/%y %H:%M'
+        form_data = {
+            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
+        }
+        date_filter = self.request.GET.get('date_filter', None)
+        if date_filter:
+            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
+            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
+
+        context['form'] = LogFilterForm(initial=form_data)
+        context.update({
+            'instance': AgvTransfer.history.model,
+            'fields': zip(data, name, class_name),
+        })
+        return context
+
+
+######################################################################################################################################################
+# FormView for edit data
+# @method_decorator(login_required, name='dispatch')
+class AgvProductionPlanView(generic.TemplateView):
+    template_name = 'wms/agv/agvproductionplan_form.html'
+
+
+# @method_decorator(login_required, name='dispatch')
+class AgvQueueView(generic.TemplateView):
+    template_name = 'wms/agv/agvqueue_form.html'
+
+
+# @method_decorator(login_required, name='dispatch')
+class RobotQueueView(generic.TemplateView):
+    template_name = 'wms/agv/robotqueue_form.html'
+
+
+# @method_decorator(login_required, name='dispatch')
+class AgvTransferView(generic.TemplateView):
+    template_name = 'wms/agv/agvtransfer_form.html'
+
+
+######################################################################################################################################################
+# Function for CRUD data
+# @login_required
+def agvproductionplan_update(request, pk):
     obj = get_object_or_404(AgvProductionPlan, pk=pk)
     data = {}
     if request.method == 'POST':
@@ -859,22 +940,22 @@ def plan_update(request, pk):
     else:
         form = AgvProductionPlanForm(instance=obj)
 
-    template_name = 'wms/agv/plan_update.html'
+    template_name = 'wms/agv/agvproductionplan_update.html'
     context = {'form': form}
     data['html_form'] = render_to_string(template_name, context, request=request)
     return JsonResponse(data)
 
 
-@login_required
-def plan_delete(request, pk):
+# @login_required
+def agvproductionplan_delete(request, pk):
     obj = get_object_or_404(AgvProductionPlan, pk=pk)
     obj.changeReason = 'Manual Delete Production Plan'
     obj.delete()
     return redirect('wms:auto_close')
 
 
-@login_required
-def plan_clear(request):
+# @login_required
+def agvproductionplan_clear(request):
     qs = AgvProductionPlan.objects.all()
     for obj in qs:
         obj.changeReason = 'Manual Delete Production Plan'
@@ -882,13 +963,9 @@ def plan_clear(request):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-@method_decorator(login_required, name='dispatch')
-class QueueFormView(generic.TemplateView):
-    template_name = 'wms/agv/queue_form.html'
-
-
-@login_required
-def queue_update(request, pk):
+######################################################################################################################################################
+# @login_required
+def agvqueue_update(request, pk):
     obj = get_object_or_404(AgvQueue, pk=pk)
     data = {}
     if request.method == 'POST':
@@ -919,22 +996,22 @@ def queue_update(request, pk):
     else:
         form = AgvQueueForm(instance=obj)
 
-    template_name = 'wms/agv/queue_update.html'
+    template_name = 'wms/agv/agvqueue_update.html'
     context = {'form': form}
     data['html_form'] = render_to_string(template_name, context, request=request)
     return JsonResponse(data)
 
 
-@login_required
-def queue_delete(request, pk):
+# @login_required
+def agvqueue_delete(request, pk):
     obj = get_object_or_404(AgvQueue, pk=pk)
     obj.changeReason = 'Manual Delete AGV Queue'
     obj.delete()
     return redirect('wms:auto_close')
 
 
-@login_required
-def queue_clear(request):
+# @login_required
+def agvqueue_clear(request):
     qs = AgvQueue.objects.all()
     for obj in qs:
         obj.changeReason = 'Manual Delete AGV Queue'
@@ -942,13 +1019,9 @@ def queue_clear(request):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-@method_decorator(login_required, name='dispatch')
-class RobotFormView(generic.TemplateView):
-    template_name = 'wms/agv/robot_form.html'
-
-
-@login_required
-def robot_update(request, pk):
+######################################################################################################################################################
+# @login_required
+def robotqueue_update(request, pk):
     obj = get_object_or_404(RobotQueue, pk=pk)
     data = {}
     if request.method == 'POST':
@@ -963,22 +1036,22 @@ def robot_update(request, pk):
     else:
         form = RobotQueueForm(instance=obj)
 
-    template_name = 'wms/agv/robot_update.html'
+    template_name = 'wms/agv/robotqueue_update.html'
     context = {'form': form}
     data['html_form'] = render_to_string(template_name, context, request=request)
     return JsonResponse(data)
 
 
-@login_required
-def robot_delete(request, pk):
+# @login_required
+def robotqueue_delete(request, pk):
     obj = get_object_or_404(RobotQueue, pk=pk)
     obj.changeReason = 'Manual Delete Robot Queue'
     obj.delete()
     return redirect('wms:auto_close')
 
 
-@login_required
-def robot_clear(request):
+# @login_required
+def robotqueue_clear(request):
     qs = RobotQueue.objects.all()
     for obj in qs:
         obj.changeReason = 'Manual Delete Robot Queue'
@@ -986,13 +1059,9 @@ def robot_clear(request):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-@method_decorator(login_required, name='dispatch')
-class TransferFormView(generic.TemplateView):
-    template_name = 'wms/agv/transfer_form.html'
-
-
-@login_required
-def transfer_update(request, pk):
+######################################################################################################################################################
+# @login_required
+def agvtransfer_update(request, pk):
     obj = get_object_or_404(AgvTransfer, pk=pk)
     data = {}
     if request.method == 'POST':
@@ -1007,84 +1076,15 @@ def transfer_update(request, pk):
     else:
         form = AgvTransferForm(instance=obj)
 
-    template_name = 'wms/agv/transfer_update.html'
-    context = {'form': form, 'queue_db': AgvQueue.objects.all()}
+    template_name = 'wms/agv/agvtransfer_update.html'
+    context = {'form': form}
     data['html_form'] = render_to_string(template_name, context, request=request)
     return JsonResponse(data)
 
 
-@method_decorator([login_required, groups_required('Staff')], name='dispatch')
-class AgvTestListView(generic.TemplateView):
-    template_name = 'wms/agv_debug.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if 'storage_form' not in context:
-            context['storage_form'] = StorageOrderForm()
-        if 'robot_form' not in context:
-            context['robot_form'] = RobotQueueForm()
-        if 'manualtransfer_form' not in context:
-            context['manualtransfer_form'] = ManualTransferForm()
-        context.update({
-            'plan_db': AgvProductionPlan.objects.all(),
-            'robot_db': RobotQueue.objects.all(),
-            'queue_db': AgvQueue.objects.all(),
-            'transfer_db': AgvTransfer.objects.all()
-        })
-        return context
-
-    def post(self, request, *args, **kwargs):
-        context = {}
-        if 'storage' in request.POST:
-            form = StorageOrderForm(request.POST)
-            if form.is_valid():
-                obj = AgvProductionPlan(product_name=Product.objects.get(product_name=request.POST.get('product_name', None)))
-                obj.qty_total = obj.qty_remain = request.POST.get('qty_bag', None)
-                obj.lot_name = request.POST.get('lot_name', None)
-                obj.changeReason = 'New Production Plan'
-                obj.save()
-                return redirect(request.META.get('HTTP_REFERER'))
-            else:
-                context['storage_form'] = form
-        if 'robot' in request.POST:
-            form = RobotQueueForm(request.POST)
-            if form.is_valid():
-                obj = RobotQueue()
-                obj.robot_no = request.POST.get('robot_no', None)
-                obj.product_name = request.POST.get('product_name', None)
-                obj.qty_act = request.POST.get('qty_act', None)
-                obj.updated = request.POST.get('updated', None)
-                obj.changeReason = 'Manual Create Robot Queue'
-                obj.save()
-                return redirect(request.META.get('HTTP_REFERER'))
-            else:
-                context['robot_form'] = form
-        if 'manualtransfer' in request.POST:
-            form = ManualTransferForm(request.POST)
-            if form.is_valid():
-                agv_no = 1
-                qs_transfer = AgvTransfer.objects.filter(id=agv_no)
-                pattern = float(request.POST.get('pattern', None))
-                robot_no = int(request.POST.get('robot_no_manual', None))
-                obj_storage = get_object_or_404(Storage, storage_id=request.POST.get('place_id', None))
-                runway_row = 9
-                if pattern != 2.0:
-                    target_col = obj_storage.layout_col
-                    target_row = obj_storage.layout_row
-                elif pattern == 2.0:
-                    target_col = 45 if robot_no == 1 else 40
-                    target_row = runway_row
-
-                agv_route_manual(agv_no, qs_transfer, pattern, target_col, target_row)
-
-                return redirect(request.META.get('HTTP_REFERER'))
-            else:
-                context['manualtransfer_form'] = form
-
-        return render(request, self.template_name, self.get_context_data(**context))
-
-
-@login_required
+######################################################################################################################################################
+# Agv to home
+# @login_required
 def agv_to_home(request, pk):
     agv_no = pk
     qs_transfer = AgvTransfer.objects.filter(id=agv_no)
@@ -1093,38 +1093,231 @@ def agv_to_home(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-class GraphTrendView(generic.TemplateView):
-    template_name = 'wms/graph_trend.html'
+######################################################################################################################################################
+# API for data
+class AgvRobotStatusViewSet(viewsets.ViewSetMixin, ObjectMultipleModelAPIView):
+    querylist = [
+        {'queryset': AgvTransfer.objects.all(), 'serializer_class': AgvStatusSerializer, 'label': 'agv_status'},
+        {'queryset': RobotStatus.objects.all(), 'serializer_class': RobotStatusSerializer, 'label': 'robot_status'},
+    ]
+    pagination_class = MultipleModelLimitOffsetPagination
 
-    def get_context_data(self, **kwargs):
-        dt_stop = datetime.now()
-        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+class AgvTransferViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = AgvTransfer.objects.all()
+    serializer_class = AgvTransferSerializer
+
+
+class AgvProductionPlanViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = AgvProductionPlan.objects.all()
+    serializer_class = AgvProductionPlanSerializer
+
+
+class RobotQueueViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = RobotQueue.objects.all()
+    serializer_class = RobotQueueSerializer
+
+
+class AgvQueueViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = AgvQueue.objects.all()
+    serializer_class = AgvQueueSerializer
+
+
+class ProductViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+class StorageViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Storage.objects.all()
+    serializer_class = StorageSerializer
+
+    def get_queryset(self):
+        type = self.kwargs['type']
+        if type == 'all':
+            queryset = self.queryset
+        elif type in list(Product.objects.all().values_list('product_name', flat=True)):
+            queryset = self.queryset.filter(have_inventory=True, inv_product__product_name=type)
+        elif type in list(Plant.objects.all().values_list('plant_id', flat=True)):
+            queryset = self.queryset.filter(have_inventory=True, inv_product__plant=type)
+        else:
+            queryset = self.queryset.none()
+        return queryset
+
+
+######################################################################################################################################################
+class ProductHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Product.history.all()
+    serializer_class = ProductHistorySerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        date_filter = self.request.query_params.get('date_filter', None)
         dt_format = '%d/%m/%y %H:%M'
-        form_data = {
-            'label': 'all',
-            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
-            'data': 25,
+        if date_filter:
+            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
+            queryset = queryset.filter(history_date__range=date_range)
+        return queryset
+
+
+class StorageHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Storage.history.all()
+    serializer_class = StorageHistorySerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        date_filter = self.request.query_params.get('date_filter', None)
+        dt_format = '%d/%m/%y %H:%M'
+        if date_filter:
+            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
+            queryset = queryset.filter(history_date__range=date_range)
+        return queryset
+
+
+class AgvProductionPlanHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = AgvProductionPlan.history.all()
+    serializer_class = AgvProductionPlanHistorySerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        date_filter = self.request.query_params.get('date_filter', None)
+        dt_format = '%d/%m/%y %H:%M'
+        if date_filter:
+            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
+            queryset = queryset.filter(history_date__range=date_range)
+        return queryset
+
+
+class RobotQueueHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = RobotQueue.history.all()
+    serializer_class = RobotQueueHistorySerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        date_filter = self.request.query_params.get('date_filter', None)
+        dt_format = '%d/%m/%y %H:%M'
+        if date_filter:
+            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
+            queryset = queryset.filter(history_date__range=date_range)
+        return queryset
+
+
+class AgvQueueHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = AgvQueue.history.all()
+    serializer_class = AgvQueueHistorySerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        date_filter = self.request.query_params.get('date_filter', None)
+        dt_format = '%d/%m/%y %H:%M'
+        if date_filter:
+            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
+            queryset = queryset.filter(history_date__range=date_range)
+        return queryset
+
+
+class AgvTransferHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = AgvTransfer.history.all()
+    serializer_class = AgvTransferHistorySerializer
+
+    def get_queryset(self):
+        id = self.kwargs['id']
+        queryset = self.queryset.filter(id=id)
+
+        date_filter = self.request.query_params.get('date_filter', None)
+        dt_format = '%d/%m/%y %H:%M'
+        if date_filter:
+            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
+            queryset = queryset.filter(history_date__range=date_range)
+        return queryset
+
+
+######################################################################################################################################################
+class OverviewGraphViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Product.objects.all()
+
+    def get_queryset(self):
+        queryset = self.queryset
+        plant_id = self.request.query_params.get('plant_id', _('All'))
+        if plant_id != _('All'):
+            queryset = queryset.filter(plant__plant_id=plant_id)
+        return queryset
+
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        plant_id = self.request.query_params.get('plant_id', _('All'))
+        value_type = int(self.request.query_params.get('value_type', 0))
+        product_name = list(queryset.values_list('product_name', flat=True))
+        product_color = list(queryset.values_list('bg_color', flat=True))
+        qty_inventory = list(queryset.values_list('qty_inventory', flat=True))
+        qty_buffer = list(queryset.values_list('qty_buffer', flat=True))
+        qty_misplace = list(queryset.values_list('qty_misplace', flat=True))
+        qty_storage = list(queryset.values_list('qty_storage', flat=True))
+        qty_total = list(queryset.values_list('qty_total', flat=True))
+
+        if value_type == 0:
+            qty_inventory = qty_inventory
+            qty_buffer = qty_buffer
+            qty_misplace = qty_misplace
+            qty_avail_storage = [storage - total for storage, total in zip(qty_storage, qty_total)]
+        else:
+            qty_inventory = [round(inventory / storage * 100, 2) for inventory, storage in zip(qty_inventory, qty_storage)]
+            qty_buffer = [round(buffer / storage * 100, 2) for buffer, storage in zip(qty_buffer, qty_storage)]
+            qty_misplace = [round(misplace / storage * 100, 2) for misplace, storage in zip(qty_misplace, qty_storage)]
+            qty_avail_storage = [round((storage - total) / storage * 100, 2) for storage, total in zip(qty_storage, qty_total)]
+        data = {
+            'plant_id': plant_id,
+            'value_type': value_type,
+            'product_name': product_name,
+            'product_color': product_color,
+            'qty_inventory': [{'value': inventory, 'itemStyle': {'color': color}} for inventory, color in zip(qty_inventory, product_color)],
+            'qty_buffer': qty_buffer,
+            'qty_misplace': qty_misplace,
+            'qty_avail_storage': qty_avail_storage,
         }
+        return Response(data)
 
-        if self.request.GET.get('label'):
-            form_data['label'] = self.request.GET.get('label')
-        if self.request.GET.get('date_filter'):
-            date_filter = self.request.GET.get('date_filter').split(' - ')
-            dt_start, dt_stop = [dt.strptime(dt_format) for dt in date_filter]
-            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
-        if self.request.GET.get('data'):
-            if self.request.GET.get('data') != '' and int(self.request.GET.get('data')) > 0:
-                form_data['data'] = int(self.request.GET.get('data'))
 
-        dt_list = pd.date_range(dt_start, dt_stop, periods=form_data['data']).to_list()
+######################################################################################################################################################
+class UsageGraphViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Storage.objects.all()
+
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        plant_list = list(Product.objects.order_by('plant_id').distinct().values_list('plant', flat=True))
+        qty_inventory = [queryset.filter(column_id__is_inventory=True, column_id__for_product__plant__plant_id=plant).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] for plant in plant_list]
+
+        data = {
+            'qty_inventory': [{'name': plant, 'value': inventory if inventory else 0} for plant, inventory in zip(plant_list, qty_inventory)],
+        }
+        return Response(data)
+
+
+######################################################################################################################################################
+class HistoryGraphViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Product.history.all()
+
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        dt_format = '%d/%m/%y %H:%M'
+        label = self.request.query_params.get('label', 'all')
+        date_filter = self.request.query_params.get('date_filter', None)
+        data = int(self.request.query_params.get('data', 25))
+
+        if date_filter:
+            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
+        else:
+            dt_stop = datetime.now()
+            dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        dt_list = pd.date_range(dt_start, dt_stop, periods=data).to_list()
         dt_list = [timezone.make_aware(dt) for dt in dt_list]
 
         df_qty = pd.DataFrame(index=dt_list)
-
-        if form_data['label'] == 'all':
+        if label == 'all':
             plant_list = list(Plant.objects.all().values_list('plant_id', flat=True))
             label_list = plant_list + [str(_('All'))]
-
             for plant in plant_list:
                 product_list = list(get_object_or_404(Plant, plant_id=plant).product_set.all().values_list('product_name', flat=True))
                 for product in product_list:
@@ -1132,13 +1325,12 @@ class GraphTrendView(generic.TemplateView):
                         condition = Q(history_date__lte=dt, product_name=product)
                         df_qty.loc[dt, product] = Product.history.filter(condition).order_by('-history_date').first().qty_total if Product.history.filter(condition).exists() else 0
                 df_qty[plant] = df_qty.loc[:, product_list].sum(axis=1)
-
             df_qty[str(_('All'))] = df_qty.loc[:, plant_list].sum(axis=1)
 
         else:
-            plant = form_data['label']
-            label_list = list(get_object_or_404(Plant, plant_id=plant).product_set.all().values_list('product_name', flat=True))
-            product_list = label_list
+            plant = label
+            product_list = list(get_object_or_404(Plant, plant_id=plant).product_set.all().values_list('product_name', flat=True))
+            label_list = product_list
             for product in product_list:
                 for dt in dt_list:
                     condition = Q(history_date__lte=dt, product_name=product)
@@ -1146,13 +1338,12 @@ class GraphTrendView(generic.TemplateView):
                 df_qty[product] = df_qty.loc[:, product_list].sum(axis=1)
 
         dt = [timezone.localtime(dt).strftime(dt_format) for dt in dt_list]
-        qty = {'{}'.format(label): df_qty[label].to_list() for label in label_list}
+        qty = {'{}'.format(product): df_qty[product].to_list() for product in label_list}
 
-        context = super().get_context_data(**kwargs)
-        context['form'] = GraphTrendForm(initial=form_data)
-        context.update({
+        data = {
             'label_list': label_list,
             'dt': dt,
-            'qty': qty,
-        })
-        return context
+            'qty': qty
+        }
+        return Response(data)
+######################################################################################################################################################

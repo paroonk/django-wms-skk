@@ -1,0 +1,68 @@
+{% load static i18n %}
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'wms/css/popup_form.css' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'wms/images/Siam_Cement_Group_Logo.ico' %}">
+    <title>WMS | {% trans 'Edit Robot Queue' %}</title>
+</head>
+
+<body>
+<div class="container-fluid" style="padding: 0">
+    <div id="popup" class="container" role="document">
+    </div>
+</div>
+</body>
+
+<script type="text/javascript" src="{% static 'jquery/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'popper/js/popper.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<script type="text/javascript">
+$(document).keydown(function(e) {
+    if (e.keyCode == 27) {
+        window.close()
+    }
+})
+$(document).ready(function () {
+    var pk = {{ view.kwargs.pk }}
+    var url = '{% url 'wms:robotqueue_update' pk %}'
+    $.ajax( {
+        url: url,
+        type: 'get',
+        success: function (data) {
+            $('#popup').html(data.html_form)
+        }
+    })
+
+    var saveForm = function () {
+        var form = $(this)
+        $.ajax( {
+            url: form.attr('action'),
+            type: form.attr('method'),
+            data: form.serialize(),
+            success: function (data) {
+                if (data.form_is_valid) {
+                    $('#popup').html(data.html_form)
+                    $(document).ready(function () {
+                        window.close()
+                    })
+                }
+                else {
+                    $('#popup').html(data.html_form)
+                }
+            }
+        })
+        return false
+    }
+
+    $('#popup').on('submit', '.js-robotqueue-update', saveForm)
+
+})
+
+</script>
+
+</html>

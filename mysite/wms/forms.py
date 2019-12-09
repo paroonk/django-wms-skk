@@ -53,13 +53,13 @@ class ColumnForm(forms.ModelForm):
 
     def clean_for_product(self):
         data = self.cleaned_data['for_product']
-        if self.cleaned_data['is_inventory'] and data is None:
+        if self.cleaned_data['is_inventory'] == 'True' and data is None:
             raise forms.ValidationError(_('This field is required'))
         return data
 
     def clean_for_buffer(self):
         data = self.cleaned_data['for_buffer']
-        if not self.cleaned_data['is_inventory'] and data is None:
+        if self.cleaned_data['is_inventory'] == 'False' and data is None:
             raise forms.ValidationError(_('This field is required'))
         return data
 
@@ -262,23 +262,19 @@ class AgvTransferForm(forms.ModelForm):
 class ManualTransferForm(forms.Form):
     agv_no = forms.ModelChoiceField(label=_('AGV No.'), queryset=AgvTransfer.objects.all(), empty_label=None)
     pattern = forms.ChoiceField(label=_('Pattern'), choices=AgvTransfer.pattern_choices)
-    robot_no_manual = forms.ChoiceField(label=_('Robot No.'), choices=RobotQueue.robot_choices, required=False)
-    place_id = forms.ModelChoiceField(label=_('To'), queryset=Storage.objects.all(), empty_label=None)
+    layout_col = forms.ChoiceField(label=_('Column'), choices=[(col, col) for col in list(set(Coordinate.objects.all().values_list('layout_col', flat=True)))[1:-1]])
+    layout_row = forms.ChoiceField(label=_('Row'), choices=[(row, row) for row in list(set(Coordinate.objects.all().values_list('layout_row', flat=True)))[1:-1]])
 
-    def clean_robot_no_manual(self):
-        data = self.cleaned_data['robot_no_manual']
-        if self.cleaned_data['pattern'] == 2.0 and data is None:
-            raise forms.ValidationError(_('This field is required in {}').format(self.pattern_choices[self.cleaned_data['pattern']]))
-        return data
+    def clean(self):
+        cleaned_data = super().clean()
+        layout_col = cleaned_data.get('layout_col')
+        layout_row = cleaned_data.get('layout_row')
 
-    def clean_place_id(self):
-        data = self.cleaned_data['place_id']
-        if self.cleaned_data['pattern'] != 2.0 and data is None:
-            raise forms.ValidationError(_('This field is required in {}').format(self.pattern_choices[self.cleaned_data['pattern']]))
-        return data
+        if not Coordinate.objects.filter(layout_col=layout_col, layout_row=layout_row).exists():
+            raise forms.ValidationError(_('Selected coordinate not exist'))
 
 
-class GraphTrendForm(forms.Form):
+class HistoryGraphForm(forms.Form):
     try:
         plant_list = list(Plant.objects.all().values_list('plant_id', flat=True))
     except ProgrammingError:
@@ -287,3 +283,7 @@ class GraphTrendForm(forms.Form):
     label = forms.ChoiceField(label=_('Data'), choices=label_choices)
     date_filter = forms.CharField(label=_('Date'))
     data = forms.IntegerField(label=_('Number of Data'), min_value=1, max_value=100)
+
+
+class LogFilterForm(forms.Form):
+    date_filter = forms.CharField(label=_('Date'))

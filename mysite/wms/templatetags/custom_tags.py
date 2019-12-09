@@ -50,3 +50,19 @@ def param_replace(context, **kwargs):
     for k in [k for k, v in d.items() if not v]:
         del d[k]
     return d.urlencode()
+
+
+@register.filter
+def get_fields(instance):
+    """
+    Returns field name for a model.
+    """
+    return [field.name for field in instance._meta.fields]
+
+
+@register.simple_tag
+def get_verbose_name(instance, field_name):
+    """
+    Returns verbose_name for a field.
+    """
+    return instance._meta.get_field(field_name).verbose_name.title()
