@@ -217,8 +217,9 @@ class RobotQueue(ComputedFieldsModel):
     robot_choices = [(1, _('Robot #1')), (2, _('Robot #2'))]
     robot_no = models.PositiveSmallIntegerField(choices=robot_choices, verbose_name=_('Robot No.'))
     product_id_choices = list(enumerate(
-        ['แรด SKW', 'เสือพลัส SKW', 'ช้างโครงสร้าง(แดง) SKW', 'ช้างงานหล่อ(ส้ม) SKW', 'ช้างไฮบริด STL', 'เสือซูเปอร์ SKW', 'เสือใหญ่ SKW', 'ช้างม่วง STL', 'ช้างทนน้ำทะเล STL', 'ช้างทนน้ำเค็มดินเค็ม STL', 'ก่อทั่วไป SMC', 'เทปรับพื้น SMC',
-         'ฉาบทั่วไป SMC', 'ฉาบอิฐมวลเบา SMC', 'ฉาบผิวคอนกรีต SMC', 'ก่ออิฐมวลเบา SMC', 'ฉาบอิฐมวลเบาสูตรพิเศษ SMC', 'ก่ออิฐมวลเบา คิวคอน SMC', 'ช้างโครงสร้าง(แดง) SLP', 'ช้างงานหล่อ(ส้ม) SLP', 'เสือใหญ่ SLP', 'เสือพลัส SLP', 'เสือซูเปอร์ SLP']))
+        ['Super Cement SKK', 'ช้างไฮบริด SKK', 'ช้างโครงสร้าง SKK', 'เสือฉาบ SKK', 'แรด SKK', 'เสือ SKK', 'ช้างงานหล่อ SKK', 'Super Cement KCL', 'เสือฉาบ KCL', 'ช้างโครงสร้าง KCL', 'SMC ฉาบอิฐมวลเบา KK1', 'SMC ฉาบทั่วไป KK1',
+         'SMC ฉาบอิฐมวลเบา สูตร Xpert  KK1', 'SMC DURA ONE อิฐมวลเบา KK1 ', 'SMC ก่อทั่วไป KK2  ', 'SMC เทปรับพื้น KK2', 'SMC EASY KK2', 'SMC ฉาบทั่วไป KK2', 'SMC ฉาบอิฐมวลเบา KK2', 'SMC ฉาบทั่วไป BB', 'SMC ฉาบอิฐมวลเบา BB',
+         'SMC ก่อทั่วไป BB', 'SMC DURA ONE อิฐมวลเบา NR', 'SMC ฉาบทั่วไป NR ', 'SMC ฉาบอิฐมวลเบา NR', 'SMC DURA แดง NR', 'SMC DURA เขียว NR']))
     product_id = models.PositiveSmallIntegerField(choices=product_id_choices, blank=True, null=True, verbose_name=_('Product ID'))
     qty_act = models.PositiveIntegerField(verbose_name=_('Actual Quantity (Bag)'))
     updated_choices = [(0, _('Wait')), (1, _('Ready'))]
