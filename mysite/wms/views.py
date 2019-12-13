@@ -120,46 +120,27 @@ def layout_map(obj_storage, debug=False, age=False):
             layout[s.layout_col][s.layout_row]['bg_color'] = df_product.loc[s.column_id.storage_for, 'bg_color']
             layout[s.layout_col][s.layout_row]['font_color'] = df_product.loc[s.column_id.storage_for, 'font_color']
 
-    header_1 = []
-    footer_1 = []
-    header_2 = []
-    header_col = []
-    footer_2 = []
-    footer_col = []
+    headers = []
+    footers = []
     for i in range(76):
 
         quotient = divmod(i, 2)[0]
         remainder = divmod(i, 2)[1]
 
-        if quotient <= 21 and quotient != 16:
-            col_no = 'Y{:02d}'.format(quotient + 1 if quotient < 16 else quotient)
-            col_label = '{}'.format('A' if remainder == 0 else 'B')
-            if remainder == 0:
-                header_1.append(col_no)
-            header_2.append(col_label)
-            header_col.append(col_no + col_label)
-        elif quotient == 16:
-            col_no = ''
+        if i == 32 or i == 33:
             col_label = ''
-            if remainder == 0:
-                header_1.append(col_no)
-            header_2.append(col_label)
-            header_col.append(col_no + col_label)
+            headers.append(col_label)
+        elif i <= 43:
+            col_label = 'B{:02d}'.format(i + 1 if i < 32 else i - 1)
+            headers.append(col_label)
 
-        col_no = 'X{:02d}'.format(38 - quotient)
-        col_label = '{}'.format('B' if remainder == 0 else 'A')
-        if remainder == 0:
-            footer_1.append(col_no)
-        footer_2.append(col_label)
-        footer_col.append(col_no + col_label)
+        col_label = 'A{:02d}'.format(76 - i)
+        footers.append(col_label)
 
-    zip_header_2 = zip(header_2, header_col)
-    zip_footer_2 = zip(footer_2, footer_col)
-
-    index = ['{:02d}'.format(i + 1) for i in range(7)] + [''] + ['{:02d}'.format(11 - i) for i in range(11)]
+    index = ['R{:02d}'.format(i + 1) for i in range(7)] + [''] + ['R{:02d}'.format(11 - i) for i in range(11)]
     zip_row = zip(index, layout_row)
 
-    return layout, header_1, zip_header_2, footer_1, zip_footer_2, layout_col, zip_row
+    return layout, headers, footers, layout_col, zip_row
 
 
 ######################################################################################################################################################
@@ -169,16 +150,14 @@ class LayoutView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         obj_storage = Storage.objects.select_related('column_id', 'column_id__for_product', 'inv_product').all()
-        layout, header_1, zip_header_2, footer_1, zip_footer_2, layout_col, zip_row = layout_map(obj_storage)
+        layout, headers, footers, layout_col, zip_row = layout_map(obj_storage)
         in_queue = list(set(AgvQueue.objects.all().values_list('pick_id', flat=True)) | set(AgvQueue.objects.all().values_list('place_id', flat=True)))
 
         context = super().get_context_data(**kwargs)
         context.update({
             'layout': layout,
-            'header_1': header_1,
-            'zip_header_2': zip_header_2,
-            'footer_1': footer_1,
-            'zip_footer_2': zip_footer_2,
+            'headers': headers,
+            'footers': footers,
             'layout_col': layout_col,
             'zip_row': zip_row,
             'in_queue': in_queue,
@@ -194,15 +173,13 @@ class LayoutDebugView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         obj_storage = Storage.objects.select_related('column_id', 'column_id__for_product', 'inv_product').all()
-        layout, header_1, zip_header_2, footer_1, zip_footer_2, layout_col, zip_row = layout_map(obj_storage, debug=True)
+        layout, headers, footers, layout_col, zip_row = layout_map(obj_storage, debug=True)
 
         context = super().get_context_data(**kwargs)
         context.update({
             'layout': layout,
-            'header_1': header_1,
-            'zip_header_2': zip_header_2,
-            'footer_1': footer_1,
-            'zip_footer_2': zip_footer_2,
+            'headers': headers,
+            'footers': footers,
             'layout_col': layout_col,
             'zip_row': zip_row,
         })
@@ -215,15 +192,13 @@ class LayoutAgeView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         obj_storage = Storage.objects.select_related('column_id', 'column_id__for_product', 'inv_product').all()
-        layout, header_1, zip_header_2, footer_1, zip_footer_2, layout_col, zip_row = layout_map(obj_storage, age=True)
+        layout, headers, footers, layout_col, zip_row = layout_map(obj_storage, age=True)
 
         context = super().get_context_data(**kwargs)
         context.update({
             'layout': layout,
-            'header_1': header_1,
-            'zip_header_2': zip_header_2,
-            'footer_1': footer_1,
-            'zip_footer_2': zip_footer_2,
+            'headers': headers,
+            'footers': footers,
             'layout_col': layout_col,
             'zip_row': zip_row,
         })
@@ -564,14 +539,10 @@ def get_data_retrieval_form(request):
         avail_inv_bag = qs_avail_inventory.aggregate(models.Sum('inv_qty'))['inv_qty__sum']
         data['avail_inv_bag'] = avail_inv_bag if avail_inv_bag else 0
 
-        avail_inventory_zone_a = qs_avail_inventory.filter(zone='A').order_by('area', 'col', '-row')
-        avail_inventory_zone_b = qs_avail_inventory.filter(zone='B').order_by('-area', '-col', '-row')
-        pk_avail_inventory_list = list(avail_inventory_zone_a.values_list('storage_id', flat=True)) + list(avail_inventory_zone_b.values_list('storage_id', flat=True))
+        pk_avail_inventory_list = list(qs_avail_inventory.order_by('col', '-row').values_list('storage_id', flat=True))
         if pk_avail_inventory_list:
             # Find oldest inventory column
-            column_zone_a = Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name, zone='A').order_by('area', 'col')
-            column_zone_b = Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name, zone='B').order_by('-area', '-col')
-            column_id_list = list(column_zone_a.distinct().values_list('column_id', flat=True)) + list(column_zone_b.distinct().values_list('column_id', flat=True))
+            column_id_list = list(Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name).order_by('col').distinct().values_list('column_id', flat=True))
             df_created_on = pd.DataFrame(columns=['column_id', 'created_on']).set_index('column_id')
             for column_id in column_id_list:
                 qs_oldest_inventory_in_column = Storage.objects.filter(column_id=column_id, have_inventory=True)
@@ -596,14 +567,10 @@ def get_data_retrieval_form(request):
             if occupied_outer:
                 qs_avail_buffer = qs_avail_buffer.exclude(column_id=column_id, row__lte=occupied_outer.row)
 
-        avail_buffer_zone_a = qs_avail_buffer.filter(zone='A').order_by('area', 'col', 'row')
-        avail_buffer_zone_b = qs_avail_buffer.filter(zone='B').order_by('-area', '-col', 'row')
-        pk_avail_buffer_list = list(avail_buffer_zone_a.values_list('storage_id', flat=True)) + list(avail_buffer_zone_b.values_list('storage_id', flat=True))
+        pk_avail_buffer_list = list(qs_avail_buffer.order_by('col', 'row').values_list('storage_id', flat=True))
         if pk_avail_buffer_list:
             # Find last buffer column
-            column_zone_a = Storage.objects.filter(column_id__for_buffer__buffer_for_plant__plant_id=obj.plant.plant_id, zone='A').order_by('area', 'col')
-            column_zone_b = Storage.objects.filter(column_id__for_buffer__buffer_for_plant__plant_id=obj.plant.plant_id, zone='B').order_by('-area', '-col')
-            column_id_list = list(column_zone_a.distinct().values_list('column_id', flat=True)) + list(column_zone_b.distinct().values_list('column_id', flat=True))
+            column_id_list = list(Storage.objects.filter(column_id__for_buffer__buffer_for_plant__plant_id=obj.plant.plant_id).order_by('col').distinct().values_list('column_id', flat=True))
             df_updated_on = pd.DataFrame(columns=['column_id', 'updated_on']).set_index('column_id')
             for column_id in column_id_list:
                 qs_last_inventory_in_column = Storage.objects.filter(column_id=column_id, have_inventory=True)
@@ -698,8 +665,8 @@ class ProductView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        data = ['product_name', 'name_eng', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
-        name = ['product_name', 'name_eng', 'plant.plant_id', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+        data = ['product_name', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+        name = ['product_name', 'plant.plant_id', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
         class_name = ['text-left', 'text-left', 'text-center', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right']
         context.update({
             'instance': Product,
@@ -715,8 +682,8 @@ class StorageView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        data = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'name_eng', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
-        name = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product.product_name', 'name_eng', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
+        data = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
+        name = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product.product_name', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
         class_name = ['text-left', 'text-center', 'text-left', 'text-center', 'text-left', 'text-left', 'text-right', 'text-left', 'text-left', 'text-left']
         context.update({
             'instance': Storage,

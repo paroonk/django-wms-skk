@@ -98,13 +98,13 @@ class AgvQueueSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['product_name', 'name_eng', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+        fields = ['product_name', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
 
 
 class StorageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Storage
-        fields = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'name_eng', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
+        fields = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
 
 
 class ProductHistorySerializer(serializers.ModelSerializer):

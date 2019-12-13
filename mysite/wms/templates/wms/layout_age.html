@@ -23,15 +23,13 @@
                     <thead>
                         <tr>
                             <th class="headerFooter font-weight-bold"></th>
-                            {% for header in header_1 %}
-                            <th class="headerFooter font-weight-bold" colspan="2">{{ header }}</th>
-                            {% endfor %}
+                            <th class="headerFooter font-weight-bold" colspan="44">B</th>
                         </tr>
                         <tr>
                             <th class="headerFooter font-weight-normal"></th>
-                            {% for header, header_col in zip_header_2 %}
-                                {% if header_col %}
-                                <th class="headerFooter font-weight-normal js-invcol-update-button" data-url="{% url 'wms:invcol_update' header_col %}">{{ header }}</th>
+                            {% for header in headers %}
+                                {% if header %}
+                                <th class="headerFooter font-weight-normal js-invcol-update-button" data-url="{% url 'wms:invcol_update' header %}">{{ header }}</th>
                                 {% else %}
                                 <th class="headerFooter font-weight-normal">{{ header }}</th>
                                 {% endif %}
@@ -77,7 +75,7 @@
                                     </td>
                                     {% endif %}
                                 {% else %}
-                                    {% if col == 10 and row >= 5 and row <= 7 or col == 14 and row >= 5 and row <= 7 or col == 18 and row >= 5 and row <= 7 %}
+                                    {% if col == 10 and row >= 5 and row <= 6 or col == 14 and row >= 5 and row <= 6 or col == 18 and row >= 5 and row <= 6 %}
                                         {% if col == 10 and row == 5 %}
                                         <td rowspan="2" class="storage robot">Ro bot #2</td>
                                         {% elif col == 14 and row == 5 %}
@@ -97,9 +95,9 @@
                     <tfoot>
                         <tr>
                             <td class="headerFooter font-weight-normal"></td>
-                            {% for footer, footer_col in zip_footer_2 %}
-                                {% if footer_col %}
-                                <th class="headerFooter font-weight-normal js-invcol-update-button" data-url="{% url 'wms:invcol_update' footer_col %}">{{ footer }}</th>
+                            {% for footer in footers %}
+                                {% if footer %}
+                                <th class="headerFooter font-weight-normal js-invcol-update-button" data-url="{% url 'wms:invcol_update' footer %}">{{ footer }}</th>
                                 {% else %}
                                 <th class="headerFooter font-weight-normal">{{ footer }}</th>
                                 {% endif %}
@@ -107,9 +105,7 @@
                         </tr>
                         <tr>
                             <td class="headerFooter font-weight-bold"></td>
-                            {% for footer in footer_1 %}
-                            <td class="headerFooter font-weight-bold" colspan="2">{{ footer }}</td>
-                            {% endfor %}
+                            <td class="headerFooter font-weight-bold" colspan="76">A</td>
                         </tr>
                     </tfoot>
                 </table>

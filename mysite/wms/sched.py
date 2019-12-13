@@ -88,14 +88,10 @@ def robot_check():
                         if occupied_outer:
                             qs_avail_storage = qs_avail_storage.exclude(column_id=column_id, row__lte=occupied_outer.row)
 
-                    avail_storage_zone_a = qs_avail_storage.filter(zone='A').order_by('area', 'col', 'row')
-                    avail_storage_zone_b = qs_avail_storage.filter(zone='B').order_by('-area', '-col', 'row')
-                    pk_avail_storage_list = list(avail_storage_zone_a.values_list('storage_id', flat=True)) + list(avail_storage_zone_b.values_list('storage_id', flat=True))
+                    pk_avail_storage_list = list(qs_avail_storage.order_by('col', 'row').values_list('storage_id', flat=True))
                     if pk_avail_storage_list:
                         # Find last storage column for obj_to
-                        column_zone_a = Storage.objects.filter(storage_for=obj_plan.product_name.product_name, zone='A').order_by('area', 'col')
-                        column_zone_b = Storage.objects.filter(storage_for=obj_plan.product_name.product_name, zone='B').order_by('-area', '-col')
-                        column_id_list = list(column_zone_a.distinct().values_list('column_id', flat=True)) + list(column_zone_b.distinct().values_list('column_id', flat=True))
+                        column_id_list = list(Storage.objects.filter(storage_for=obj_plan.product_name.product_name).order_by('col').distinct().values_list('column_id', flat=True))
                         df_created_on = pd.DataFrame(columns=['column_id', 'created_on']).set_index('column_id')
                         for column_id in column_id_list:
                             qs_last_inventory_in_column = Storage.objects.filter(column_id=column_id, have_inventory=True)

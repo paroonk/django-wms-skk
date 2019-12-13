@@ -9,14 +9,14 @@
     margin: 0 auto;
 }
 .headerFooter {
-    min-width: 2.5vh;
-    width: 2.5vh;
+    min-width: 2.0vh;
+    width: 2.0vh;
     border: 0vh;
     font-size: 1vh;
 }
 .storage {
-    min-width: 2.5vh;
-    width: 2.5vh;
+    min-width: 2.0vh;
+    width: 2.0vh;
     height: 2.5vh;
     border: 0.1vh solid lightgrey;
     font-size: 1vh;
@@ -50,8 +50,8 @@
     font-weight: bold;
 }
 .agv {
-    width: 1.8vh;
-    height: 1.8vh;
+    width: 1.5vh;
+    height: 1.5vh;
 }
 .modal-title {
     font-size: calc(14px + 0.2vh + 0.05vw);

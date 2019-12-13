@@ -102,23 +102,19 @@ class Storage(ComputedFieldsModel):
     created_on = models.DateTimeField(blank=True, null=True, verbose_name=_('Created On'))
     updated_on = models.DateTimeField(blank=True, null=True, verbose_name=_('Updated On'))
     history = HistoricalRecords(excluded_fields=['layout_col', 'layout_row', 'column_id', 'coor_id', 'lot_name', 'updated_on',
-                                                 'zone', 'area', 'col', 'row', 'coor_x', 'coor_y', 'bg_color', 'font_color'])
+                                                 'zone', 'col', 'row', 'coor_x', 'coor_y', 'bg_color', 'font_color'])
 
     @computed(models.CharField(max_length=1, verbose_name=_('Zone')))
     def zone(self):
         return str(self.storage_id)[0:1]
 
-    @computed(models.CharField(max_length=3, verbose_name=_('Area')))
-    def area(self):
-        return str(self.storage_id)[0:3]
-
-    @computed(models.CharField(max_length=3, verbose_name=_('Column No.')))
+    @computed(models.CharField(max_length=2, verbose_name=_('Column No.')))
     def col(self):
-        return str(self.storage_id)[3:4]
+        return str(self.storage_id)[1:3]
 
     @computed(models.CharField(max_length=3, verbose_name=_('Row No.')))
     def row(self):
-        return str(self.storage_id)[4:6]
+        return str(self.storage_id)[3:6]
 
     @computed(models.FloatField(verbose_name=_('Coordinate X')), depends=['coor_id#layout_col', 'coor_id#layout_row', 'coor_id#coor_x', 'coor_id#coor_y'])
     def coor_x(self):
@@ -169,7 +165,7 @@ class Storage(ComputedFieldsModel):
 
     def save(self, *args, **kwargs):
         try:
-            self.column_id = Column.objects.get(column_id=str(self.storage_id)[0:4])
+            self.column_id = Column.objects.get(column_id=str(self.storage_id)[0:3])
         except:
             self.column_id = None
         try:

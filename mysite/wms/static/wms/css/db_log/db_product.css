@@ -1,9 +1,9 @@
-th:nth-child(1), th:nth-child(2), th:nth-child(3), th:nth-child(4) {
+th:nth-child(1), th:nth-child(2), th:nth-child(3) {
     color: black;
 }
-th:nth-child(6), th:nth-child(7), th:nth-child(8), th:nth-child(9) {
+th:nth-child(5), th:nth-child(6), th:nth-child(7), th:nth-child(8) {
     color: red;
 }
-th:nth-child(11), th:nth-child(12) {
+th:nth-child(10), th:nth-child(11) {
     color: green;
 }
