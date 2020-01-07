@@ -19,6 +19,9 @@ class Buffer(ComputedFieldsModel):
     buffer_id = models.CharField(max_length=10, primary_key=True, unique=True)
     buffer_for_plant = models.ManyToManyField(Plant)
 
+    def buffer_for_plant_list(self):
+        return ", ".join([plant.plant_id for plant in self.buffer_for_plant.all()])
+
     def __str__(self):
         return self.buffer_id
 

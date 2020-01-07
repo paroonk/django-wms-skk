@@ -40,10 +40,7 @@ class BufferResource(resources.ModelResource):
 
 class BufferAdmin(ImportExportMixin, SimpleHistoryAdmin):
     resource_class = BufferResource
-    list_display = ['buffer_id', 'buffer_plant_list']
-
-    def buffer_plant_list(obj):
-        return ", ".join([plant.plant_id for plant in obj.buffer_for_plant.all()])
+    list_display = ['buffer_id', 'buffer_for_plant_list']
 
     def get_import_formats(self):
         return [base_formats.XLSX]
