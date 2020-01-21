@@ -1,12 +1,12 @@
 .content-header p {
-    font-size: calc(18px + 0.2vh + 0.05vw);
+    font-size: calc(16px + 0.2vh + 0.05vw);
     color: crimson;
 }
 .card-header h3, th, tr, .card-body input, .card-body label, .card-body span, .card-body option, .card-body button, .card-body a {
-    font-size: calc(12px + 0.2vh + 0.05vw);
+    font-size: calc(10px + 0.2vh + 0.05vw);
 }
 .card .table-responsive {
-    min-height: 250px;
+    min-height: 200px;
 }
 .card-body {
     padding: 10px;

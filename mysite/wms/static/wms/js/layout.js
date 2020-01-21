@@ -1,15 +1,15 @@
 $(document).ready(function () {
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
     /* Functions show tooltip */
     $('[data-toggle="tooltip"]').tooltip()
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
     /* Date Range Picker */
     var date_format = 'D/M/Y HH:mm:ss'
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
     /* Functions for modal form */
     var loadForm = function () {
         var btn = $(this)
-        $.ajax( {
+        $.ajax({
             url: btn.attr('data-url'),
             type: 'GET',
             beforeSend: function () {
@@ -35,7 +35,7 @@ $(document).ready(function () {
     }
     var saveForm = function () {
         var form = $(this)
-        $.ajax( {
+        $.ajax({
             url: form.attr('action'),
             type: form.attr('method'),
             data: form.serialize(),
@@ -51,7 +51,7 @@ $(document).ready(function () {
         })
         return false
     }
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
     /* Binding */
     // Create Inv
     $('.js-inv-create-button').click(loadForm)
@@ -64,12 +64,12 @@ $(document).ready(function () {
     // Update Inv Col
     $('.js-invcol-update-button').click(loadForm)
     $('#modal-id').on('submit', '.js-invcol-update', saveForm)
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
     /* Functions show agv, robot status */
     var old_column = [], old_row = [], old_data = []
     var agv, agv_src
-    function update_agv_robot () {
-        $.ajax( {
+    function update_agv_robot() {
+        $.ajax({
             url: api_agvrobotstatus,
             type: 'GET',
             success: function (response) {
@@ -84,10 +84,10 @@ $(document).ready(function () {
                     if (value.agv_col <= 39) { columnIndex = 95 - value.agv_col }
                     else if (value.agv_col <= 45) { columnIndex = 96 - value.agv_col }
                     else { columnIndex = 97 - value.agv_col }
-                    if (value.agv_col <= 38 && value.agv_row >=6 && value.agv_row <=7) { columnIndex -= 2 }
-                    else if (value.agv_col <= 40 && value.agv_row >=6 && value.agv_row <=7) { columnIndex -= 0 }
-                    else if (value.agv_col <= 44 && value.agv_row >=6 && value.agv_row <=7) { columnIndex -= 1 }
-                    if ((value.agv_col == 39 || value.agv_col == 46) && value.agv_row >=5 && value.agv_row <=7) { rowIndex = 4 }
+                    if (value.agv_col <= 38 && value.agv_row >= 6 && value.agv_row <= 7) { columnIndex -= 2 }
+                    else if (value.agv_col <= 40 && value.agv_row >= 6 && value.agv_row <= 7) { columnIndex -= 0 }
+                    else if (value.agv_col <= 44 && value.agv_row >= 6 && value.agv_row <= 7) { columnIndex -= 1 }
+                    if ((value.agv_col == 39 || value.agv_col == 46) && value.agv_row >= 5 && value.agv_row <= 7) { rowIndex = 4 }
                     else { rowIndex = value.agv_row - 1 }
 
                     $('#layout-table tbody tr').eq(old_row[value.id]).find('td').eq(old_column[value.id]).html(old_data[value.id])
@@ -107,9 +107,9 @@ $(document).ready(function () {
     }
     update_agv_robot()
     setInterval(update_agv_robot, 1000)
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
     // Refresh AgvTransfer
-    function update_agvtransfer () {
+    function update_agvtransfer() {
         $.ajax({
             url: api_agvtransfer,
             type: 'GET',
@@ -120,12 +120,12 @@ $(document).ready(function () {
     }
     update_agvtransfer()
     setInterval(update_agvtransfer, 1000)
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
     // Refresh page every 3 minutes
-    setInterval(function() {
+    setInterval(function () {
         if ((document.hasFocus() || true) && !($('#modal-id').is(':visible'))) {
             location.reload()
         }
     }, 180000)
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
 })

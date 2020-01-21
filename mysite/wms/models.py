@@ -104,8 +104,7 @@ class Storage(ComputedFieldsModel):
     lot_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_('Lot Name'))
     created_on = models.DateTimeField(blank=True, null=True, verbose_name=_('Created On'))
     updated_on = models.DateTimeField(blank=True, null=True, verbose_name=_('Updated On'))
-    history = HistoricalRecords(excluded_fields=['layout_col', 'layout_row', 'column_id', 'coor_id', 'lot_name', 'updated_on',
-                                                 'zone', 'col', 'row', 'coor_x', 'coor_y', 'bg_color', 'font_color'])
+    history = HistoricalRecords(excluded_fields=['layout_col', 'layout_row', 'column_id', 'coor_id', 'lot_name', 'updated_on', 'zone', 'col', 'row', 'coor_x', 'coor_y', 'bg_color', 'font_color'])
 
     @computed(models.CharField(max_length=1, verbose_name=_('Zone')))
     def zone(self):
@@ -219,10 +218,39 @@ class RobotStatus(ComputedFieldsModel):
 class RobotQueue(ComputedFieldsModel):
     robot_choices = [(1, _('Robot #1')), (2, _('Robot #2'))]
     robot_no = models.PositiveSmallIntegerField(choices=robot_choices, verbose_name=_('Robot No.'))
-    product_id_choices = list(enumerate(
-        ['Super Cement SKK', 'ช้างไฮบริด SKK', 'ช้างโครงสร้าง SKK', 'เสือฉาบ SKK', 'แรด SKK', 'เสือ SKK', 'ช้างงานหล่อ SKK', 'Super Cement KCL', 'เสือฉาบ KCL', 'ช้างโครงสร้าง KCL', 'SMC ฉาบอิฐมวลเบา KK1', 'SMC ฉาบทั่วไป KK1',
-         'SMC ฉาบอิฐมวลเบา สูตร Xpert  KK1', 'SMC DURA ONE อิฐมวลเบา KK1 ', 'SMC ก่อทั่วไป KK2  ', 'SMC เทปรับพื้น KK2', 'SMC EASY KK2', 'SMC ฉาบทั่วไป KK2', 'SMC ฉาบอิฐมวลเบา KK2', 'SMC ฉาบทั่วไป BB', 'SMC ฉาบอิฐมวลเบา BB',
-         'SMC ก่อทั่วไป BB', 'SMC DURA ONE อิฐมวลเบา NR', 'SMC ฉาบทั่วไป NR ', 'SMC ฉาบอิฐมวลเบา NR', 'SMC DURA แดง NR', 'SMC DURA เขียว NR']))
+    product_id_choices = list(
+        enumerate(
+            [
+                'Super Cement SKK',
+                'ช้างไฮบริด SKK',
+                'ช้างโครงสร้าง SKK',
+                'เสือฉาบ SKK',
+                'แรด SKK',
+                'เสือ SKK',
+                'ช้างงานหล่อ SKK',
+                'Super Cement KCL',
+                'เสือฉาบ KCL',
+                'ช้างโครงสร้าง KCL',
+                'SMC ฉาบอิฐมวลเบา KK1',
+                'SMC ฉาบทั่วไป KK1',
+                'SMC ฉาบอิฐมวลเบา สูตร Xpert  KK1',
+                'SMC DURA ONE อิฐมวลเบา KK1 ',
+                'SMC ก่อทั่วไป KK2  ',
+                'SMC เทปรับพื้น KK2',
+                'SMC EASY KK2',
+                'SMC ฉาบทั่วไป KK2',
+                'SMC ฉาบอิฐมวลเบา KK2',
+                'SMC ฉาบทั่วไป BB',
+                'SMC ฉาบอิฐมวลเบา BB',
+                'SMC ก่อทั่วไป BB',
+                'SMC DURA ONE อิฐมวลเบา NR',
+                'SMC ฉาบทั่วไป NR ',
+                'SMC ฉาบอิฐมวลเบา NR',
+                'SMC DURA แดง NR',
+                'SMC DURA เขียว NR',
+            ]
+        )
+    )
     product_id = models.PositiveSmallIntegerField(choices=product_id_choices, blank=True, null=True, verbose_name=_('Product ID'))
     qty_act = models.PositiveIntegerField(verbose_name=_('Actual Quantity (Bag)'))
     updated_choices = [(0, _('Wait')), (1, _('Ready'))]

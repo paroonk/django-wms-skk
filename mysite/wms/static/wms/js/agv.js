@@ -1,7 +1,7 @@
-$(document).ready(function() {
-/******************************************************************************************************************************************************/
+$(document).ready(function () {
+    /************************************************************************************************************************************************/
     // Refresh AgvProductionPlan
-    function update_agvproductionplan () {
+    function update_agvproductionplan() {
         $.ajax({
             url: api_agvproductionplan,
             type: 'GET',
@@ -14,7 +14,7 @@ $(document).ready(function() {
     setInterval(update_agvproductionplan, 1000)
 
     // Refresh RobotQueue
-    function update_robotqueue () {
+    function update_robotqueue() {
         $.ajax({
             url: api_robotqueue,
             type: 'GET',
@@ -27,7 +27,7 @@ $(document).ready(function() {
     setInterval(update_robotqueue, 1000)
 
     // Refresh AgvQueue
-    function update_agvqueue () {
+    function update_agvqueue() {
         $.ajax({
             url: api_agvqueue,
             type: 'GET',
@@ -40,7 +40,7 @@ $(document).ready(function() {
     setInterval(update_agvqueue, 1000)
 
     // Refresh AgvTransfer
-    function update_agvtransfer () {
+    function update_agvtransfer() {
         $.ajax({
             url: api_agvtransfer,
             type: 'GET',
@@ -51,12 +51,12 @@ $(document).ready(function() {
     }
     update_agvtransfer()
     setInterval(update_agvtransfer, 1000)
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
     /* Auto Calculate Form */
     // Storage
     path1 = 'form[name="storage-form"] '
-    $(path1 + '#id_product_name_storage,' + path1 + '#id_qty_bag').change(function() {
-        $.ajax( {
+    $(path1 + '#id_product_name_storage,' + path1 + '#id_qty_bag').change(function () {
+        $.ajax({
             url: url_get_data_storage_form,
             type: 'GET',
             data: {
@@ -77,8 +77,8 @@ $(document).ready(function() {
 
     // Retrieval
     path2 = 'form[name="retrieval-form"] '
-    $(path2 + '#id_product_name_retrieve,' + path2 + '#id_qty_bag').change(function() {
-        $.ajax( {
+    $(path2 + '#id_product_name_retrieve,' + path2 + '#id_qty_bag').change(function () {
+        $.ajax({
             url: url_get_data_retrieval_form,
             type: 'GET',
             data: {
@@ -104,8 +104,8 @@ $(document).ready(function() {
 
     // Move
     path3 = 'form[name="move-form"] '
-    $(path3 + '#id_move_from,' + path3 + '#id_move_to').change(function() {
-        $.ajax( {
+    $(path3 + '#id_move_from,' + path3 + '#id_move_to').change(function () {
+        $.ajax({
             url: url_get_data_move_form,
             type: 'GET',
             data: {
@@ -125,11 +125,11 @@ $(document).ready(function() {
         })
     })
     $(path3 + '#id_move_from').change()
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
     // Enable Select2
     $('.select2').select2({
         theme: "bootstrap4",
         language: lang,
     })
-/******************************************************************************************************************************************************/
+    /************************************************************************************************************************************************/
 })

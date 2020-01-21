@@ -134,8 +134,7 @@ class StorageResource(resources.ModelResource):
 
 class StorageAdmin(ImportExportMixin, SimpleHistoryAdmin):
     resource_class = StorageResource
-    list_display = ['storage_id', 'coor_id', 'coor_x', 'coor_y', 'is_inventory', 'storage_for',
-                    'have_inventory', 'inv_product', 'inv_qty', 'lot_name', 'created_on', 'updated_on', 'bg_color', 'font_color']
+    list_display = ['storage_id', 'coor_id', 'coor_x', 'coor_y', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty', 'lot_name', 'created_on', 'updated_on', 'bg_color', 'font_color']
     list_per_page = 50
     list_filter = ['created_on', 'updated_on', 'have_inventory', 'inv_product', 'is_inventory', 'zone', 'col', 'row']
     search_fields = ['storage_id', 'storage_for', 'lot_name']
@@ -205,8 +204,7 @@ class ProductHistoryResource(resources.ModelResource):
 
 class ProductHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = ProductHistoryResource
-    list_display = ['history_id', 'history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total',
-                    'qty_storage_avail', 'qty_inventory_avail']
+    list_display = ['history_id', 'history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
     list_filter = ['history_date']
     search_fields = ['product_name']
     list_per_page = 50

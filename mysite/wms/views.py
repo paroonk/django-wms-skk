@@ -41,8 +41,9 @@ class DashboardView(generic.TemplateView):
     template_name = 'wms/dashboard.html'
 
     def get_context_data(self, **kwargs):
-        in_stock_status = '{:,}'.format(Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum']
-                                        if Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] is not None else 0)
+        in_stock_status = '{:,}'.format(
+            Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] if Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] is not None else 0
+        )
         in_stock_pct = '{:.0%}'.format(Storage.objects.filter(have_inventory=True).count() / Storage.objects.all().count() if Storage.objects.all() else 0)
         agv_run = AgvTransfer.objects.filter(run=1).count()
         agv_total = AgvTransfer.objects.all().count()
@@ -54,23 +55,24 @@ class DashboardView(generic.TemplateView):
         qty_inventory_plant = []
         usage_plant_list = list(enumerate(list(Product.objects.order_by('plant_id').distinct().values_list('plant', flat=True))))
         for i, plant in usage_plant_list:
-            qty_inventory_plant.append(
-                Storage.objects.filter(column_id__is_inventory=True, column_id__for_product__plant__plant_id=plant).aggregate(models.Sum('inv_qty'))['inv_qty__sum'])
+            qty_inventory_plant.append(Storage.objects.filter(column_id__is_inventory=True, column_id__for_product__plant__plant_id=plant).aggregate(models.Sum('inv_qty'))['inv_qty__sum'])
             if qty_inventory_plant[-1] == None:
                 qty_inventory_plant[-1] = 0
 
         context = super().get_context_data(**kwargs)
-        context.update({
-            'in_stock_status': in_stock_status,
-            'in_stock_pct': in_stock_pct,
-            'agv_run': agv_run,
-            'agv_total': agv_total,
-            # For Overview Graph #
-            'overview_plant_list': overview_plant_list,
-            # For Usage Graph #
-            'usage_plant_list': usage_plant_list,
-            'qty_inventory_plant': qty_inventory_plant,
-        })
+        context.update(
+            {
+                'in_stock_status': in_stock_status,
+                'in_stock_pct': in_stock_pct,
+                'agv_run': agv_run,
+                'agv_total': agv_total,
+                # For Overview Graph #
+                'overview_plant_list': overview_plant_list,
+                # For Usage Graph #
+                'usage_plant_list': usage_plant_list,
+                'qty_inventory_plant': qty_inventory_plant,
+            }
+        )
         return context
 
 
@@ -154,15 +156,9 @@ class LayoutView(generic.TemplateView):
         in_queue = list(set(AgvQueue.objects.all().values_list('pick_id', flat=True)) | set(AgvQueue.objects.all().values_list('place_id', flat=True)))
 
         context = super().get_context_data(**kwargs)
-        context.update({
-            'layout': layout,
-            'headers': headers,
-            'footers': footers,
-            'layout_col': layout_col,
-            'zip_row': zip_row,
-            'in_queue': in_queue,
-            'agvtransfer': AgvTransfer.objects.all(),
-        })
+        context.update(
+            {'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row, 'in_queue': in_queue, 'agvtransfer': AgvTransfer.objects.all(),}
+        )
         return context
 
 
@@ -176,13 +172,9 @@ class LayoutDebugView(generic.TemplateView):
         layout, headers, footers, layout_col, zip_row = layout_map(obj_storage, debug=True)
 
         context = super().get_context_data(**kwargs)
-        context.update({
-            'layout': layout,
-            'headers': headers,
-            'footers': footers,
-            'layout_col': layout_col,
-            'zip_row': zip_row,
-        })
+        context.update(
+            {'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row,}
+        )
         return context
 
 
@@ -195,13 +187,9 @@ class LayoutAgeView(generic.TemplateView):
         layout, headers, footers, layout_col, zip_row = layout_map(obj_storage, age=True)
 
         context = super().get_context_data(**kwargs)
-        context.update({
-            'layout': layout,
-            'headers': headers,
-            'footers': footers,
-            'layout_col': layout_col,
-            'zip_row': zip_row,
-        })
+        context.update(
+            {'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row,}
+        )
         return context
 
 
@@ -370,12 +358,7 @@ class AgvView(generic.TemplateView):
             context['retrieval_form'] = RetrievalOrderForm()
         if 'move_form' not in context:
             context['move_form'] = MoveOrderForm()
-        context.update({
-            'agvproductionplan': AgvProductionPlan.objects.all(),
-            'robotqueue': RobotQueue.objects.all(),
-            'agvqueue': AgvQueue.objects.all(),
-            'agvtransfer': AgvTransfer.objects.all()
-        })
+        context.update({'agvproductionplan': AgvProductionPlan.objects.all(), 'robotqueue': RobotQueue.objects.all(), 'agvqueue': AgvQueue.objects.all(), 'agvtransfer': AgvTransfer.objects.all()})
 
         return context
 
@@ -452,12 +435,7 @@ class AgvTestView(generic.TemplateView):
             context['robot_form'] = RobotQueueForm()
         if 'manualtransfer_form' not in context:
             context['manualtransfer_form'] = ManualTransferForm()
-        context.update({
-            'agvproductionplan': AgvProductionPlan.objects.all(),
-            'robotqueue': RobotQueue.objects.all(),
-            'agvqueue': AgvQueue.objects.all(),
-            'agvtransfer': AgvTransfer.objects.all()
-        })
+        context.update({'agvproductionplan': AgvProductionPlan.objects.all(), 'robotqueue': RobotQueue.objects.all(), 'agvqueue': AgvQueue.objects.all(), 'agvtransfer': AgvTransfer.objects.all()})
         return context
 
     def post(self, request, *args, **kwargs):
@@ -668,11 +646,7 @@ class ProductView(generic.TemplateView):
         data = ['product_name', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
         name = ['product_name', 'plant.plant_id', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
         class_name = ['text-left', 'text-left', 'text-center', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right']
-        context.update({
-            'instance': Product,
-            'fields': zip(data, name, class_name),
-            'q': self.request.GET.get('q', '')
-        })
+        context.update({'instance': Product, 'fields': zip(data, name, class_name), 'q': self.request.GET.get('q', '')})
         return context
 
 
@@ -685,10 +659,9 @@ class StorageView(generic.TemplateView):
         data = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
         name = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product.product_name', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
         class_name = ['text-left', 'text-center', 'text-left', 'text-center', 'text-left', 'text-left', 'text-right', 'text-left', 'text-left', 'text-left']
-        context.update({
-            'instance': Storage,
-            'fields': zip(data, name, class_name),
-        })
+        context.update(
+            {'instance': Storage, 'fields': zip(data, name, class_name),}
+        )
         return context
 
 
@@ -715,10 +688,9 @@ class ProductHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update({
-            'instance': Product.history.model,
-            'fields': zip(data, name, class_name),
-        })
+        context.update(
+            {'instance': Product.history.model, 'fields': zip(data, name, class_name),}
+        )
         return context
 
 
@@ -744,10 +716,9 @@ class StorageHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update({
-            'instance': Storage.history.model,
-            'fields': zip(data, name, class_name),
-        })
+        context.update(
+            {'instance': Storage.history.model, 'fields': zip(data, name, class_name),}
+        )
         return context
 
 
@@ -773,10 +744,9 @@ class AgvProductionPlanHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update({
-            'instance': AgvProductionPlan.history.model,
-            'fields': zip(data, name, class_name),
-        })
+        context.update(
+            {'instance': AgvProductionPlan.history.model, 'fields': zip(data, name, class_name),}
+        )
         return context
 
 
@@ -802,10 +772,9 @@ class RobotQueueHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update({
-            'instance': RobotQueue.history.model,
-            'fields': zip(data, name, class_name),
-        })
+        context.update(
+            {'instance': RobotQueue.history.model, 'fields': zip(data, name, class_name),}
+        )
         return context
 
 
@@ -831,10 +800,9 @@ class AgvQueueHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update({
-            'instance': AgvQueue.history.model,
-            'fields': zip(data, name, class_name),
-        })
+        context.update(
+            {'instance': AgvQueue.history.model, 'fields': zip(data, name, class_name),}
+        )
         return context
 
 
@@ -860,10 +828,9 @@ class AgvTransferHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update({
-            'instance': AgvTransfer.history.model,
-            'fields': zip(data, name, class_name),
-        })
+        context.update(
+            {'instance': AgvTransfer.history.model, 'fields': zip(data, name, class_name),}
+        )
         return context
 
 
@@ -1307,10 +1274,9 @@ class HistoryGraphViewSet(viewsets.ReadOnlyModelViewSet):
         dt = [timezone.localtime(dt).strftime(dt_format) for dt in dt_list]
         qty = {'{}'.format(product): df_qty[product].to_list() for product in label_list}
 
-        data = {
-            'label_list': label_list,
-            'dt': dt,
-            'qty': qty
-        }
+        data = {'label_list': label_list, 'dt': dt, 'qty': qty}
         return Response(data)
+
+
 ######################################################################################################################################################
+

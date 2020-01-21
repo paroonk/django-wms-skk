@@ -110,8 +110,7 @@ class StorageSerializer(serializers.ModelSerializer):
 class ProductHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Product.history.model
-        fields = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total',
-                  'qty_storage_avail', 'qty_inventory_avail']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
 
 
 class StorageHistorySerializer(serializers.ModelSerializer):
