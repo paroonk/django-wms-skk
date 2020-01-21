@@ -37,6 +37,7 @@
 {% endblock %}
 
 {% block javascript %}
+
 <script type="text/javascript" src="{% static 'datatables/js/jszip.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/jquery.dataTables.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/dataTables.bootstrap4.min.js' %}"></script>
@@ -45,23 +46,25 @@
 <script type="text/javascript" src="{% static 'datatables/js/buttons.colVis.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/buttons.html5.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/buttons.print.min.js' %}"></script>
-<script type="text/javascript">
-$(document).ready(function() {
-    var table = $('#datatable').DataTable({
-        dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" + "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-12'l>>" + "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-        buttons: [
-            { extend: 'colvis', text: '<span class="fas fa-eye" data-toggle="tooltip" title="Column Visible"></span>' },
-            { extend: 'excelHtml5', text: '<span class="fas fa-file-excel" data-toggle="tooltip" title="Export Excel"></span>' },
-            { extend: 'print', text: '<span class="fas fa-print" data-toggle="tooltip" title="Print"></span>' }
-        ],
-        order: [[1, 'asc']],
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-        searching: true,
-        processing: true,
-        stateSave: true,
-    })
 
-    $('[data-toggle="tooltip"]').tooltip()
-})
+<script type="text/javascript">
+    $(document).ready(function() {
+        var table = $('#datatable').DataTable({
+            dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" + "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-12'l>>" + "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            buttons: [
+                { extend: 'colvis', text: '<span class="fas fa-eye" data-toggle="tooltip" title="Column Visible"></span>' },
+                { extend: 'excelHtml5', text: '<span class="fas fa-file-excel" data-toggle="tooltip" title="Export Excel"></span>' },
+                { extend: 'print', text: '<span class="fas fa-print" data-toggle="tooltip" title="Print"></span>' }
+            ],
+            order: [[1, 'asc']],
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+            searching: true,
+            processing: true,
+            stateSave: true,
+        })
+
+        $('[data-toggle="tooltip"]').tooltip()
+    })
 </script>
+
 {% endblock %}

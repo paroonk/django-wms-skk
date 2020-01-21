@@ -142,17 +142,20 @@
 {% endblock %}
 
 {% block javascript %}
-<script>
-var overview_plant_list = {{ overview_plant_list|safe }}
 
-var overviewChart = echarts.init(document.getElementById('stockOverview'))
-var api_overviewgraph = '{% url 'wms:overviewgraph-list' %}'
-var lebel_legendList = ['{% trans 'Inventory' %}', '{% trans 'Buffer' %}', '{% trans 'Misplace' %}', '{% trans 'Available Storage' %}']
+<script type="text/javascript">
+    var overview_plant_list = {{ overview_plant_list|safe }}
 
-var usageChart = echarts.init(document.getElementById('stockUsage'))
-var api_usagegraph = '{% url 'wms:usagegraph-list' %}'
+    var overviewChart = echarts.init(document.getElementById('stockOverview'))
+    var api_overviewgraph = '{% url 'wms:overviewgraph-list' %}'
+    var lebel_legendList = ['{% trans 'Inventory' %}', '{% trans 'Buffer' %}', '{% trans 'Misplace' %}', '{% trans 'Available Storage' %}']
 
-var label_saveAsImage = '{% trans 'Save As Image' %}'
+    var usageChart = echarts.init(document.getElementById('stockUsage'))
+    var api_usagegraph = '{% url 'wms:usagegraph-list' %}'
+
+    var label_saveAsImage = '{% trans 'Save As Image' %}'
 </script>
+
 <script type="text/javascript" src="{% static 'wms/js/dashboard.js' %}"></script>
+
 {% endblock %}

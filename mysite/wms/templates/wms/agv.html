@@ -389,13 +389,16 @@
 {% endblock %}
 
 {% block javascript %}
+
 <script type="text/javascript">
     var url_get_data_storage_form = '{% url 'wms:get_data_storage_form' %}'
     var url_get_data_retrieval_form = '{% url 'wms:get_data_retrieval_form' %}'
     var url_get_data_move_form = '{% url 'wms:get_data_move_form' %}'
 </script>
+
 <script type="text/javascript" src="{% static 'select2/js/select2.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'select2/js/th.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/agv.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/PopupCenter.js' %}"></script>
+
 {% endblock %}

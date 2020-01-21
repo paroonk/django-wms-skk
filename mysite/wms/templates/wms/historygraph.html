@@ -35,7 +35,7 @@
                 <!-- Card Body -->
                 <div class="card-body">
                     <!-- Graph -->
-                    <div id="history" style="width: 100%; min-height: 700px;"></div>
+                    <div id="history" style="width: 100%; min-height: 600px;"></div>
                 </div>
             </div>
         </div>
@@ -46,24 +46,26 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript">
-var str_submit = "{% trans 'Submit' %}"
-var str_cancel = "{% trans 'Close' %}"
-var str_custom_range = "{% trans 'Custom Range' %}"
-var custom_range = {
-    '{% trans 'Today' %}': [moment().subtract(1, 'days'), moment()],
-    '{% trans 'Yesterday' %}': [moment().subtract(2, 'days'), moment().subtract(1, 'days')],
-    '{% trans 'Last 7 Days' %}': [moment().subtract(7, 'days'), moment()],
-    '{% trans 'Last 30 Days' %}': [moment().subtract(30, 'days'), moment()],
-    '{% trans 'This Month' %}': [moment().startOf('month'), moment().endOf('month')],
-    '{% trans 'Last Month' %}': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-}
 
-var historyChart = echarts.init(document.getElementById('history'))
-var api_historygraph = '{% url 'wms:historygraph-list' %}'
-var label_saveAsImage = '{% trans 'Save As Image' %}'
-var label_toolboxName = '{{ view.kwargs.pk|upper }} {% trans 'Inventory Graph' %}'
+<script type="text/javascript">
+    var str_submit = "{% trans 'Submit' %}"
+    var str_cancel = "{% trans 'Close' %}"
+    var str_custom_range = "{% trans 'Custom Range' %}"
+    var custom_range = {
+        '{% trans 'Today' %}': [moment().subtract(1, 'days'), moment()],
+        '{% trans 'Yesterday' %}': [moment().subtract(2, 'days'), moment().subtract(1, 'days')],
+        '{% trans 'Last 7 Days' %}': [moment().subtract(7, 'days'), moment()],
+        '{% trans 'Last 30 Days' %}': [moment().subtract(30, 'days'), moment()],
+        '{% trans 'This Month' %}': [moment().startOf('month'), moment().endOf('month')],
+        '{% trans 'Last Month' %}': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+    }
+    var historyChart = echarts.init(document.getElementById('history'))
+    var api_historygraph = '{% url 'wms:historygraph-list' %}'
+    var label_saveAsImage = '{% trans 'Save As Image' %}'
+    var label_toolboxName = '{{ view.kwargs.pk|upper }} {% trans 'Inventory Graph' %}'
 </script>
+
 <script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/historygraph.js' %}"></script>
+
 {% endblock %}

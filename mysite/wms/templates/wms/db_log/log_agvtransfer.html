@@ -48,6 +48,7 @@
 {% endblock %}
 
 {% block javascript %}
+
 <script type="text/javascript" src="{% static 'datatables/js/jszip.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/jquery.dataTables.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/dataTables.bootstrap4.min.js' %}"></script>
@@ -57,45 +58,47 @@
 <script type="text/javascript" src="{% static 'datatables/js/buttons.html5.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/buttons.print.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
+
 <script type="text/javascript">
-$(document).ready(function() {
-    var table = $('#datatable').DataTable({
-        dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" + "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-12'l>>" + "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-        buttons: [
-            { extend: 'colvis', text: '<span class="fas fa-eye" data-toggle="tooltip" title="Column Visible"></span>' },
-            { extend: 'excelHtml5', text: '<span class="fas fa-file-excel" data-toggle="tooltip" title="Export Excel"></span>' },
-            { extend: 'print', text: '<span class="fas fa-print" data-toggle="tooltip" title="Print"></span>' }
-        ],
-        order: [[0, 'desc']],
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-        searching: true,
-        processing: true,
-        stateSave: false,
-    })
+    $(document).ready(function() {
+        var table = $('#datatable').DataTable({
+            dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" + "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-12'l>>" + "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            buttons: [
+                { extend: 'colvis', text: '<span class="fas fa-eye" data-toggle="tooltip" title="Column Visible"></span>' },
+                { extend: 'excelHtml5', text: '<span class="fas fa-file-excel" data-toggle="tooltip" title="Export Excel"></span>' },
+                { extend: 'print', text: '<span class="fas fa-print" data-toggle="tooltip" title="Print"></span>' }
+            ],
+            order: [[0, 'desc']],
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+            searching: true,
+            processing: true,
+            stateSave: false,
+        })
 
-    $('[data-toggle="tooltip"]').tooltip()
+        $('[data-toggle="tooltip"]').tooltip()
 
-    /* Date Range Picker */
-    $('input[name="date_filter"]').daterangepicker({
-        maxDate: moment(),
-        timePicker: true,
-        timePicker24Hour: true,
-        alwaysShowCalendars: true,
-        locale: {
-            format: 'D/M/YY HH:mm',
-            applyLabel: '{% trans 'Submit' %}',
-            cancelLabel: '{% trans 'Close' %}',
-            customRangeLabel: '{% trans 'Custom Range' %}',
-        },
-        ranges: {
-            '{% trans 'Today' %}': [moment().subtract(1, 'days'), moment()],
-            '{% trans 'Yesterday' %}': [moment().subtract(2, 'days'), moment().subtract(1, 'days')],
-            '{% trans 'Last 7 Days' %}': [moment().subtract(7, 'days'), moment()],
-            '{% trans 'Last 30 Days' %}': [moment().subtract(30, 'days'), moment()],
-            '{% trans 'This Month' %}': [moment().startOf('month'), moment().endOf('month')],
-            '{% trans 'Last Month' %}': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-        },
+        /* Date Range Picker */
+        $('input[name="date_filter"]').daterangepicker({
+            maxDate: moment(),
+            timePicker: true,
+            timePicker24Hour: true,
+            alwaysShowCalendars: true,
+            locale: {
+                format: 'D/M/YY HH:mm',
+                applyLabel: '{% trans 'Submit' %}',
+                cancelLabel: '{% trans 'Close' %}',
+                customRangeLabel: '{% trans 'Custom Range' %}',
+            },
+            ranges: {
+                '{% trans 'Today' %}': [moment().subtract(1, 'days'), moment()],
+                '{% trans 'Yesterday' %}': [moment().subtract(2, 'days'), moment().subtract(1, 'days')],
+                '{% trans 'Last 7 Days' %}': [moment().subtract(7, 'days'), moment()],
+                '{% trans 'Last 30 Days' %}': [moment().subtract(30, 'days'), moment()],
+                '{% trans 'This Month' %}': [moment().startOf('month'), moment().endOf('month')],
+                '{% trans 'Last Month' %}': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+        })
     })
-})
-</script>
+    </script>
+
 {% endblock %}

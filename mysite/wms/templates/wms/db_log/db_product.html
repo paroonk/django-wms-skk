@@ -37,6 +37,7 @@
 {% endblock %}
 
 {% block javascript %}
+
 <script type="text/javascript" src="{% static 'datatables/js/jszip.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/jquery.dataTables.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/dataTables.bootstrap4.min.js' %}"></script>
@@ -45,43 +46,45 @@
 <script type="text/javascript" src="{% static 'datatables/js/buttons.colVis.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/buttons.html5.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'datatables/js/buttons.print.min.js' %}"></script>
+
 <script type="text/javascript">
-$(document).ready(function() {
-    var table = $('#datatable').DataTable({
-        columnDefs: [
-            {
-                targets: [0, 2],
-                render: function(data, type, row, meta) {
-                    if (type === 'display') {
-                        data = ("<a href={% url 'wms:db_storage' 'pk' %}>" + data + "</a>").replace('pk', encodeURIComponent(data))
+    $(document).ready(function() {
+        var table = $('#datatable').DataTable({
+            columnDefs: [
+                {
+                    targets: [0, 2],
+                    render: function(data, type, row, meta) {
+                        if (type === 'display') {
+                            data = ("<a href={% url 'wms:db_storage' 'pk' %}>" + data + "</a>").replace('pk', encodeURIComponent(data))
+                        }
+                        return data
                     }
-                    return data
                 }
-            }
-        ],
-        dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" + "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-12'l>>" + "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-        buttons: [
-            { extend: 'colvis', text: '<span class="fas fa-eye" data-toggle="tooltip" title="Column Visible"></span>' },
-            { extend: 'excelHtml5', text: '<span class="fas fa-file-excel" data-toggle="tooltip" title="Export Excel"></span>' },
-            { extend: 'print', text: '<span class="fas fa-print" data-toggle="tooltip" title="Print"></span>' }
-        ],
-        order: [[2, 'asc'], [4, 'desc']],
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-        searching: true,
-        processing: true,
-        stateSave: true,
-    })
+            ],
+            dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" + "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-12'l>>" + "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            buttons: [
+                { extend: 'colvis', text: '<span class="fas fa-eye" data-toggle="tooltip" title="Column Visible"></span>' },
+                { extend: 'excelHtml5', text: '<span class="fas fa-file-excel" data-toggle="tooltip" title="Export Excel"></span>' },
+                { extend: 'print', text: '<span class="fas fa-print" data-toggle="tooltip" title="Print"></span>' }
+            ],
+            order: [[2, 'asc'], [4, 'desc']],
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+            searching: true,
+            processing: true,
+            stateSave: true,
+        })
 
-    $('[data-toggle="tooltip"]').tooltip()
+        $('[data-toggle="tooltip"]').tooltip()
 
-    table.search($('input[name=q]').val()).draw()
-    $('input[name=q]').keyup(function() {
-          table.search($(this).val()).draw()
+        table.search($('input[name=q]').val()).draw()
+        $('input[name=q]').keyup(function() {
+            table.search($(this).val()).draw()
+        })
+        table.on('search.dt', function() {
+            var value = $('.dataTables_filter input').val()
+            $('input[name=q]').val(value)
+        })
     })
-    table.on('search.dt', function() {
-        var value = $('.dataTables_filter input').val()
-        $('input[name=q]').val(value)
-    })
-})
 </script>
+
 {% endblock %}

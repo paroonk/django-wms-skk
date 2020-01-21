@@ -122,6 +122,7 @@
 {% endblock %}
 
 {% block javascript %}
+
 <script type="text/javascript">
     var str_submit = "{% trans 'Submit' %}"
     var str_cancel = "{% trans 'Close' %}"
@@ -135,6 +136,8 @@
         '{% trans 'Last Month' %}': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
     }
 </script>
+
 <script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/layout_age.js' %}"></script>
+
 {% endblock %}

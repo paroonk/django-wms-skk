@@ -340,6 +340,7 @@
 {% endblock %}
 
 {% block javascript %}
+
 <script type="text/javascript">
     url_agv_to_home = []
     {% for item in agvtransfer %}
@@ -347,8 +348,10 @@
     {% endfor %}
     console.log(url_agv_to_home)
 </script>
+
 <script type="text/javascript" src="{% static 'select2/js/select2.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'select2/js/th.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/agv_debug.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/PopupCenter.js' %}"></script>
+
 {% endblock %}

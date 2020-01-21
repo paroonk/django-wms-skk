@@ -271,15 +271,20 @@
 </div>
 <!-- ./Site Wrapper -->
 </body>
+
 <script type="text/javascript" src="{% static 'jquery/js/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'popper/js/popper.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'adminlte/js/adminlte.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'moment/js/moment-with-locales.min.js' %}"></script>
+
 <script type="text/javascript">
     var lang = "{{ LANGUAGE_CODE }}"
 </script>
+
 <script type="text/javascript" src="{% static 'wms/js/base.js' %}"></script>
+
 {% block javascript %}
 {% endblock %}
+
 </html>
