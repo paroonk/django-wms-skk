@@ -118,7 +118,7 @@ def layout_map(obj_storage, debug=False, age=False):
             layout[s.layout_col][s.layout_row]['font_color'] = s.font_color
             if age:
                 layout[s.layout_col][s.layout_row]['age'] = (timezone.now() - s.created_on).days
-        elif debug and s.is_inventory:
+        elif debug and s.is_inventory and s.column_id.storage_for:
             layout[s.layout_col][s.layout_row]['bg_color'] = df_product.loc[s.column_id.storage_for, 'bg_color']
             layout[s.layout_col][s.layout_row]['font_color'] = df_product.loc[s.column_id.storage_for, 'font_color']
 
@@ -129,11 +129,11 @@ def layout_map(obj_storage, debug=False, age=False):
         quotient = divmod(i, 2)[0]
         remainder = divmod(i, 2)[1]
 
-        if i == 32 or i == 33:
+        if i < 4 or i == 32 or i == 33:
             col_label = ''
             headers.append(col_label)
-        elif i <= 43:
-            col_label = 'B{:02d}'.format(i + 1 if i < 32 else i - 1)
+        elif i < 50:
+            col_label = 'B{:02d}'.format(48 - i if i < 32 else 50 - i)
             headers.append(col_label)
 
         col_label = 'A{:02d}'.format(76 - i)
