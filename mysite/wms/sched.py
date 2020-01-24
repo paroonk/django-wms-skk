@@ -559,8 +559,9 @@ def route_calculate(agv_no, obj_transfer, pattern, agv_x, agv_y, target_col, tar
 
         # Start point offset #
         dist_offset_start = 0.1
-        df_route.iloc[0, df_route.columns.get_loc('coor_x')], df_route.iloc[0, df_route.columns.get_loc('coor_y')] = \
-            dist_compensate(df_route['coor_x'].iloc[1], df_route['coor_y'].iloc[1], df_route['coor_x'].iloc[0], df_route['coor_y'].iloc[0], dist_offset_start)
+        df_route.iloc[0, df_route.columns.get_loc('coor_x')], df_route.iloc[0, df_route.columns.get_loc('coor_y')] = dist_compensate(
+            df_route['coor_x'].iloc[1], df_route['coor_y'].iloc[1], df_route['coor_x'].iloc[0], df_route['coor_y'].iloc[0], dist_offset_start
+        )
 
         # Final point offset #
         dist_offset_final = 1.33
@@ -572,12 +573,12 @@ def route_calculate(agv_no, obj_transfer, pattern, agv_x, agv_y, target_col, tar
             4: dist_offset_final,
         }
 
-        df_route.iloc[-1, df_route.columns.get_loc('coor_x')], df_route.iloc[-1, df_route.columns.get_loc('coor_y')] = \
-            dist_compensate(df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1], dist_offset[pattern])
+        df_route.iloc[-1, df_route.columns.get_loc('coor_x')], df_route.iloc[-1, df_route.columns.get_loc('coor_y')] = dist_compensate(
+            df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1], dist_offset[pattern]
+        )
         df_route.reset_index(drop=True, inplace=True)
 
-        x_check[agv_no], y_check[agv_no] = dist_compensate(df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1],
-                                                           -dist_offset_final)
+        x_check[agv_no], y_check[agv_no] = dist_compensate(df_route['coor_x'].iloc[-2], df_route['coor_y'].iloc[-2], df_route['coor_x'].iloc[-1], df_route['coor_y'].iloc[-1], -dist_offset_final)
 
         print(' Pattern = {}'.format(pattern))
         print(df_route.to_string(index=False))
@@ -618,8 +619,7 @@ def update_product_db():
                 buffer = Storage.objects.filter(is_inventory=False, inv_product=obj.product_name).aggregate(models.Sum('inv_qty'))['inv_qty__sum']
                 obj.qty_buffer = buffer if buffer else 0
 
-                misplace = Storage.objects.filter(is_inventory=True, inv_product=obj.product_name).exclude(storage_for=obj.product_name).aggregate(models.Sum('inv_qty'))[
-                    'inv_qty__sum']
+                misplace = Storage.objects.filter(is_inventory=True, inv_product=obj.product_name).exclude(storage_for=obj.product_name).aggregate(models.Sum('inv_qty'))['inv_qty__sum']
                 obj.qty_misplace = misplace if misplace else 0
 
                 obj.qty_total = obj.qty_inventory + obj.qty_buffer + obj.qty_misplace
@@ -634,8 +634,7 @@ def update_product_db():
                         qs_avail_storage = qs_avail_storage.exclude(column_id=column_id, row__lte=occupied_outer.row)
                 obj.qty_storage_avail = (qs_avail_storage.count() * obj.qty_limit) - storage_plan
 
-                qs_avail_inventory = Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name).exclude(
-                    storage_id__in=AgvQueue.objects.filter(mode=2).values('pick_id'))
+                qs_avail_inventory = Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name).exclude(storage_id__in=AgvQueue.objects.filter(mode=2).values('pick_id'))
                 condition_misplace = ~Q(inv_product=obj.product_name) & Q(storage_for=obj.product_name) & Q(have_inventory=True)
                 condition_new = Q(have_inventory=True) & Q(created_on__gte=timezone.now() - timezone.timedelta(days=7))
                 qs_exclude = Storage.objects.filter(condition_misplace | condition_new)

@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import F
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_list_or_404
+from django.shortcuts import get_list_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -1279,4 +1279,3 @@ class HistoryGraphViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 ######################################################################################################################################################
-

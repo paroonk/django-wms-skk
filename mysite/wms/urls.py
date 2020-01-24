@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from . import views, sched
+from . import sched, views
 
 router = routers.DefaultRouter()
 router.register('agvrobotstatus', views.AgvRobotStatusViewSet, basename='agvrobotstatus')
