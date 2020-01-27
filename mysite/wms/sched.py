@@ -12,7 +12,7 @@ from simple_history.signals import post_create_historical_record
 from .models import *
 
 agv_list = [1, 2]
-robot_list = [1, 2, 3]
+robot_list = [1, 2]
 
 transfer_hold = {}
 x_check = {}

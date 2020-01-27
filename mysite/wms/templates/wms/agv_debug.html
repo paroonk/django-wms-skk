@@ -28,7 +28,7 @@
                     var api_agvproductionplan = '{% url 'wms:agvproductionplan-list' %}'
                     url_agvproductionplan_form = []
                     {% for item in agvproductionplan %}
-                        url_agvproductionplan_form[{{ item.id }}] = "{% url 'wms:agvproductionplan_form' item.id %}"
+                        url_agvproductionplan_form[{{ item.id|escape }}] = "{% url 'wms:agvproductionplan_form' item.id %}"
                     {% endfor %}
                     function render_agvproductionplan(response) {
                         $("#agvproductionplan-table .table-responsive").empty()
@@ -73,7 +73,7 @@
                     var api_robotqueue = '{% url 'wms:robotqueue-list' %}'
                     url_robotqueue_form = []
                     {% for item in robotqueue %}
-                        url_robotqueue_form[{{ item.id }}] = "{% url 'wms:robotqueue_form' item.id %}"
+                        url_robotqueue_form[{{ item.id|escape }}] = "{% url 'wms:robotqueue_form' item.id %}"
                     {% endfor %}
                     function render_robotqueue(response) {
                         $("#robotqueue-table .table-responsive").empty()
@@ -116,7 +116,7 @@
                     var api_agvqueue = '{% url 'wms:agvqueue-list' %}'
                     url_agvqueue_form = []
                     {% for item in agvqueue %}
-                        url_agvqueue_form[{{ item.id }}] = "{% url 'wms:agvqueue_form' item.id %}"
+                        url_agvqueue_form[{{ item.id|escape }}] = "{% url 'wms:agvqueue_form' item.id %}"
                     {% endfor %}
                     function render_agvqueue(response) {
                         $("#agvqueue-table .table-responsive").empty()
@@ -186,7 +186,7 @@
                         var api_agvtransfer = '{% url 'wms:agvtransfer-list' %}'
                         url_agvtransfer_form = []
                         {% for item in agvtransfer %}
-                            url_agvtransfer_form[{{ item.id }}] = "{% url 'wms:agvtransfer_form' item.id %}"
+                            url_agvtransfer_form[{{ item.id|escape }}] = "{% url 'wms:agvtransfer_form' item.id %}"
                         {% endfor %}
                         function render_agvtransfer(response) {
                             $("#agvtransfer-table tbody").empty()

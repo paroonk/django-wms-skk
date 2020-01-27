@@ -84,16 +84,16 @@
                                         <td rowspan="2" class="storage robot">Ro bot #2</td>
                                         {% elif col == 14 and row == 5 %}
                                         <td rowspan="2" class="storage robot">Ro bot #1</td>
-                                        {% elif col == 18 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #3</td>
+                                        {% comment %} {% elif col == 18 and row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #3</td> {% endcomment %}
                                         {% endif %}
                                     {% elif col >= 8 and col <= 19 and row == 7 %}
                                         {% if col == 11 %}
                                         <td id="robotQty2" colspan="3" class="storage noBorder"></td>
                                         {% elif col == 15 %}
                                         <td id="robotQty1" colspan="3" class="storage noBorder"></td>
-                                        {% elif col == 19 %}
-                                        <td id="robotQty3" colspan="3" class="storage noBorder"></td>
+                                        {% comment %} {% elif col == 19 %}
+                                        <td id="robotQty3" colspan="3" class="storage noBorder"></td> {% endcomment %}
                                         {% endif %}
                                     {% else %}
                                         <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
@@ -156,7 +156,7 @@
                         var api_agvtransfer = '{% url 'wms:agvtransfer-list' %}'
                         url_agvtransfer_form = []
                         {% for item in agvtransfer %}
-                            url_agvtransfer_form[{{ item.id }}] = "{% url 'wms:agvtransfer_form' item.id %}"
+                            url_agvtransfer_form[{{ item.id|escape }}] = "{% url 'wms:agvtransfer_form' item.id %}"
                         {% endfor %}
                         console.log(url_agvtransfer_form)
                         function render_agvtransfer(response) {
