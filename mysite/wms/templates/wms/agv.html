@@ -162,6 +162,7 @@
                 <table class="table table-sm table-hover">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>{% trans 'AGV Run' %}</th>
                             <th>{% trans 'AGV Status' %}</th>
                             <th>{% trans 'Step' %}</th>
@@ -192,6 +193,7 @@
                             $("#agvtransfer-table tbody").empty()
                             $.each(response, function (key, value) {
                                 var data = "<tr>" +
+                                    "<td>" + value.id + "</td>" +
                                     "<td>" + value.run + "</td>" +
                                     "<td><a href='#' onclick=PopupCenter('" + url_agvtransfer_form[value.id] + "','Popup','400','600')>" + value.status + "</a></td>" +
                                     "<td>" + value.step + "</td>" +

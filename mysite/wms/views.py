@@ -83,9 +83,9 @@ def layout_map(obj_storage, debug=False, age=False):
     layout_row = []
 
     col_range = range(1, 80)
-    col_skips = {9, 13, 17}
+    col_skips = {10, 14, 18}
     row_range = range(1, 22)
-    row_skips = {8, 10}
+    row_skips = {}
     for col in (x for x in col_range if x not in col_skips):
         layout_col.append(col)
         layout[col] = {}
@@ -139,7 +139,7 @@ def layout_map(obj_storage, debug=False, age=False):
         col_label = 'A{:02d}'.format(76 - i)
         footers.append(col_label)
 
-    index = ['R{:02d}'.format(i + 1) for i in range(7)] + [''] + ['R{:02d}'.format(11 - i) for i in range(11)]
+    index = ['R{:02d}'.format(i + 1) for i in range(7)] + 3*[''] + ['R{:02d}'.format(11 - i) for i in range(11)]
     zip_row = zip(index, layout_row)
 
     return layout, headers, footers, layout_col, zip_row
