@@ -65,16 +65,20 @@
                                     </td>
                                     {% endif %}
                                 {% else %}
-                                    {% if col == 10 and row >= 5 and row <= 6 or col == 14 and row >= 5 and row <= 6 or col == 18 and row >= 5 and row <= 6 %}
-                                        {% if col == 10 and row == 5 %}
+                                    {% if col == 9 and row >= 5 and row <= 6 %}
+                                        {% if col == 9 and row == 5 %}
                                         <td rowspan="2" class="storage robot">Ro bot #2</td>
-                                        {% elif col == 14 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
-                                        {% elif col == 18 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #3</td>
                                         {% endif %}
+                                    {% elif col == 13 and row >= 5 and row <= 6 %}
+                                        {% if col == 13 and row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
+                                        {% endif %}
+                                    {% comment %} {% elif col == 17 and row >= 5 and row <= 6 %}
+                                        {% if col == 17 and row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #3</td>
+                                        {% endif %} {% endcomment %}
                                     {% else %}
-                                    <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
+                                        <td class="storage noBorder {% if row >= 8 and row <= 10 %}runway{% endif %}"></td>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
