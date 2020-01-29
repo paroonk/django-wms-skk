@@ -280,6 +280,7 @@ class AgvQueue(ComputedFieldsModel):
     place_id = models.ForeignKey(Storage, on_delete=models.CASCADE, blank=True, null=True, verbose_name=_('Place ID'), related_name='place_id')
     mode_choices = list(enumerate([_('Storage'), _('Retrieval/Move')], start=1))
     mode = models.PositiveSmallIntegerField(choices=mode_choices, verbose_name=_('Mode'))
+    agv_no = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name=_('AGV No.'))
     history = HistoricalRecords()
 
     @computed(models.PositiveSmallIntegerField(blank=True, null=True, verbose_name=_('Pick Col')), depends=['pick_id#layout_col'])
@@ -350,7 +351,17 @@ class AgvTransfer(ComputedFieldsModel):
     y4 = models.FloatField(default=0.0)
     x5 = models.FloatField(default=0.0)
     y5 = models.FloatField(default=0.0)
-    history = HistoricalRecords(excluded_fields=['x_nav', 'y_nav', 'beta_nav', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5'])
+    col1 = models.PositiveSmallIntegerField(default=0)
+    row1 = models.PositiveSmallIntegerField(default=0)
+    col2 = models.PositiveSmallIntegerField(default=0)
+    row2 = models.PositiveSmallIntegerField(default=0)
+    col3 = models.PositiveSmallIntegerField(default=0)
+    row3 = models.PositiveSmallIntegerField(default=0)
+    col4 = models.PositiveSmallIntegerField(default=0)
+    row4 = models.PositiveSmallIntegerField(default=0)
+    col5 = models.PositiveSmallIntegerField(default=0)
+    row5 = models.PositiveSmallIntegerField(default=0)
+    history = HistoricalRecords(excluded_fields=['x_nav', 'y_nav', 'beta_nav', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5', 'col1', 'row1', 'col2', 'row2', 'col3', 'row3', 'col4', 'row4', 'col5', 'row5'])
 
     def __str__(self):
         return '{}'.format(self.id)

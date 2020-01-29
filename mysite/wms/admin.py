@@ -169,14 +169,45 @@ class RobotQueueAdmin(SimpleHistoryAdmin):
 
 
 class AgvQueueAdmin(SimpleHistoryAdmin):
-    list_display = ['id', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'pick_col', 'pick_row', 'place_id', 'place_col', 'place_row', 'mode']
+    list_display = ['id', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'pick_col', 'pick_row', 'place_id', 'place_col', 'place_row', 'mode', 'agv_no']
     list_per_page = 50
-    list_filter = ['mode', 'lot_name', 'product_name']
+    list_filter = ['mode', 'lot_name', 'product_name', 'agv_no']
     search_fields = ['product_name']
 
 
 class AgvTransferAdmin(SimpleHistoryAdmin):
-    list_display = ['id', 'run', 'status', 'step', 'x_nav', 'y_nav', 'beta_nav', 'pause', 'pattern', 'qty', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5']
+    list_display = [
+        'id',
+        'run',
+        'status',
+        'step',
+        'x_nav',
+        'y_nav',
+        'beta_nav',
+        'pause',
+        'pattern',
+        'qty',
+        'x1',
+        'y1',
+        'x2',
+        'y2',
+        'x3',
+        'y3',
+        'x4',
+        'y4',
+        'x5',
+        'y5',
+        'col1',
+        'row1',
+        'col2',
+        'row2',
+        'col3',
+        'row3',
+        'col4',
+        'row4',
+        'col5',
+        'row5',
+    ]
     list_editable = ['run', 'status', 'step', 'pause', 'pattern']
     list_per_page = 50
 

@@ -46,6 +46,15 @@ $(document).ready(function () {
             type: 'GET',
             success: function (response) {
                 render_agvtransfer(response)
+                agv_no = $('form[name="manualtransfer-form"] #id_agv_no').val()
+                if (response[agv_no - 1].run != 'Start' || response[agv_no - 1].status != 'Wait for queue') {
+                    $('button[name="manualtransfer"]').addClass('disabled')
+                    $('#agv_to_home').addClass('disabled')
+                }
+                else {
+                    $('button[name="manualtransfer"]').removeClass('disabled')
+                    $('#agv_to_home').removeClass('disabled')
+                }
             }
         })
     }
@@ -53,7 +62,7 @@ $(document).ready(function () {
     setInterval(update_agvtransfer, 1000)
     /************************************************************************************************************************************************/
     /* Auto Calculate Form */
-    // Manual Transfeer
+    // Manual Transfer
     path = 'form[name="manualtransfer-form"] '
     $(path + '#id_agv_no').change(function () {
         agv_no = $(path + '#id_agv_no').val()

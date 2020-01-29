@@ -17,7 +17,7 @@
 </section>
 
 <section class="content">
-    <div class="row justify-content-center refresh">
+    <div class="row justify-content-center">
         <div class="col-md-4">
             <div class="card card-outline card-info shadow" id="agvproductionplan-table">
                 <div class="card-header">
@@ -129,6 +129,7 @@
                                 "<th>{% trans 'Pick Location' %}</th>" +
                                 "<th>{% trans 'Place Location' %}</th>" +
                                 "<th>{% trans 'Mode' %}</th>" +
+                                "<th>{% trans 'AGV No.' %}</th>" +
                                 "</tr>" +
                                 "</thead>" +
                                 "<tbody>"
@@ -141,6 +142,7 @@
                                     "<td>" + value.pick_id + "</td>" +
                                     "<td>" + value.place_id + "</td>" +
                                     "<td>" + value.mode + "</td>" +
+                                    "<td>" + value.agv_no + "</td>" +
                                     "</tr>"
                             })
                             data += "</tbody>" +

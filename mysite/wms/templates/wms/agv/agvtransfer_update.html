@@ -32,7 +32,7 @@
 
     <div class="modal-footer">
         <input type="button" value="{% trans 'Close' %}" class="btn btn-default" onclick="window.close()">
-        <a href="{% url 'wms:agv_to_home' form.instance.pk %}" role="button" class="btn btn-secondary {% if queue_db %}disabled{% endif %}" onclick="return confirm('{% trans 'Back to home. Are you sure?' %}')">{% trans 'Go Home' %}</a>
+        <a href="{% url 'wms:agv_to_home' form.instance.pk %}" role="button" class="btn btn-secondary {% if form.instance.run != 1 or form.instance.status != 0 %}disabled{% endif %}" onclick="return confirm('{% trans 'Back to home. Are you sure?' %}')">{% trans 'Go Home' %}</a>
         <input type="submit" value="{% trans 'Update' %}" class="btn btn-primary">
     </div>
 

@@ -85,14 +85,14 @@ class AgvQueueSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        for field in ['lot_name', 'robot_no', 'pick_id']:
+        for field in ['product_name', 'lot_name', 'robot_no', 'pick_id', 'place_id', 'agv_no']:
             if not data[field]:
                 data[field] = ''
         return data
 
     class Meta:
         model = AgvQueue
-        fields = ['id', 'product_name', 'lot_name', 'qty_act', 'robot_no', 'pick_id', 'place_id', 'mode']
+        fields = ['id', 'product_name', 'lot_name', 'qty_act', 'robot_no', 'pick_id', 'place_id', 'mode', 'agv_no']
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -131,7 +131,7 @@ class RobotQueueHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RobotQueue.history.model
-        fields = ['history_date', 'history_type', 'history_change_reason', 'robot_no', 'product_id', 'qty_act']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'id', 'robot_no', 'product_id', 'qty_act']
 
 
 class AgvQueueHistorySerializer(serializers.ModelSerializer):
@@ -140,7 +140,7 @@ class AgvQueueHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgvQueue.history.model
-        fields = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
 
 
 class AgvTransferHistorySerializer(serializers.ModelSerializer):
@@ -152,4 +152,4 @@ class AgvTransferHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgvTransfer.history.model
-        fields = ['history_date', 'history_type', 'history_change_reason', 'run', 'status', 'step', 'pause', 'pattern']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']

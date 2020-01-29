@@ -232,7 +232,7 @@ class AgvQueueForm(forms.ModelForm):
 
     class Meta:
         model = AgvQueue
-        fields = ['mode', 'robot_no', 'pick_id', 'place_id']
+        fields = ['mode', 'robot_no', 'pick_id', 'place_id', 'agv_no']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -48,10 +48,10 @@ class DashboardView(generic.TemplateView):
         agv_run = AgvTransfer.objects.filter(run=1).count()
         agv_total = AgvTransfer.objects.all().count()
 
-        # For Overview Graph #
+        # For Overview Graph
         overview_plant_list = list(enumerate([_('All')] + list(Product.objects.select_related('plant').order_by('plant_id').distinct().values_list('plant', flat=True))))
 
-        # For Usage Graph #
+        # For Usage Graph
         qty_inventory_plant = []
         usage_plant_list = list(enumerate(list(Product.objects.order_by('plant_id').distinct().values_list('plant', flat=True))))
         for i, plant in usage_plant_list:
@@ -66,9 +66,9 @@ class DashboardView(generic.TemplateView):
                 'in_stock_pct': in_stock_pct,
                 'agv_run': agv_run,
                 'agv_total': agv_total,
-                # For Overview Graph #
+                # For Overview Graph
                 'overview_plant_list': overview_plant_list,
-                # For Usage Graph #
+                # For Usage Graph
                 'usage_plant_list': usage_plant_list,
                 'qty_inventory_plant': qty_inventory_plant,
             }
@@ -154,7 +154,6 @@ class LayoutView(generic.TemplateView):
         obj_storage = Storage.objects.select_related('column_id', 'column_id__for_product', 'inv_product').all()
         layout, headers, footers, layout_col, zip_row = layout_map(obj_storage)
         in_queue = list(set(AgvQueue.objects.all().values_list('pick_id', flat=True)) | set(AgvQueue.objects.all().values_list('place_id', flat=True)))
-
         context = super().get_context_data(**kwargs)
         context.update(
             {'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row, 'in_queue': in_queue, 'agvtransfer': AgvTransfer.objects.all(),}
@@ -499,13 +498,13 @@ def get_data_retrieval_form(request):
     if request.method == 'GET':
         obj = get_object_or_404(Product.objects.select_related('plant'), product_name=request.GET.get('product_name_retrieve', None))
 
-        # Calculate inventory qty, exclude in queue #
+        # Calculate inventory qty, exclude in queue
         qs_inventory = Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name).exclude(storage_id__in=AgvQueue.objects.filter(mode=2).values('pick_id'))
         inv_bag = qs_inventory.aggregate(models.Sum('inv_qty'))['inv_qty__sum']
         data['inv_bag'] = inv_bag if inv_bag else 0
 
-        # Calculate available inventory qty #
-        # Only retrieve from pre-assigned column and don't have misplace or new(less than 7 days) inventory before it #
+        # Calculate available inventory qty
+        # Only retrieve from pre-assigned column and don't have misplace or new(less than 7 days) inventory before it
         qs_avail_inventory = qs_inventory
         condition_misplace = ~Q(inv_product=obj.product_name) & Q(storage_for=obj.product_name) & Q(have_inventory=True)
         condition_age = Q(have_inventory=True) & Q(created_on__gte=timezone.now() - timezone.timedelta(days=7))
@@ -536,8 +535,8 @@ def get_data_retrieval_form(request):
                         pk_avail_inventory_list_sort += storage_id_list
                 pk_avail_inventory_list = pk_avail_inventory_list_sort
 
-        # Calculate buffer qty #
-        # Only store to pre-assigned buffer and don't have any inventory before it #
+        # Calculate buffer qty
+        # Only store to pre-assigned buffer and don't have any inventory before it
         qs_avail_buffer = Storage.objects.filter(column_id__for_buffer__buffer_for_plant__plant_id=obj.plant.plant_id)
         qs_occupied = qs_avail_buffer.filter(Q(have_inventory=True) | Q(storage_id__in=AgvQueue.objects.all().values('place_id')))
         for column_id in qs_occupied.order_by().distinct().values_list('column_id', flat=True):
@@ -570,7 +569,7 @@ def get_data_retrieval_form(request):
         data['buffer_space'] = len(pk_avail_buffer_list)
         data['buffer_list'] = pk_avail_buffer_list
 
-        # Calculate retrieve qty #
+        # Calculate retrieve qty
         if request.GET.get('qty_bag', None) == '':
             data['qty_act_bag'] = 0
             data['qty_act_pallet'] = 0
@@ -756,9 +755,9 @@ class RobotQueueHistoryView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        data = ['history_date', 'history_type', 'history_change_reason', 'robot_no', 'product_id', 'qty_act']
-        name = ['history_date', 'history_type', 'history_change_reason', 'robot_no', 'product_id', 'qty_act']
-        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right']
+        data = ['history_date', 'history_type', 'history_change_reason', 'id', 'robot_no', 'product_id', 'qty_act']
+        name = ['history_date', 'history_type', 'history_change_reason', 'id', 'robot_no', 'product_id', 'qty_act']
+        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right']
 
         dt_stop = datetime.now()
         dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -784,9 +783,9 @@ class AgvQueueHistoryView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        data = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
-        name = ['history_date', 'history_type', 'history_change_reason', 'product_name.product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id.storage_id', 'place_id.storage_id', 'mode']
-        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center']
+        data = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
+        name = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name.product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id.storage_id', 'place_id.storage_id', 'mode']
+        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center']
 
         dt_stop = datetime.now()
         dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -812,9 +811,9 @@ class AgvTransferHistoryView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        data = ['history_date', 'history_type', 'history_change_reason', 'run', 'status', 'step', 'pause', 'pattern']
-        name = ['history_date', 'history_type', 'history_change_reason', 'run', 'status', 'step', 'pause', 'pattern']
-        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center', 'text-left', 'text-left']
+        data = ['history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']
+        name = ['history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']
+        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center', 'text-left', 'text-left']
 
         dt_stop = datetime.now()
         dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
