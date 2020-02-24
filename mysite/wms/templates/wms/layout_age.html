@@ -47,7 +47,7 @@
                             {% for col in layout_col reversed %}
                                 {% if layout|k:col|k:row|k:'storage_for' %}
                                     {% if layout|k:col|k:row|k:'have_inventory' %}
-                                    <td class="js-inv-update-button storage"
+                                    <td class="js-inv-update-button storage age-{% if layout|k:col|k:row|k:'age' < age_criteria %}n{% endif %}ok"
                                         data-url="{% url 'wms:inv_update' layout|k:col|k:row|k:'storage_id' %}"
                                         bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
                                         data-toggle="tooltip"

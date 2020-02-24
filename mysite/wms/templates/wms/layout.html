@@ -141,6 +141,7 @@
                     <thead>
                         <tr>
                             <th>#</th>
+                            <th>{% trans 'Conn.' %}</th>
                             <th>{% trans 'AGV Run' %}</th>
                             <th>{% trans 'AGV Status' %}</th>
                             <th>{% trans 'Step' %}</th>
@@ -170,9 +171,12 @@
                         function render_agvtransfer(response) {
                             $("#agvtransfer-table tbody").empty()
                             $.each(response, function (key, value) {
+                                if (value.wdt_plc_ok == '{% trans 'OK' %}') { wdt_plc_ok_class = 'text-success' } else { wdt_plc_ok_class = 'text-danger' }
+                                if (value.run == '{% trans 'Start' %}') { run_class = 'text-success' } else { run_class = 'text-danger' }
                                 var data = "<tr>" +
                                     "<td>" + value.id + "</td>" +
-                                    "<td>" + value.run + "</td>" +
+                                    "<td><a class=" + wdt_plc_ok_class + ">" + value.wdt_plc_ok + "<a></td>" +
+                                    "<td><a class=" + run_class + ">" + value.run + "<a></td>" +
                                     "<td><a href='#' onclick=PopupCenter('" + url_agvtransfer_form[value.id] + "','Popup','400','600')>" + value.status + "</a></td>" +
                                     "<td>" + value.step + "</td>" +
                                     "<td>" + value.x_nav + "</td>" +

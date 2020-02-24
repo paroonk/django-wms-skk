@@ -126,9 +126,6 @@ def layout_map(obj_storage, debug=False, age=False):
     footers = []
     for i in range(76):
 
-        quotient = divmod(i, 2)[0]
-        remainder = divmod(i, 2)[1]
-
         if i < 4 or i == 32 or i == 33:
             col_label = ''
             headers.append(col_label)
@@ -139,7 +136,7 @@ def layout_map(obj_storage, debug=False, age=False):
         col_label = 'A{:02d}'.format(76 - i)
         footers.append(col_label)
 
-    index = ['R{:02d}'.format(i + 1) for i in range(7)] + 3*[''] + ['R{:02d}'.format(11 - i) for i in range(11)]
+    index = ['R{:02d}'.format(i + 1) for i in range(7)] + 3 * [''] + ['R{:02d}'.format(11 - i) for i in range(11)]
     zip_row = zip(index, layout_row)
 
     return layout, headers, footers, layout_col, zip_row
@@ -184,10 +181,11 @@ class LayoutAgeView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         obj_storage = Storage.objects.select_related('column_id', 'column_id__for_product', 'inv_product').all()
         layout, headers, footers, layout_col, zip_row = layout_map(obj_storage, age=True)
+        age_criteria = Setting.objects.get(id=1).age_criteria if Setting.objects.filter(id=1).exists() else 0
 
         context = super().get_context_data(**kwargs)
         context.update(
-            {'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row,}
+            {'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row, 'age_criteria': age_criteria,}
         )
         return context
 
@@ -1275,6 +1273,3 @@ class HistoryGraphViewSet(viewsets.ReadOnlyModelViewSet):
 
         data = {'label_list': label_list, 'dt': dt, 'qty': qty}
         return Response(data)
-
-
-######################################################################################################################################################

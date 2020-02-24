@@ -158,6 +158,9 @@ class AgvProductionPlanAdmin(SimpleHistoryAdmin):
 class RobotStatusAdmin(SimpleHistoryAdmin):
     list_display = ['robot_no', 'brand', 'qty_act', 'qty_target']
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
 
 class RobotQueueAdmin(SimpleHistoryAdmin):
     list_display = ['id', 'robot_no', 'product_id', 'qty_act', 'updated']
@@ -178,6 +181,9 @@ class AgvQueueAdmin(SimpleHistoryAdmin):
 class AgvTransferAdmin(SimpleHistoryAdmin):
     list_display = [
         'id',
+        'wdt_wms',
+        'wdt_plc',
+        'wdt_plc_ok',
         'run',
         'status',
         'step',
@@ -208,8 +214,32 @@ class AgvTransferAdmin(SimpleHistoryAdmin):
         'col5',
         'row5',
     ]
-    list_editable = ['run', 'status', 'step', 'pause', 'pattern']
+    list_editable = ['run', 'status', 'step', 'x_nav', 'y_nav', 'pause', 'pattern']
     list_per_page = 50
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+class SettingResource(resources.ModelResource):
+    class Meta:
+        model = Setting
+        skip_unchanged = True
+        report_skipped = False
+
+
+class SettingAdmin(ImportExportMixin, admin.ModelAdmin):
+    resource_class = SettingResource
+    list_display = ['age_criteria']
+
+    def get_import_formats(self):
+        return [base_formats.XLSX]
+
+    def get_export_formats(self):
+        return [base_formats.XLSX]
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 admin.site.register(Plant, PlantAdmin)
@@ -223,6 +253,7 @@ admin.site.register(RobotStatus, RobotStatusAdmin)
 admin.site.register(RobotQueue, RobotQueueAdmin)
 admin.site.register(AgvQueue, AgvQueueAdmin)
 admin.site.register(AgvTransfer, AgvTransferAdmin)
+admin.site.register(Setting, SettingAdmin)
 
 
 class ProductHistoryResource(resources.ModelResource):
@@ -246,6 +277,9 @@ class ProductHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     def get_export_formats(self):
         return [base_formats.XLSX]
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
 
 class StorageHistoryResource(resources.ModelResource):
     class Meta:
@@ -267,6 +301,9 @@ class StorageHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
 
     def get_export_formats(self):
         return [base_formats.XLSX]
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 class AgvProductionPlanHistoryResource(resources.ModelResource):
@@ -290,6 +327,9 @@ class AgvProductionPlanHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     def get_export_formats(self):
         return [base_formats.XLSX]
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
 
 class RobotQueueHistoryResource(resources.ModelResource):
     class Meta:
@@ -311,6 +351,9 @@ class RobotQueueHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
 
     def get_export_formats(self):
         return [base_formats.XLSX]
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 class AgvQueueHistoryResource(resources.ModelResource):
@@ -334,6 +377,9 @@ class AgvQueueHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     def get_export_formats(self):
         return [base_formats.XLSX]
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
 
 class AgvTransferHistoryResource(resources.ModelResource):
     class Meta:
@@ -355,6 +401,9 @@ class AgvTransferHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
 
     def get_export_formats(self):
         return [base_formats.XLSX]
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 admin.site.register(Product.history.model, ProductHistoryAdmin)

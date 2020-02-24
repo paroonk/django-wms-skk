@@ -66,7 +66,7 @@ $(document).ready(function () {
     $('#modal-id').on('submit', '.js-invcol-update', saveForm)
     /************************************************************************************************************************************************/
     /* Functions show agv, robot status */
-    
+
     var rowIndex = [], columnIndex = [], row, col
     row = 0
     for (agv_row = 0; agv_row <= 22; agv_row++) {

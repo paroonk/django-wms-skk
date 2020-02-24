@@ -41,6 +41,12 @@
     animation-duration: 1s;
     animation-iteration-count: infinite;
 }
+.age-nok {
+    border: 0.2vh solid red;
+}
+.age-ok {
+    border: 0.2vh solid green;
+}
 .runway {
     height: 3vh;
 }

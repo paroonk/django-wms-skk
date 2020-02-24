@@ -1,4 +1,5 @@
 from computedfields.models import ComputedFieldsModel, computed
+from dirtyfields import DirtyFieldsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
@@ -326,7 +327,11 @@ class AgvQueue(ComputedFieldsModel):
         ordering = ('id',)
 
 
-class AgvTransfer(ComputedFieldsModel):
+class AgvTransfer(DirtyFieldsMixin, ComputedFieldsModel):
+    wdt_wms = models.BooleanField(default=0)
+    wdt_plc = models.BooleanField(default=0)
+    wdt_plc_ok_choices = list(enumerate([_('Lost'), _('OK')]))
+    wdt_plc_ok = models.BooleanField(default=0, choices=wdt_plc_ok_choices)
     run_choices = list(enumerate([_('Stop'), _('Start')]))
     run = models.PositiveSmallIntegerField(choices=run_choices, default=0)
     status_choices = list(enumerate([_('Wait for queue'), _('Sending command'), _('Operating queue')]))
@@ -361,10 +366,17 @@ class AgvTransfer(ComputedFieldsModel):
     row4 = models.PositiveSmallIntegerField(default=0)
     col5 = models.PositiveSmallIntegerField(default=0)
     row5 = models.PositiveSmallIntegerField(default=0)
-    history = HistoricalRecords(excluded_fields=['x_nav', 'y_nav', 'beta_nav', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5', 'col1', 'row1', 'col2', 'row2', 'col3', 'row3', 'col4', 'row4', 'col5', 'row5'])
+    history = HistoricalRecords(
+        excluded_fields=['wdt_wms', 'wdt_plc', 'wdt_plc_ok', 'x_nav', 'y_nav', 'beta_nav', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5', 'col1', 'row1', 'col2', 'row2', 'col3', 'row3', 'col4', 'row4', 'col5', 'row5']
+    )
+    FIELDS_TO_CHECK = ['wdt_plc_ok']
 
     def __str__(self):
         return '{}'.format(self.id)
 
     class Meta:
         ordering = ('id',)
+
+
+class Setting(ComputedFieldsModel):
+    age_criteria = models.PositiveSmallIntegerField(default=7)

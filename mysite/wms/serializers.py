@@ -33,6 +33,7 @@ class AgvRobotStatusSerializer(serializers.Serializer):
 
 
 class AgvTransferSerializer(serializers.ModelSerializer):
+    wdt_plc_ok = serializers.CharField(source='get_wdt_plc_ok_display')
     run = serializers.CharField(source='get_run_display')
     status = serializers.CharField(source='get_status_display')
     step = serializers.IntegerField(source='get_step_display')
@@ -53,7 +54,7 @@ class AgvTransferSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgvTransfer
-        fields = ['id', 'run', 'status', 'step', 'x_nav', 'y_nav', 'beta_nav', 'pattern', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5']
+        fields = ['id', 'wdt_plc_ok', 'run', 'status', 'step', 'x_nav', 'y_nav', 'beta_nav', 'pattern', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5']
 
 
 class AgvProductionPlanSerializer(serializers.ModelSerializer):
