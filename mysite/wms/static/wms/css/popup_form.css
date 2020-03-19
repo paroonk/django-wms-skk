@@ -1,4 +1,10 @@
 .modal-title {
-    font-size: calc(16px + 0.2vh + 0.05vw);
+    font-size: calc(14px + 0.2vh + 0.05vw);
     font-weight: bold;
+}
+.modal-body input, .modal-body label, .modal-body span, .modal-body select, .modal-body option {
+    font-size: calc(12px + 0.2vh + 0.05vw);
+}
+.modal-footer button, .modal-footer a, .modal-footer input {
+    font-size: calc(12px + 0.2vh + 0.05vw);
 }

@@ -52,7 +52,7 @@
         var table = $('#datatable').DataTable({
             columnDefs: [
                 {
-                    targets: [0, 2],
+                    targets: [0, 1],
                     render: function(data, type, row, meta) {
                         if (type === 'display') {
                             data = ("<a href={% url 'wms:db_storage' 'pk' %}>" + data + "</a>").replace('pk', encodeURIComponent(data))

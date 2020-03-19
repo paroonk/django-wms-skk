@@ -41,7 +41,7 @@ class DashboardView(generic.TemplateView):
     template_name = 'wms/dashboard.html'
 
     def get_context_data(self, **kwargs):
-        in_stock_status = '{:,}'.format(
+        in_stock_status = '{:}'.format(
             Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] if Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] is not None else 0
         )
         in_stock_pct = '{:.0%}'.format(Storage.objects.filter(have_inventory=True).count() / Storage.objects.all().count() if Storage.objects.all() else 0)
@@ -82,14 +82,12 @@ def layout_map(obj_storage, debug=False, age=False):
     layout_col = []
     layout_row = []
 
-    col_range = range(1, 80)
-    col_skips = {10, 14, 18}
+    col_range = range(1, 77)
     row_range = range(1, 22)
-    row_skips = {}
-    for col in (x for x in col_range if x not in col_skips):
+    for col in col_range:
         layout_col.append(col)
         layout[col] = {}
-        for row in (y for y in row_range if y not in row_skips):
+        for row in row_range:
             if col == layout_col[0]:
                 layout_row.append(row)
             layout[col][row] = {}
@@ -124,16 +122,17 @@ def layout_map(obj_storage, debug=False, age=False):
 
     headers = []
     footers = []
-    for i in range(76):
+    for i in range(1, 77):
 
-        if i < 4 or i == 32 or i == 33:
+        if i in [1, 2, 3, 4, 33, 34]:
             col_label = ''
             headers.append(col_label)
-        elif i < 50:
-            col_label = 'B{:02d}'.format(48 - i if i < 32 else 50 - i)
+        elif i <= 50:
+            # col_label = 'B{:02d}'.format(50 - i if i < 32 else 50 - i)
+            col_label = 'B{:02d}'.format(49 - i if i < 33 else 51 - i)
             headers.append(col_label)
 
-        col_label = 'A{:02d}'.format(76 - i)
+        col_label = 'A{:02d}'.format(77 - i)
         footers.append(col_label)
 
     index = ['R{:02d}'.format(i + 1) for i in range(7)] + 3 * [''] + ['R{:02d}'.format(11 - i) for i in range(11)]
@@ -152,9 +151,7 @@ class LayoutView(generic.TemplateView):
         layout, headers, footers, layout_col, zip_row = layout_map(obj_storage)
         in_queue = list(set(AgvQueue.objects.all().values_list('pick_id', flat=True)) | set(AgvQueue.objects.all().values_list('place_id', flat=True)))
         context = super().get_context_data(**kwargs)
-        context.update(
-            {'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row, 'in_queue': in_queue, 'agvtransfer': AgvTransfer.objects.all(),}
-        )
+        context.update({'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row, 'in_queue': in_queue})
         return context
 
 
@@ -168,9 +165,7 @@ class LayoutDebugView(generic.TemplateView):
         layout, headers, footers, layout_col, zip_row = layout_map(obj_storage, debug=True)
 
         context = super().get_context_data(**kwargs)
-        context.update(
-            {'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row,}
-        )
+        context.update({'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row})
         return context
 
 
@@ -184,9 +179,7 @@ class LayoutAgeView(generic.TemplateView):
         age_criteria = Setting.objects.get(id=1).age_criteria if Setting.objects.filter(id=1).exists() else 0
 
         context = super().get_context_data(**kwargs)
-        context.update(
-            {'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row, 'age_criteria': age_criteria,}
-        )
+        context.update({'layout': layout, 'headers': headers, 'footers': footers, 'layout_col': layout_col, 'zip_row': zip_row, 'age_criteria': age_criteria})
         return context
 
 
@@ -355,7 +348,6 @@ class AgvView(generic.TemplateView):
             context['retrieval_form'] = RetrievalOrderForm()
         if 'move_form' not in context:
             context['move_form'] = MoveOrderForm()
-        context.update({'agvproductionplan': AgvProductionPlan.objects.all(), 'robotqueue': RobotQueue.objects.all(), 'agvqueue': AgvQueue.objects.all(), 'agvtransfer': AgvTransfer.objects.all()})
 
         return context
 
@@ -432,7 +424,6 @@ class AgvTestView(generic.TemplateView):
             context['robot_form'] = RobotQueueForm()
         if 'manualtransfer_form' not in context:
             context['manualtransfer_form'] = ManualTransferForm()
-        context.update({'agvproductionplan': AgvProductionPlan.objects.all(), 'robotqueue': RobotQueue.objects.all(), 'agvqueue': AgvQueue.objects.all(), 'agvtransfer': AgvTransfer.objects.all()})
         return context
 
     def post(self, request, *args, **kwargs):
@@ -453,7 +444,7 @@ class AgvTestView(generic.TemplateView):
             if form.is_valid():
                 obj = RobotQueue()
                 obj.robot_no = request.POST.get('robot_no', None)
-                obj.product_id = request.POST.get('product_id', None)
+                obj.product_id = RobotTag.objects.get(product_id=request.POST.get('product_id', None))
                 obj.qty_act = request.POST.get('qty_act', None)
                 obj.updated = request.POST.get('updated', None)
                 obj.changeReason = 'Manual Create Robot Queue'
@@ -467,8 +458,8 @@ class AgvTestView(generic.TemplateView):
                 agv_no = int(request.POST.get('agv_no', None))
                 qs_transfer = AgvTransfer.objects.filter(id=agv_no)
                 pattern = float(request.POST.get('pattern', None))
-                target_col = int(request.POST.get('layout_col', None))
-                target_row = int(request.POST.get('layout_row', None))
+                target_col = float(request.POST.get('layout_col', None))
+                target_row = float(request.POST.get('layout_row', None))
                 agv_route_manual(agv_no, qs_transfer, pattern, target_col, target_row)
 
                 return redirect(request.META.get('HTTP_REFERER'))
@@ -656,9 +647,7 @@ class StorageView(generic.TemplateView):
         data = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
         name = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product.product_name', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
         class_name = ['text-left', 'text-center', 'text-left', 'text-center', 'text-left', 'text-left', 'text-right', 'text-left', 'text-left', 'text-left']
-        context.update(
-            {'instance': Storage, 'fields': zip(data, name, class_name),}
-        )
+        context.update({'instance': Storage, 'fields': zip(data, name, class_name)})
         return context
 
 
@@ -685,9 +674,7 @@ class ProductHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update(
-            {'instance': Product.history.model, 'fields': zip(data, name, class_name),}
-        )
+        context.update({'instance': Product.history.model, 'fields': zip(data, name, class_name)})
         return context
 
 
@@ -713,9 +700,7 @@ class StorageHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update(
-            {'instance': Storage.history.model, 'fields': zip(data, name, class_name),}
-        )
+        context.update({'instance': Storage.history.model, 'fields': zip(data, name, class_name)})
         return context
 
 
@@ -741,9 +726,7 @@ class AgvProductionPlanHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update(
-            {'instance': AgvProductionPlan.history.model, 'fields': zip(data, name, class_name),}
-        )
+        context.update({'instance': AgvProductionPlan.history.model, 'fields': zip(data, name, class_name)})
         return context
 
 
@@ -769,9 +752,7 @@ class RobotQueueHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update(
-            {'instance': RobotQueue.history.model, 'fields': zip(data, name, class_name),}
-        )
+        context.update({'instance': RobotQueue.history.model, 'fields': zip(data, name, class_name)})
         return context
 
 
@@ -797,9 +778,7 @@ class AgvQueueHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update(
-            {'instance': AgvQueue.history.model, 'fields': zip(data, name, class_name),}
-        )
+        context.update({'instance': AgvQueue.history.model, 'fields': zip(data, name, class_name)})
         return context
 
 
@@ -825,9 +804,7 @@ class AgvTransferHistoryView(generic.TemplateView):
             form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update(
-            {'instance': AgvTransfer.history.model, 'fields': zip(data, name, class_name),}
-        )
+        context.update({'instance': AgvTransfer.history.model, 'fields': zip(data, name, class_name)})
         return context
 
 

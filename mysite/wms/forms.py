@@ -196,8 +196,8 @@ class AgvProductionPlanForm(forms.ModelForm):
 
 
 class RobotQueueForm(forms.ModelForm):
-    robot_no = forms.ChoiceField(label=_('Robot No.'), choices=RobotQueue.robot_choices, required=False)
-    product_id = forms.ChoiceField(label=_('Product Name'), choices=RobotQueue.product_id_choices)
+    robot_no = forms.ChoiceField(label=_('Robot No.'), choices=RobotQueue.robot_choices)
+    product_id = forms.ModelChoiceField(label=_('Product Name'), queryset=RobotTag.objects.none(), empty_label=None)
     qty_act = forms.IntegerField(label=_('Actual Quantity (Bag)'))
     updated = forms.ChoiceField(label=_('Status'), choices=RobotQueue.updated_choices, initial=1)
 
@@ -206,6 +206,10 @@ class RobotQueueForm(forms.ModelForm):
         if data <= 0:
             raise forms.ValidationError(_('Quantity must be more than 0 bag.'))
         return data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['product_id'].queryset = RobotTag.objects.all()
 
     class Meta:
         model = RobotQueue
@@ -232,7 +236,7 @@ class AgvQueueForm(forms.ModelForm):
 
     class Meta:
         model = AgvQueue
-        fields = ['mode', 'robot_no', 'pick_id', 'place_id', 'agv_no']
+        fields = ['mode', 'lot_name', 'robot_no', 'pick_id', 'place_id', 'agv_no']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -251,12 +255,11 @@ class AgvQueueForm(forms.ModelForm):
 class AgvTransferForm(forms.ModelForm):
     status = forms.ChoiceField(label=_('AGV Status'), choices=AgvTransfer.status_choices)
     step = forms.ChoiceField(label=_('Step'), choices=AgvTransfer.step_choices)
-    pause = forms.ChoiceField(label=_('Pause'), choices=AgvTransfer.pause_choices)
     pattern = forms.ChoiceField(label=_('Pattern'), choices=AgvTransfer.pattern_choices)
 
     class Meta:
         model = AgvTransfer
-        fields = ['status', 'step', 'pause', 'pattern']
+        fields = ['status', 'step', 'pattern', 'x_nav', 'y_nav']
 
 
 class ManualTransferForm(forms.Form):

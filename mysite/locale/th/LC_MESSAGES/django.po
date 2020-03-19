@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-05 13:08+0700\n"
+"POT-Creation-Date: 2020-03-13 14:54+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,14 +45,14 @@ msgstr "จำนวนสินค้าคงคลัง (ถุง)"
 
 #: .\wms\forms.py:13 .\wms\forms.py:35 .\wms\forms.py:82 .\wms\forms.py:131
 #: .\wms\forms.py:169 .\wms\models.py:105 .\wms\models.py:191
-#: .\wms\models.py:275 .\wms\templates\wms\agv.html:38
-#: .\wms\templates\wms\agv.html:126 .\wms\templates\wms\agv_debug.html:38
-#: .\wms\templates\wms\agv_debug.html:126 .\wms\templates\wms\layout.html:63
+#: .\wms\models.py:248 .\wms\templates\wms\agv.html:34
+#: .\wms\templates\wms\agv.html:114 .\wms\templates\wms\agv_debug.html:34
+#: .\wms\templates\wms\agv_debug.html:114 .\wms\templates\wms\layout.html:63
 #: .\wms\templates\wms\layout_age.html:62
 msgid "Lot Name"
 msgstr "ชื่อล็อต"
 
-#: .\wms\forms.py:14 .\wms\forms.py:36 .\wms\models.py:106 .\wms\models.py:277
+#: .\wms\forms.py:14 .\wms\forms.py:36 .\wms\models.py:106 .\wms\models.py:250
 msgid "Created On"
 msgstr "ผลิตเมื่อ"
 
@@ -79,10 +79,10 @@ msgid "This field is required"
 msgstr "ฟิลด์นี้จำเป็น"
 
 #: .\wms\forms.py:77 .\wms\forms.py:98 .\wms\forms.py:129 .\wms\forms.py:168
-#: .\wms\forms.py:200 .\wms\models.py:34 .\wms\templates\wms\agv.html:37
-#: .\wms\templates\wms\agv.html:83 .\wms\templates\wms\agv.html:125
-#: .\wms\templates\wms\agv_debug.html:37 .\wms\templates\wms\agv_debug.html:83
-#: .\wms\templates\wms\agv_debug.html:125
+#: .\wms\forms.py:200 .\wms\models.py:34 .\wms\models.py:221
+#: .\wms\templates\wms\agv.html:33 .\wms\templates\wms\agv.html:75
+#: .\wms\templates\wms\agv.html:113 .\wms\templates\wms\agv_debug.html:33
+#: .\wms\templates\wms\agv_debug.html:75 .\wms\templates\wms\agv_debug.html:113
 msgid "Product Name"
 msgstr "ชื่อสินค้า"
 
@@ -124,7 +124,7 @@ msgid "Retrieve Quantity (Bag)"
 msgstr "สินค้านำออกที่ต้องการ (ถุง)"
 
 #: .\wms\forms.py:103 .\wms\forms.py:201 .\wms\models.py:208
-#: .\wms\models.py:261 .\wms\models.py:276
+#: .\wms\models.py:234 .\wms\models.py:249
 msgid "Actual Quantity (Bag)"
 msgstr "สินค้านำออกจริง (ถุง)"
 
@@ -145,11 +145,11 @@ msgstr ""
 "พื้นที่พักว่างไม่เพียงพอ จำนวนต้องน้อยกว่าหรือเท่ากับ {} พาเลท, "
 "เปลี่ยนจำนวนสินค้านำออกที่ต้องการแล้ว ลองอีกครั้ง"
 
-#: .\wms\forms.py:128 .\wms\forms.py:218
+#: .\wms\forms.py:128 .\wms\forms.py:222
 msgid "From"
 msgstr "จาก"
 
-#: .\wms\forms.py:132 .\wms\forms.py:219
+#: .\wms\forms.py:132 .\wms\forms.py:223
 msgid "To"
 msgstr "ไปยัง"
 
@@ -183,82 +183,82 @@ msgstr "ตรวจสอบจำนวนสินค้ารวมที่
 msgid "Quantity must be less than or equal {} pallets."
 msgstr "จำนวนต้องน้อยกว่าหรือเท่ากับ {} พาเลท"
 
-#: .\wms\forms.py:199 .\wms\forms.py:217 .\wms\models.py:206
-#: .\wms\models.py:221 .\wms\models.py:279 .\wms\templates\wms\agv.html:82
-#: .\wms\templates\wms\agv.html:128 .\wms\templates\wms\agv_debug.html:82
-#: .\wms\templates\wms\agv_debug.html:128
+#: .\wms\forms.py:199 .\wms\forms.py:221 .\wms\models.py:206
+#: .\wms\models.py:232 .\wms\models.py:252 .\wms\templates\wms\agv.html:74
+#: .\wms\templates\wms\agv.html:116 .\wms\templates\wms\agv_debug.html:74
+#: .\wms\templates\wms\agv_debug.html:116
 msgid "Robot No."
 msgstr "เลขโรบอท"
 
-#: .\wms\forms.py:202 .\wms\templates\wms\agv.html:85
-#: .\wms\templates\wms\agv_debug.html:85
+#: .\wms\forms.py:202 .\wms\templates\wms\agv.html:77
+#: .\wms\templates\wms\agv_debug.html:77
 msgid "Status"
 msgstr "สถานะ"
 
-#: .\wms\forms.py:216 .\wms\models.py:283 .\wms\templates\wms\agv.html:131
-#: .\wms\templates\wms\agv_debug.html:131
+#: .\wms\forms.py:220 .\wms\models.py:256 .\wms\templates\wms\agv.html:119
+#: .\wms\templates\wms\agv_debug.html:119
 msgid "Mode"
 msgstr "รูปแบบ"
 
-#: .\wms\forms.py:224
+#: .\wms\forms.py:228
 msgid "This field is required in storage mode."
 msgstr "ฟิลด์นี้จำเป็นสำหรับคำสั่งเก็บสินค้า"
 
-#: .\wms\forms.py:230
+#: .\wms\forms.py:234
 msgid "This field is required in retrieval/move mode."
 msgstr "ฟิลด์นี้จำเป็นสำหรับคำสั่งนำสินค้าออกหรือเคลื่อนย้าย"
 
-#: .\wms\forms.py:252 .\wms\models.py:338 .\wms\templates\wms\agv.html:170
-#: .\wms\templates\wms\agv_debug.html:170 .\wms\templates\wms\dashboard.html:69
+#: .\wms\forms.py:256 .\wms\models.py:311 .\wms\templates\wms\agv.html:158
+#: .\wms\templates\wms\agv_debug.html:158 .\wms\templates\wms\dashboard.html:69
 #: .\wms\templates\wms\layout.html:148
 msgid "AGV Status"
 msgstr "สถานะเอจีวี"
 
-#: .\wms\forms.py:253 .\wms\templates\wms\agv.html:171
-#: .\wms\templates\wms\agv_debug.html:171 .\wms\templates\wms\layout.html:149
+#: .\wms\forms.py:257 .\wms\templates\wms\agv.html:159
+#: .\wms\templates\wms\agv_debug.html:159 .\wms\templates\wms\layout.html:149
 msgid "Step"
 msgstr "ขั้น"
 
-#: .\wms\forms.py:254 .\wms\models.py:344
+#: .\wms\forms.py:258 .\wms\models.py:320
 msgid "Pause"
 msgstr "หยุด"
 
-#: .\wms\forms.py:255 .\wms\forms.py:264 .\wms\templates\wms\agv.html:175
-#: .\wms\templates\wms\agv_debug.html:175 .\wms\templates\wms\layout.html:153
+#: .\wms\forms.py:259 .\wms\forms.py:268 .\wms\templates\wms\agv.html:165
+#: .\wms\templates\wms\agv_debug.html:165 .\wms\templates\wms\layout.html:155
 msgid "Pattern"
 msgstr "แพทเทิร์น"
 
-#: .\wms\forms.py:263 .\wms\models.py:284 .\wms\templates\wms\agv.html:132
-#: .\wms\templates\wms\agv_debug.html:132
+#: .\wms\forms.py:267 .\wms\models.py:257 .\wms\templates\wms\agv.html:120
+#: .\wms\templates\wms\agv_debug.html:120
 msgid "AGV No."
 msgstr "เอจีวีคันที่"
 
-#: .\wms\forms.py:266
+#: .\wms\forms.py:270
 msgid "Column"
 msgstr "หลัก"
 
-#: .\wms\forms.py:267
+#: .\wms\forms.py:271
 msgid "Row"
 msgstr "แถว"
 
-#: .\wms\forms.py:277
+#: .\wms\forms.py:281
 msgid "Selected coordinate not exist"
 msgstr "ตำแหน่งที่เลือกไม่มีอยู่"
 
-#: .\wms\forms.py:286 .\wms\views.py:52 .\wms\views.py:1172 .\wms\views.py:1173
-#: .\wms\views.py:1179 .\wms\views.py:1251 .\wms\views.py:1259
+#: .\wms\forms.py:290 .\wms\views.py:52 .\wms\views.py:1149 .\wms\views.py:1150
+#: .\wms\views.py:1156 .\wms\views.py:1228 .\wms\views.py:1236
 msgid "All"
 msgstr "ทั้งหมด"
 
-#: .\wms\forms.py:287
+#: .\wms\forms.py:291
 msgid "Data"
 msgstr "ข้อมูล"
 
-#: .\wms\forms.py:288 .\wms\forms.py:293
+#: .\wms\forms.py:292 .\wms\forms.py:297
 msgid "Date"
 msgstr "วันที่"
 
-#: .\wms\forms.py:289
+#: .\wms\forms.py:293
 msgid "Number of Data"
 msgstr "จำนวนข้อมูล"
 
@@ -382,99 +382,112 @@ msgstr "เลขชนิดสินค้า"
 msgid "Target Quantity (Bag)"
 msgstr "จำนวนเป้าหมาย (ถุง)"
 
-#: .\wms\models.py:220 .\wms\models.py:278
-msgid "Robot #1"
-msgstr "โรบอท #1"
-
-#: .\wms\models.py:220 .\wms\models.py:278
-msgid "Robot #2"
-msgstr "โรบอท #2"
-
-#: .\wms\models.py:260
+#: .\wms\models.py:220 .\wms\models.py:233
 msgid "Product ID"
 msgstr "รหัสสินค้า"
 
-#: .\wms\models.py:262
+#: .\wms\models.py:231 .\wms\models.py:251
+msgid "Robot #1"
+msgstr "โรบอท #1"
+
+#: .\wms\models.py:231 .\wms\models.py:251
+msgid "Robot #2"
+msgstr "โรบอท #2"
+
+#: .\wms\models.py:235
 msgid "Wait"
 msgstr "รอ"
 
-#: .\wms\models.py:262
+#: .\wms\models.py:235
 msgid "Ready"
 msgstr "พร้อม"
 
-#: .\wms\models.py:263 .\wms\templates\wms\layout.html:65
+#: .\wms\models.py:236 .\wms\templates\wms\layout.html:65
 #: .\wms\templates\wms\layout_age.html:64
 msgid "Updated"
 msgstr "แก้ไข"
 
-#: .\wms\models.py:274
+#: .\wms\models.py:247
 msgid "Queuing Product"
 msgstr "สินค้าในคิว"
 
-#: .\wms\models.py:280
+#: .\wms\models.py:253
 msgid "Pick ID"
 msgstr "รหัสที่หยิบ"
 
-#: .\wms\models.py:281
+#: .\wms\models.py:254
 msgid "Place ID"
 msgstr "รหัสที่วาง"
 
-#: .\wms\models.py:282 .\wms\templates\wms\base.html:160
+#: .\wms\models.py:255 .\wms\templates\wms\base.html:160
 #: .\wms\templates\wms\base.html:185
 msgid "Storage"
 msgstr "พื้นที่เก็บสินค้า"
 
-#: .\wms\models.py:282
+#: .\wms\models.py:255
 msgid "Retrieval/Move"
 msgstr "เก็บและเคลื่อนย้าย"
 
-#: .\wms\models.py:287
+#: .\wms\models.py:260
 msgid "Pick Col"
 msgstr "หลักที่หยิบ"
 
-#: .\wms\models.py:294
+#: .\wms\models.py:267
 msgid "Pick Row"
 msgstr "แถวที่หยิบ"
 
-#: .\wms\models.py:301
+#: .\wms\models.py:274
 msgid "Place Col"
 msgstr "หลักที่วาง"
 
-#: .\wms\models.py:308
+#: .\wms\models.py:281
 msgid "Place Row"
 msgstr "แถวที่วาง"
 
-#: .\wms\models.py:333
+#: .\wms\models.py:306
 msgid "Lost"
 msgstr "หลุด"
 
-#: .\wms\models.py:333 .\wms\templates\wms\agv.html:198
-#: .\wms\templates\wms\agv_debug.html:198 .\wms\templates\wms\layout.html:176
+#: .\wms\models.py:306 .\wms\templates\wms\agv.html:182
+#: .\wms\templates\wms\agv_debug.html:182 .\wms\templates\wms\layout.html:172
 msgid "OK"
 msgstr "ปกติ"
 
-#: .\wms\models.py:335
+#: .\wms\models.py:308
 msgid "Stop"
 msgstr "หยุดเดิน"
 
-#: .\wms\models.py:335 .\wms\templates\wms\agv.html:199
-#: .\wms\templates\wms\agv_debug.html:199 .\wms\templates\wms\layout.html:177
+#: .\wms\models.py:308 .\wms\templates\wms\agv.html:183
+#: .\wms\templates\wms\agv_debug.html:183 .\wms\templates\wms\layout.html:173
 msgid "Start"
 msgstr "ทำงาน"
 
-#: .\wms\models.py:337
+#: .\wms\models.py:310
 msgid "Wait for queue"
 msgstr "รอคิวงาน"
 
-#: .\wms\models.py:337
+#: .\wms\models.py:310
 msgid "Sending command"
 msgstr "กำลังส่งคำสั่ง"
 
-#: .\wms\models.py:337
+#: .\wms\models.py:310
 msgid "Operating queue"
 msgstr "ทำคิวงาน"
 
-#: .\wms\models.py:344
+#: .\wms\models.py:317
+msgid "AGV Column"
+msgstr "หลักของเอจีวี"
+
+#: .\wms\models.py:318 .\wms\templates\wms\agv.html:164
+#: .\wms\templates\wms\agv_debug.html:164 .\wms\templates\wms\layout.html:154
+msgid "AGV Row"
+msgstr "แถวของเอจีวี"
+
+#: .\wms\models.py:319
+msgid "AGV Direction"
+msgstr "ทิศของเอจีวี"
+
+#: .\wms\models.py:320
 msgid "Not Pause"
 msgstr "ไม่หยุด"
 
@@ -491,88 +504,91 @@ msgstr "สั่งงานเอจีวี"
 msgid "Production Plan"
 msgstr "แผนการผลิต"
 
-#: .\wms\templates\wms\agv.html:39 .\wms\templates\wms\agv_debug.html:39
+#: .\wms\templates\wms\agv.html:35 .\wms\templates\wms\agv_debug.html:35
 msgid "Total Qty (Bags)"
 msgstr "ทั้งหมด (ถุง)"
 
-#: .\wms\templates\wms\agv.html:40 .\wms\templates\wms\agv_debug.html:40
+#: .\wms\templates\wms\agv.html:36 .\wms\templates\wms\agv_debug.html:36
 msgid "Remaining Qty (Bags)"
 msgstr "ที่เหลือ (ถุง)"
 
-#: .\wms\templates\wms\agv.html:41 .\wms\templates\wms\agv_debug.html:41
+#: .\wms\templates\wms\agv.html:37 .\wms\templates\wms\agv_debug.html:37
 #, python-format
 msgid "%% Complete"
 msgstr "ทำไปแล้ว (%%)"
 
-#: .\wms\templates\wms\agv.html:57 .\wms\templates\wms\agv.html:100
-#: .\wms\templates\wms\agv.html:151 .\wms\templates\wms\agv_debug.html:57
-#: .\wms\templates\wms\agv_debug.html:100
-#: .\wms\templates\wms\agv_debug.html:151
+#: .\wms\templates\wms\agv.html:53 .\wms\templates\wms\agv.html:92
+#: .\wms\templates\wms\agv.html:139 .\wms\templates\wms\agv_debug.html:53
+#: .\wms\templates\wms\agv_debug.html:92 .\wms\templates\wms\agv_debug.html:139
 msgid "Are you sure?"
 msgstr "ยืนยันหรือไม่?"
 
-#: .\wms\templates\wms\agv.html:57 .\wms\templates\wms\agv.html:100
-#: .\wms\templates\wms\agv.html:151 .\wms\templates\wms\agv_debug.html:57
-#: .\wms\templates\wms\agv_debug.html:100
-#: .\wms\templates\wms\agv_debug.html:151
+#: .\wms\templates\wms\agv.html:53 .\wms\templates\wms\agv.html:92
+#: .\wms\templates\wms\agv.html:139 .\wms\templates\wms\agv_debug.html:53
+#: .\wms\templates\wms\agv_debug.html:92 .\wms\templates\wms\agv_debug.html:139
 msgid "Clear All"
 msgstr "ลบทั้งหมด"
 
-#: .\wms\templates\wms\agv.html:69 .\wms\templates\wms\agv_debug.html:69
+#: .\wms\templates\wms\agv.html:65 .\wms\templates\wms\agv_debug.html:65
 #: .\wms\templates\wms\base.html:197
 msgid "Robot Queue"
 msgstr "คิวงานโรบอท"
 
-#: .\wms\templates\wms\agv.html:84 .\wms\templates\wms\agv.html:127
-#: .\wms\templates\wms\agv_debug.html:84 .\wms\templates\wms\agv_debug.html:127
+#: .\wms\templates\wms\agv.html:76 .\wms\templates\wms\agv.html:115
+#: .\wms\templates\wms\agv_debug.html:76 .\wms\templates\wms\agv_debug.html:115
 msgid "Qty (Bags)"
 msgstr "จำนวน (ถุง)"
 
-#: .\wms\templates\wms\agv.html:112 .\wms\templates\wms\agv_debug.html:112
+#: .\wms\templates\wms\agv.html:104 .\wms\templates\wms\agv_debug.html:104
 #: .\wms\templates\wms\base.html:203
 msgid "AGV Queue"
 msgstr "คิวงานเอจีวี"
 
-#: .\wms\templates\wms\agv.html:129 .\wms\templates\wms\agv_debug.html:129
+#: .\wms\templates\wms\agv.html:117 .\wms\templates\wms\agv_debug.html:117
 msgid "Pick Location"
 msgstr "จาก"
 
-#: .\wms\templates\wms\agv.html:130 .\wms\templates\wms\agv_debug.html:130
+#: .\wms\templates\wms\agv.html:118 .\wms\templates\wms\agv_debug.html:118
 msgid "Place Location"
 msgstr "ไปยัง"
 
-#: .\wms\templates\wms\agv.html:168 .\wms\templates\wms\agv_debug.html:168
+#: .\wms\templates\wms\agv.html:156 .\wms\templates\wms\agv_debug.html:156
 #: .\wms\templates\wms\layout.html:146
 msgid "Conn."
 msgstr "เชื่อมต่อ"
 
-#: .\wms\templates\wms\agv.html:169 .\wms\templates\wms\agv_debug.html:169
+#: .\wms\templates\wms\agv.html:157 .\wms\templates\wms\agv_debug.html:157
 #: .\wms\templates\wms\layout.html:147
 msgid "AGV Run"
 msgstr "การทำงานเอจีวี"
 
-#: .\wms\templates\wms\agv.html:172 .\wms\templates\wms\agv_debug.html:172
+#: .\wms\templates\wms\agv.html:160 .\wms\templates\wms\agv_debug.html:160
 #: .\wms\templates\wms\layout.html:150
 msgid "X NAV"
 msgstr "พิกัด X"
 
-#: .\wms\templates\wms\agv.html:173 .\wms\templates\wms\agv_debug.html:173
+#: .\wms\templates\wms\agv.html:161 .\wms\templates\wms\agv_debug.html:161
 #: .\wms\templates\wms\layout.html:151
 msgid "Y NAV"
 msgstr "พิกัด Y"
 
-#: .\wms\templates\wms\agv.html:174 .\wms\templates\wms\agv_debug.html:174
+#: .\wms\templates\wms\agv.html:162 .\wms\templates\wms\agv_debug.html:162
 #: .\wms\templates\wms\layout.html:152
 msgid "Beta NAV"
 msgstr "มุม"
 
-#: .\wms\templates\wms\agv.html:234
+#: .\wms\templates\wms\agv.html:163 .\wms\templates\wms\agv_debug.html:163
+#: .\wms\templates\wms\layout.html:153
+msgid "AGV Col"
+msgstr "หลักเอจีวี"
+
+#: .\wms\templates\wms\agv.html:218
 msgid "Storage Order"
 msgstr "คำสั่งเก็บสินค้า"
 
-#: .\wms\templates\wms\agv.html:278 .\wms\templates\wms\agv.html:331
-#: .\wms\templates\wms\agv.html:384 .\wms\templates\wms\agv_debug.html:278
-#: .\wms\templates\wms\agv_debug.html:332
+#: .\wms\templates\wms\agv.html:262 .\wms\templates\wms\agv.html:315
+#: .\wms\templates\wms\agv.html:368 .\wms\templates\wms\agv_debug.html:262
+#: .\wms\templates\wms\agv_debug.html:316
 #: .\wms\templates\wms\db_log\log_agvproductionplan.html:29
 #: .\wms\templates\wms\db_log\log_agvproductionplan.html:88
 #: .\wms\templates\wms\db_log\log_agvqueue.html:29
@@ -586,16 +602,16 @@ msgstr "คำสั่งเก็บสินค้า"
 #: .\wms\templates\wms\db_log\log_storage.html:29
 #: .\wms\templates\wms\db_log\log_storage.html:88
 #: .\wms\templates\wms\historygraph.html:27
-#: .\wms\templates\wms\historygraph.html:51 .\wms\templates\wms\layout.html:219
+#: .\wms\templates\wms\historygraph.html:51 .\wms\templates\wms\layout.html:215
 #: .\wms\templates\wms\layout_age.html:136
 msgid "Submit"
 msgstr "ส่งคำสั่ง"
 
-#: .\wms\templates\wms\agv.html:287
+#: .\wms\templates\wms\agv.html:271
 msgid "Retrieve Order"
 msgstr "คำสั่งนำสินค้าออก"
 
-#: .\wms\templates\wms\agv.html:340
+#: .\wms\templates\wms\agv.html:324
 msgid "Move Order"
 msgstr "คำสั่งเคลื่อนย้าย"
 
@@ -614,7 +630,7 @@ msgstr "แก้ไขแผนการผลิต"
 #: .\wms\templates\wms\db_log\log_product.html:89
 #: .\wms\templates\wms\db_log\log_robotqueue.html:89
 #: .\wms\templates\wms\db_log\log_storage.html:89
-#: .\wms\templates\wms\historygraph.html:52 .\wms\templates\wms\layout.html:220
+#: .\wms\templates\wms\historygraph.html:52 .\wms\templates\wms\layout.html:216
 #: .\wms\templates\wms\layout\inv_create.html:36
 #: .\wms\templates\wms\layout\inv_update.html:37
 #: .\wms\templates\wms\layout\invcol_update.html:36
@@ -650,12 +666,12 @@ msgid "Edit AGV Transfer"
 msgstr "แก้ไขคำสั่งเอจีวี"
 
 #: .\wms\templates\wms\agv\agvtransfer_update.html:35
-#: .\wms\templates\wms\agv_debug.html:334
+#: .\wms\templates\wms\agv_debug.html:318
 msgid "Back to home. Are you sure?"
 msgstr "สั่งกลับบ้าน ยืนยันหรือไม่?"
 
 #: .\wms\templates\wms\agv\agvtransfer_update.html:35
-#: .\wms\templates\wms\agv_debug.html:334
+#: .\wms\templates\wms\agv_debug.html:318
 msgid "Go Home"
 msgstr "กลับบ้าน"
 
@@ -669,15 +685,15 @@ msgstr "แก้ไขคิวงานโรบอท"
 msgid "AGV Debug"
 msgstr "แก้ไขเอจีวี"
 
-#: .\wms\templates\wms\agv_debug.html:234
+#: .\wms\templates\wms\agv_debug.html:218
 msgid "Robot Order"
 msgstr "คิวงานโรบอท"
 
-#: .\wms\templates\wms\agv_debug.html:287
+#: .\wms\templates\wms\agv_debug.html:271
 msgid "Manual Move AGV"
 msgstr "สั่งเอจีวีแบบแมนวล"
 
-#: .\wms\templates\wms\agv_debug.html:332
+#: .\wms\templates\wms\agv_debug.html:316
 msgid "Manual transfer. Are you sure?"
 msgstr "สั่งแบบแมนวล ยืนยันหรือไม่?"
 
@@ -803,7 +819,7 @@ msgstr "สถิติแผนการผลิต"
 #: .\wms\templates\wms\db_log\log_product.html:90
 #: .\wms\templates\wms\db_log\log_robotqueue.html:90
 #: .\wms\templates\wms\db_log\log_storage.html:90
-#: .\wms\templates\wms\historygraph.html:53 .\wms\templates\wms\layout.html:221
+#: .\wms\templates\wms\historygraph.html:53 .\wms\templates\wms\layout.html:217
 #: .\wms\templates\wms\layout_age.html:138
 msgid "Custom Range"
 msgstr "กำหนดเอง"
@@ -814,7 +830,7 @@ msgstr "กำหนดเอง"
 #: .\wms\templates\wms\db_log\log_product.html:93
 #: .\wms\templates\wms\db_log\log_robotqueue.html:93
 #: .\wms\templates\wms\db_log\log_storage.html:93
-#: .\wms\templates\wms\historygraph.html:55 .\wms\templates\wms\layout.html:223
+#: .\wms\templates\wms\historygraph.html:55 .\wms\templates\wms\layout.html:219
 #: .\wms\templates\wms\layout_age.html:140
 msgid "Today"
 msgstr "วันนี้"
@@ -825,7 +841,7 @@ msgstr "วันนี้"
 #: .\wms\templates\wms\db_log\log_product.html:94
 #: .\wms\templates\wms\db_log\log_robotqueue.html:94
 #: .\wms\templates\wms\db_log\log_storage.html:94
-#: .\wms\templates\wms\historygraph.html:56 .\wms\templates\wms\layout.html:224
+#: .\wms\templates\wms\historygraph.html:56 .\wms\templates\wms\layout.html:220
 #: .\wms\templates\wms\layout_age.html:141
 msgid "Yesterday"
 msgstr "เมื่อวาน"
@@ -836,7 +852,7 @@ msgstr "เมื่อวาน"
 #: .\wms\templates\wms\db_log\log_product.html:95
 #: .\wms\templates\wms\db_log\log_robotqueue.html:95
 #: .\wms\templates\wms\db_log\log_storage.html:95
-#: .\wms\templates\wms\historygraph.html:57 .\wms\templates\wms\layout.html:225
+#: .\wms\templates\wms\historygraph.html:57 .\wms\templates\wms\layout.html:221
 #: .\wms\templates\wms\layout_age.html:142
 msgid "Last 7 Days"
 msgstr "7 วันที่ผ่านมา"
@@ -847,7 +863,7 @@ msgstr "7 วันที่ผ่านมา"
 #: .\wms\templates\wms\db_log\log_product.html:96
 #: .\wms\templates\wms\db_log\log_robotqueue.html:96
 #: .\wms\templates\wms\db_log\log_storage.html:96
-#: .\wms\templates\wms\historygraph.html:58 .\wms\templates\wms\layout.html:226
+#: .\wms\templates\wms\historygraph.html:58 .\wms\templates\wms\layout.html:222
 #: .\wms\templates\wms\layout_age.html:143
 msgid "Last 30 Days"
 msgstr "30 วันที่ผ่านมา"
@@ -858,7 +874,7 @@ msgstr "30 วันที่ผ่านมา"
 #: .\wms\templates\wms\db_log\log_product.html:97
 #: .\wms\templates\wms\db_log\log_robotqueue.html:97
 #: .\wms\templates\wms\db_log\log_storage.html:97
-#: .\wms\templates\wms\historygraph.html:59 .\wms\templates\wms\layout.html:227
+#: .\wms\templates\wms\historygraph.html:59 .\wms\templates\wms\layout.html:223
 #: .\wms\templates\wms\layout_age.html:144
 msgid "This Month"
 msgstr "เดือนนี้"
@@ -869,7 +885,7 @@ msgstr "เดือนนี้"
 #: .\wms\templates\wms\db_log\log_product.html:98
 #: .\wms\templates\wms\db_log\log_robotqueue.html:98
 #: .\wms\templates\wms\db_log\log_storage.html:98
-#: .\wms\templates\wms\historygraph.html:60 .\wms\templates\wms\layout.html:228
+#: .\wms\templates\wms\historygraph.html:60 .\wms\templates\wms\layout.html:224
 #: .\wms\templates\wms\layout_age.html:145
 msgid "Last Month"
 msgstr "เดือนที่แล้ว"

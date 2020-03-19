@@ -73,47 +73,47 @@ $(document).ready(function () {
         rowIndex[agv_row] = []
         columnIndex[agv_row] = []
         col = 1
-        for (agv_col = 80; agv_col >=0; agv_col--) {
+        for (agv_col = 77; agv_col >= 0; agv_col--) {
+
             // Find Row
             rowIndex[agv_row][agv_col] = row
             if (agv_row == 6) {
-                if (agv_col == 9 || agv_col == 10) { rowIndex[agv_row][agv_col] -= 1 }         // Robot #2 Offset
-                else if (agv_col == 13 || agv_col == 14) { rowIndex[agv_row][agv_col] -= 1 }   // Robot #1 Offset
-                // else if (agv_col == 17 || agv_col == 18) { rowIndex[agv_row][agv_col] -= 1 }   // Robot #3 Offset
+                if (agv_col == 9) { rowIndex[agv_row][agv_col] -= 1 }         // Robot #2 Offset
+                else if (agv_col == 12) { rowIndex[agv_row][agv_col] -= 1 }   // Robot #1 Offset
+                // else if (agv_col == 15) { rowIndex[agv_row][agv_col] -= 1 }   // Robot #3 Offset
             }
 
             // Find Column
             columnIndex[agv_row][agv_col] = col
             if (agv_row == 6) {
-                if (agv_col == 9 || agv_col == 10) { columnIndex[agv_row][agv_col] = columnIndex[agv_row - 1][agv_col] }          // Robot #2 Offset
-                else if (agv_col == 13 || agv_col == 14) { columnIndex[agv_row][agv_col] = columnIndex[agv_row - 1][agv_col] }    // Robot #1 Offset
-                // else if (agv_col == 17 || agv_col == 18) { columnIndex[agv_row][agv_col] = columnIndex[agv_row - 1][agv_col] }    // Robot #3 Offset
+                if (agv_col == 9) { columnIndex[agv_row][agv_col] = columnIndex[agv_row - 1][agv_col] }          // Robot #2 Offset
+                else if (agv_col == 12) { columnIndex[agv_row][agv_col] = columnIndex[agv_row - 1][agv_col] }    // Robot #1 Offset
+                // else if (agv_col == 15) { columnIndex[agv_row][agv_col] = columnIndex[agv_row - 1][agv_col] }    // Robot #3 Offset
             }
 
             // Update col
-            if (agv_col == 1 || agv_col == 80) {}
-            else if (agv_col == 10) {}
-            else if (agv_col == 14) {}
-            else if (agv_col == 18) {}
+            if (agv_col == 77 || agv_col == 1) {}
 
-            else if (agv_col >= 9 && agv_col <= 11 && agv_row == 4) {}      // Robot #2 Offset
-            else if (agv_col >= 13 && agv_col <= 15 && agv_row == 4) {}     // Robot #1 Offset
-            // else if (agv_col >= 17 && agv_col <= 19 && agv_row == 4) {}     // Robot #3 Offset
+            else if (agv_col >= 9 && agv_col <= 10 && agv_row == 4) {}      // Robot #2 Offset
+            else if (agv_col >= 12 && agv_col <= 13 && agv_row == 4) {}     // Robot #1 Offset
+            // else if (agv_col >= 15 && agv_col <= 16 && agv_row == 4) {}     // Robot #3 Offset
 
             else if (agv_col == 9 && agv_row == 6) {}       // Robot #2 Offset
-            else if (agv_col == 13 && agv_row == 6) {}      // Robot #1 Offset
-            // else if (agv_col == 17 && agv_row == 6) {}      // Robot #3 Offset
+            else if (agv_col == 12 && agv_row == 6) {}      // Robot #1 Offset
+            // else if (agv_col == 15 && agv_row == 6) {}      // Robot #3 Offset
             else { col++ }
         }
         // Update row
-        if (agv_row > 0 && agv_row < 21) { row++ }
+        if (agv_row == 0 || agv_row == 21) {}
+        else { row++ }
     }
-    // console.log(rowIndex, columnIndex)
+
     // for (i = 0; i < 21; i++) {
     //     for (j = 1; j < 77; j++) {
     //         $('#layout-table tbody tr').eq(i).find('td').eq(j).text(i + "," + j)
     //     }
     // }
+    // console.log(rowIndex, columnIndex)
     
     var old_column = [], old_row = [], old_data = []
     var agv, agv_src
@@ -122,11 +122,15 @@ $(document).ready(function () {
             url: api_agvrobotstatus,
             type: 'GET',
             success: function (response) {
+                $.each(response.robot_status, function (key, value) {
+                    $('#robotQty' + value.robot_no).html(value.qty_act)
+                })
+
                 $.each(response.agv_status, function (key, value) {
-                    if ((value.agv_beta >= 0 && value.agv_beta < 45) || (value.agv_beta >= 315 && value.agv_beta < 360)) { agv_src = agv_left }
-                    else if (value.agv_beta >= 45 && value.agv_beta < 135) { agv_src = agv_bot }
-                    else if (value.agv_beta >= 135 && value.agv_beta < 225) { agv_src = agv_right }
-                    else if (value.agv_beta >= 225 && value.agv_beta < 315) { agv_src = agv_top }
+                    if (value.agv_direction == 'L') { agv_src = agv_left }
+                    else if (value.agv_direction == 'B') { agv_src = agv_bot }
+                    else if (value.agv_direction == 'R') { agv_src = agv_right }
+                    else if (value.agv_direction == 'T') { agv_src = agv_top }
 
                     $('#layout-table tbody tr').eq(old_row[value.id]).find('td').eq(old_column[value.id]).html(old_data[value.id])
                     old_column[value.id] = columnIndex[value.agv_row][value.agv_col]
@@ -136,10 +140,6 @@ $(document).ready(function () {
                     $('#layout-table tbody tr').eq(rowIndex[value.agv_row][value.agv_col]).find('td').eq(columnIndex[value.agv_row][value.agv_col]).append(agv)
                 })
                 $('.agv').tooltip()
-
-                $.each(response.robot_status, function (key, value) {
-                    $('#robotQty' + value.robot_no).html(value.qty_act)
-                })
             }
         })
     }
