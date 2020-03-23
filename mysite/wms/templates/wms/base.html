@@ -38,6 +38,9 @@
             <li class="nav-item {% active '/agv/' %}">
                 <a class="nav-link d-flex align-items-center" href="{% url 'wms:agv' %}" data-toggle="tooltip" title="{% trans 'AGV' %}"><i class="fas fa-luggage-cart"></i></a>
             </li>
+            <li class="nav-item {% active '/serverlog/' %}">
+                <a class="nav-link d-flex align-items-center" href="{% url 'wms:serverlog' %}" data-toggle="tooltip" title="{% trans 'Server Log' %}"><i class="fas fa-server"></i></a>
+            </li>
         </ul>
 
         <!-- Right Navbar -->

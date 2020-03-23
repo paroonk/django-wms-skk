@@ -596,6 +596,17 @@ def get_data_move_form(request):
 
 
 ######################################################################################################################################################
+class ServerLogView(generic.TemplateView):
+    template_name = 'wms/serverlog.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        with open('serverlog.txt', 'r') as file_object:
+            log = file_object.read()
+            context['log'] = log
+        return context
+
+######################################################################################################################################################
 # @method_decorator(login_required, name='dispatch')
 class HistoryGraphView(generic.TemplateView):
     template_name = 'wms/historygraph.html'

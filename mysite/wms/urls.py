@@ -29,6 +29,7 @@ urlpatterns = [
     path('permission_denied/', views.permission_denied, name='permission_denied'),
     path('auto_close', views.AutoCloseView.as_view(), name='auto_close'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+    path('serverlog/', views.ServerLogView.as_view(), name='serverlog'),
     path('layout/', views.LayoutView.as_view(), name='layout'),
     path('layout/<slug:pk>/inv_create/', views.inv_create, name='inv_create'),
     path('layout/<slug:pk>/inv_update/', views.inv_update, name='inv_update'),
