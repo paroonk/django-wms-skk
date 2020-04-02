@@ -1,0 +1,16 @@
+.content-header p {
+    font-size: calc(16px + 0.2vh + 0.05vw);
+    color: blue;
+}
+th, tr, .form-inline .form-group input, .form-inline button, .form-inline a, .form-inline select, .pagination li {
+    font-size: calc(10px + 0.2vh + 0.05vw);
+}
+.spacer {
+    margin-right: 1vw;
+}
+th {
+    color: #007bff;
+}
+input[name="date_filter"] {
+    min-width: 255px;
+}
