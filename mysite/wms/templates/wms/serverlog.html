@@ -2,9 +2,7 @@
 {% load static i18n widget_tweaks %}
 
 {% block css %}
-<link href="{% static 'select2/css/select2.min.css' %}" rel="stylesheet" type="text/css">
-<link href="{% static 'select2/css/select2-bootstrap4.min.css' %}" rel="stylesheet" type="text/css">
-<link href="{% static 'wms/css/serverlog.css' %}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/serverlog.css' %}">
 {% endblock %}
 
 {% block title %}{% trans 'Server Log' %}{% endblock %}
@@ -26,19 +24,9 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="modal" role="dialog" tabindex="-1">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content"></div>
-        </div>
-    </div>
 </section>
 {% endblock %}
 
 {% block javascript %}
-
-<script type="text/javascript">
-
-</script>
 <script type="text/javascript" src="{% static 'wms/js/serverlog.js' %}"></script>
-
 {% endblock %}

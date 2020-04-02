@@ -1,11 +1,11 @@
 {% load static i18n widget_tweaks %}
 
-<form method="post" action="{% url 'wms:inv_update' form.instance.pk %}" class="js-inv-update" novalidate>
+<form class="js-inv-update" method="post" action="{% url 'wms:inv_update' form.instance.pk %}" novalidate>
     {% csrf_token %}
 
     <div class="modal-header">
         <h1 class="modal-title">{% trans 'Update Inventory' %} | {{ form.instance.storage_id }}</h1>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
@@ -34,8 +34,9 @@
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Close' %}</button>
-        <a href="{% url 'wms:inv_delete' form.instance.pk %}" role="button" class="btn btn-danger">{% trans 'Delete' %}</a>
-        <button type="submit" class="btn btn-primary">{% trans 'Update' %}</button>
+        <button class="btn btn-default" type="button" data-dismiss="modal">{% trans 'Close' %}</button>
+        <a class="btn btn-danger" href="{% url 'wms:inv_delete' form.instance.pk %}" role="button">{% trans 'Delete' %}</a>
+        <button class="btn btn-primary" type="submit">{% trans 'Update' %}</button>
     </div>
+
 </form>

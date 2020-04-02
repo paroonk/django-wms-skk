@@ -1,0 +1,84 @@
+{% extends 'wms/base.html' %}
+{% load static i18n widget_tweaks %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/datatables.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/report.css' %}">
+{% endblock %}
+
+{% block title %}{% trans 'Report' %} {% trans 'Stock Data' %}{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex justify-content-center">
+        <p class="font-weight-bold my-0">{% trans 'Report' %} {% trans 'Stock Data' %}</p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row justify-content-center">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row justify-content-center">
+                        <form class="form-inline m-0" method="get" action="{{ request.path }}">
+                            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                            {% for field in form.visible_fields %}
+                                <label class="text-secondary mx-1" for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                                {% render_field field class="form-control mb-2 mr-sm-2" %}
+                            {% endfor %}
+                            <button class="btn btn-secondary mb-2" type="submit">{% trans 'Submit' %}</button>
+                        </form>
+                    </div>
+                    <table id="datatable" class="table table-sm" style="width:100%" data-server-side="true"
+                        data-ajax="{% url 'wms:reportstockdata-list' %}?format=datatables&by={{ form.by.value }}&month={{ form.month.value }}&year={{ form.year.value }}">
+                        <thead>
+                            <tr>
+                                {% for data, name, class_name, width in fields %}
+                                <th data-data="{{ data }}" data-name="{{ name }}" data-class-name="{{ class_name }}" style="width:{{ width }}%">{{ name }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'datatables/js/datatables.min.js' %}"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var table = $('#datatable').DataTable({
+            dom: "<'row'<'col-sm-12'tr>>" + "<'row'<'col-sm-12'l>>" + "<'row'<'col-sm-12 text-center'B>>",
+            buttons: [
+                { extend: 'excelHtml5', text: '<span class="fas fa-file-excel" data-toggle="tooltip" title="Export Excel"></span>' },
+                { extend: 'print', text: '<span class="fas fa-print" data-toggle="tooltip" title="Print"></span>' }
+            ],
+            ordering: false,
+            searching: false,
+            paging: false,
+            processing: true,
+            stateSave: false,
+            autoWidth: false,
+            {% if form.by.value == 'product' %}
+            rowGroup: {
+                dataSrc: 'plant'
+            },
+            columnDefs: [
+                {
+                    targets: 1,
+                    visible: false,
+                    searchable: false
+                },
+            ]
+            {% endif %}
+        })
+
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+{% endblock %}

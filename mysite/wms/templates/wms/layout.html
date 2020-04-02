@@ -19,7 +19,7 @@
     <div class="card shadow">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="layout" id="layout-table">
+                <table id="layout-table" class="layout">
                     <thead>
                         <tr>
                             <th class="headerFooter font-weight-bold"></th>
@@ -27,7 +27,7 @@
                             <th class="headerFooter font-weight-bold"></th>
                             <th class="headerFooter font-weight-bold"></th>
                             <th class="headerFooter font-weight-bold"></th>
-                            <th class="headerFooter font-weight-bold" colspan="46">B</th>
+                            <th class="headerFooter font-weight-bold" colspan="44">B</th>
                         </tr>
                         <tr>
                             <th class="headerFooter font-weight-normal"></th>
@@ -81,30 +81,30 @@
                                 {% else %}
                                     {% if col >= 8  and col <= 10 and row == 4 %}
                                         {% if col == 10 %}
-                                        <td id="robotQty2" colspan="3" class="storage noBorder"></td>
+                                        <td id="robotQty2" class="storage noBorder" colspan="3"></td>
                                         {% endif %}
                                     {% elif col >= 11 and col <= 13 and row == 4 %}
                                         {% if col == 13 %}
-                                        <td id="robotQty1" colspan="3" class="storage noBorder"></td>
+                                        <td id="robotQty1" class="storage noBorder" colspan="3"></td>
                                         {% endif %}
                                     {% comment %} {% elif col >= 14 and col <= 16 and row == 4 %}
                                         {% if col == 16 %}
-                                        <td id="robotQty3" colspan="3" class="storage noBorder"></td>
+                                        <td id="robotQty3" class="storage noBorder" colspan="3"></td>
                                         {% endif %} {% endcomment %}
                                     {% elif col == 9 and row >= 5 and row <= 6 %}
                                         {% if col == 9 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #2</td>
+                                        <td class="storage robot" rowspan="2">Ro bot #2</td>
                                         {% endif %}
                                     {% elif col == 12 and row >= 5 and row <= 6 %}
                                         {% if col == 12 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
+                                        <td class="storage robot" rowspan="2">Ro bot #1</td>
                                         {% endif %}
                                     {% comment %} {% elif col == 15 and row >= 5 and row <= 6 %}
                                         {% if col == 15 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #3</td>
+                                        <td class="storage robot" rowspan="2">Ro bot #3</td>
                                         {% endif %} {% endcomment %}
                                     {% else %}
-                                        <td class="storage noBorder {% if row >= 8 and row <= 10 %}runway{% endif %}"></td>
+                                        <td class="storage noBorder{% if row >= 8 and row <= 10 %} runway{% endif %}"></td>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -136,7 +136,7 @@
     <br>
     <div class="row justify-content-center">
         <div class="col">
-            <div class="table-responsive" id="agvtransfer-table">
+            <div id="agvtransfer-table" class="table-responsive">
                 <table class="table table-sm table-hover">
                     <thead>
                         <tr>
@@ -202,7 +202,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="modal-id" role="dialog" tabindex="-1">
+    <div id="modal-id" class="modal fade" role="dialog" tabindex="-1">
         <div class="modal-dialog" role="document">
             <div class="modal-content"></div>
         </div>
@@ -211,6 +211,7 @@
 {% endblock %}
 
 {% block javascript %}
+<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 
 <script type="text/javascript">
     var str_submit = "{% trans 'Submit' %}"
@@ -231,8 +232,6 @@
     var agv_top = '{% static 'wms/images/agv_top.gif' %}'
 </script>
 
-<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/layout.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/PopupCenter.js' %}"></script>
-
 {% endblock %}

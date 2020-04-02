@@ -256,10 +256,23 @@ class AgvTransferForm(forms.ModelForm):
     status = forms.ChoiceField(label=_('AGV Status'), choices=AgvTransfer.status_choices)
     step = forms.ChoiceField(label=_('Step'), choices=AgvTransfer.step_choices)
     pattern = forms.ChoiceField(label=_('Pattern'), choices=AgvTransfer.pattern_choices)
+    try:
+        agv_col = forms.ChoiceField(label=_('Column'), choices=[(col, col) for col in list(set(Coordinate.objects.all().values_list('layout_col', flat=True)))[1:-1]])
+        agv_row = forms.ChoiceField(label=_('Row'), choices=[(row, row) for row in list(set(Coordinate.objects.all().values_list('layout_row', flat=True)))[1:-1]])
+    except ProgrammingError:
+        pass
+
+    def clean(self):
+        cleaned_data = super().clean()
+        agv_col = cleaned_data.get('agv_col')
+        agv_row = cleaned_data.get('agv_row')
+
+        if not Coordinate.objects.filter(layout_col=agv_col, layout_row=agv_row).exists():
+            raise forms.ValidationError(_('Selected coordinate not exist'))
 
     class Meta:
         model = AgvTransfer
-        fields = ['status', 'step', 'pattern', 'x_nav', 'y_nav']
+        fields = ['status', 'step', 'pattern', 'agv_col', 'agv_row']
 
 
 class ManualTransferForm(forms.Form):
@@ -280,6 +293,36 @@ class ManualTransferForm(forms.Form):
             raise forms.ValidationError(_('Selected coordinate not exist'))
 
 
+class ReportStockDataForm(forms.Form):
+    by_choices = [('product', _('Product')), ('plant', _('Plant'))]
+    by = forms.ChoiceField(label=_('By'), choices=by_choices)
+    month = forms.ChoiceField(label=_('Month'), choices=Report.month_choices)
+    year = forms.IntegerField(label=_('Year'), min_value=1, max_value=9999)
+
+
+class ReportMonthlyForm(forms.Form):
+    plant_list = []
+    try:
+        plant_list = list(Plant.objects.all().values_list('plant_id', flat=True))
+    except ProgrammingError:
+        pass
+    plant_choices = [('all', _('All'))] + [(plant, plant) for plant in plant_list]
+    plant = forms.ChoiceField(label=_('Plant'), choices=plant_choices)
+    year = forms.IntegerField(label=_('Year'), min_value=1, max_value=9999)
+
+
+class ReportDailyForm(forms.Form):
+    plant_list = []
+    try:
+        plant_list = list(Plant.objects.all().values_list('plant_id', flat=True))
+    except ProgrammingError:
+        pass
+    plant_choices = [('all', _('All'))] + [(plant, plant) for plant in plant_list]
+    plant = forms.ChoiceField(label=_('Plant'), choices=plant_choices)
+    month = forms.ChoiceField(label=_('Month'), choices=Report.month_choices)
+    year = forms.IntegerField(label=_('Year'), min_value=1, max_value=9999)
+
+
 class HistoryGraphForm(forms.Form):
     plant_list = []
     try:
@@ -289,7 +332,7 @@ class HistoryGraphForm(forms.Form):
     label_choices = [('all', _('All'))] + [(plant, plant) for plant in plant_list]
     label = forms.ChoiceField(label=_('Data'), choices=label_choices)
     date_filter = forms.CharField(label=_('Date'))
-    data = forms.IntegerField(label=_('Number of Data'), min_value=1, max_value=100)
+    data = forms.IntegerField(label=_('Number of Data'), min_value=1, max_value=1000)
 
 
 class LogFilterForm(forms.Form):

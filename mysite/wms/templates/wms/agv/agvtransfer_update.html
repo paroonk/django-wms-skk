@@ -1,6 +1,6 @@
 {% load i18n widget_tweaks %}
 
-<form method="post" action="{% url 'wms:agvtransfer_update' form.instance.pk %}" class="js-agvtransfer-update" novalidate>
+<form class="js-agvtransfer-update" method="post" action="{% url 'wms:agvtransfer_update' form.instance.pk %}" novalidate>
     {% csrf_token %}
 
     <div class="modal-header">
@@ -31,9 +31,9 @@
     </div>
 
     <div class="modal-footer">
-        <input type="button" value="{% trans 'Close' %}" class="btn btn-default" onclick="window.close()">
-        <a href="{% url 'wms:agv_to_home' form.instance.pk %}" role="button" class="btn btn-secondary {% if form.instance.run != 1 or form.instance.status != 0 %}disabled{% endif %}" onclick="return confirm('{% trans 'Back to home. Are you sure?' %}')">{% trans 'Go Home' %}</a>
-        <input type="submit" value="{% trans 'Update' %}" class="btn btn-primary">
+        <input class="btn btn-default" type="button" value="{% trans 'Close' %}" onclick="window.close()">
+        <a class="btn btn-secondary{% if form.instance.run != 1 or form.instance.status != 0 %} disabled{% endif %}" href="{% url 'wms:agv_to_home' form.instance.pk %}" role="button" onclick="return confirm('{% trans 'Back to home. Are you sure?' %}')">{% trans 'Go Home' %}</a>
+        <input class="btn btn-primary" type="submit" value="{% trans 'Update' %}">
     </div>
 
 </form>

@@ -5,9 +5,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-<!--    <script type="text/javascript" src="{% static 'pace/js/pace.min.js' %}"></script>-->
-<!--    <link rel="stylesheet" type="text/css" href="{% static 'pace/css/pace.css' %}">-->
+    <script type="text/javascript" src="{% static 'pace/js/pace.min.js' %}"></script>
     <link rel="shortcut icon" type="image/png" href="{% static 'wms/images/Siam_Cement_Group_Logo.ico' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'pace/css/pace-theme-minimal.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'adminlte/css/adminlte.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'fontawesome/css/all.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wms/css/base.css' %}">
@@ -38,9 +38,6 @@
             <li class="nav-item {% active '/agv/' %}">
                 <a class="nav-link d-flex align-items-center" href="{% url 'wms:agv' %}" data-toggle="tooltip" title="{% trans 'AGV' %}"><i class="fas fa-luggage-cart"></i></a>
             </li>
-            <li class="nav-item {% active '/serverlog/' %}">
-                <a class="nav-link d-flex align-items-center" href="{% url 'wms:serverlog' %}" data-toggle="tooltip" title="{% trans 'Server Log' %}"><i class="fas fa-server"></i></a>
-            </li>
         </ul>
 
         <!-- Right Navbar -->
@@ -52,6 +49,9 @@
                 </li>
                 <li class="nav-item {% active '/agv_debug/' %}">
                     <a class="nav-link d-flex align-items-center" href="{% url 'wms:agv_debug' %}" data-toggle="tooltip" title="{% trans 'AGV Debug' %}"><i class="fas fa-luggage-cart"></i></a>
+                </li>
+                <li class="nav-item {% active '/serverlog/' %}">
+                    <a class="nav-link d-flex align-items-center" href="{% url 'wms:serverlog' %}" data-toggle="tooltip" title="{% trans 'Server Log' %}"><i class="fas fa-server"></i></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center" href="{% url 'admin:index' %}" data-toggle="tooltip" title="{% trans 'Site Admin' %}"><i class="fas fa-user-cog"></i></a>
@@ -97,11 +97,8 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
-        <a href="{% url 'wms:home' %}" class="brand-link">
-            <img src="{% static 'wms/images/Siam_Cement_Group_Logo_s.png' %}"
-                 alt="Logo"
-                 class="brand-image"
-                 style="opacity: .8">
+        <a class="brand-link" href="{% url 'wms:home' %}">
+            <img class="brand-image" src="{% static 'wms/images/Siam_Cement_Group_Logo_s.png' %}" alt="Logo" style="opacity: .8">
             <span class="brand-text font-weight-light"><strong>WMS</strong> <small>{% trans 'Paper Bag SKK' %}</small></span>
         </a>
 
@@ -111,11 +108,11 @@
             <!-- Sidebar User -->
             <div class="user-panel my-2 pb-2 d-flex">
                 <div class="image">
-                    <img src="{% static 'wms/images/User_Avatar-512.png' %}" class="img-circle elevation-2" alt="User Image">
+                    <img class="img-circle elevation-2" src="{% static 'wms/images/User_Avatar-512.png' %}" alt="User Image">
                 </div>
                 <div class="info">
                     {% if user.is_authenticated %}
-                    <a>{% if user.first_name %}{{ user.first_name|title }}{% else %}{{ user.username|title }}{% endif %} ( </a><a href="{% url 'account_logout' %}">{% trans 'Log Out' %}</a><a> )</a>
+                    <a>{% if user.first_name %}{{ user.first_name|title }} {% else %}{{ user.username|title }} {% endif %}( </a><a href="{% url 'account_logout' %}">{% trans 'Log Out' %}</a><a> )</a>
                     {% else %}
                     <a href="{% url 'account_login' %}">{% trans 'Login' %}</a>
                     {% endif %}
@@ -128,39 +125,65 @@
                     <!-- Age layout menu -->
                     <li class="nav-item">
                         <a class="nav-link {% active '/layout_age/' %}" href="{% url 'wms:layout_age' %}">
-                            <i class="nav-icon far fa-hourglass"></i>
-                            <p>{% trans 'Inventory Period' %}</p>
+                            <i class="nav-icon far fa-hourglass"></i><p>{% trans 'Inventory Period' %}</p>
                         </a>
+                    </li>
+
+                    <!-- Report dropdown menu -->
+                    <li class="nav-item hav-treeview {% menu_open '/report/' %}">
+                        <a class="nav-link {% active '/report/' %}" href="#">
+                            <i class="nav-icon fas fa-book"></i><p>{% trans 'Report' %}<i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/report/stockdata/' %}" href="{% url 'wms:reportstockdata' %}">
+                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Stock Data' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/report/monthlyproduce/' %}" href="{% url 'wms:reportmonthlyproduce' %}">
+                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Monthly Production' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/report/monthlysale/' %}" href="{% url 'wms:reportmonthlysale' %}">
+                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Monthly Sales' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/report/dailyproduce/' %}" href="{% url 'wms:reportdailyproduce' %}">
+                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Daily Production' %}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-sm {% active '/report/dailysale/' %}" href="{% url 'wms:reportdailysale' %}">
+                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Daily Sales' %}</p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
                     <!-- Graph menu -->
                     <li class="nav-item">
                         <a class="nav-link {% active '/historygraph/' %}" href="{% url 'wms:historygraph' %}">
-                            <i class="nav-icon far fa-chart-bar"></i>
-                            <p>{% trans 'Graph' %}</p>
+                            <i class="nav-icon far fa-chart-bar"></i><p>{% trans 'Graph' %}</p>
                         </a>
                     </li>
 
                     <!-- Database dropdown menu -->
                     <li class="nav-item hav-treeview {% menu_open '/db/' %}">
                         <a class="nav-link {% active '/db/' %}" href="#">
-                            <i class="nav-icon fas fa-database"></i>
-                            <p>
-                                {% trans 'Database' %}
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
+                            <i class="nav-icon fas fa-database"></i><p>{% trans 'Database' %}<i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/db/product/' %}" href="{% url 'wms:db_product' %}">
-                                    <i class="nav-icon fas fa-pallet"></i>
-                                    <p>{% trans 'Product' %}</p>
+                                    <i class="nav-icon fas fa-pallet"></i><p>{% trans 'Product' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/db/storage/' %}" href="{% url 'wms:db_storage' 'all' %}">
-                                    <i class="nav-icon fas fa-boxes"></i>
-                                    <p>{% trans 'Storage' %}</p>
+                                    <i class="nav-icon fas fa-boxes"></i><p>{% trans 'Storage' %}</p>
                                 </a>
                             </li>
                         </ul>
@@ -169,53 +192,42 @@
                     <!-- Log Dropdown Menu -->
                     <li class="nav-item hav-treeview {% menu_open '/log/' %}">
                         <a class="nav-link {% active '/log/' %}" href="#">
-                            <i class="nav-icon fas fa-history"></i>
-                            <p>
-                                {% trans 'Log' %}
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
+                            <i class="nav-icon fas fa-history"></i><p>{% trans 'Log' %}<i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/product/' %}" href="{% url 'wms:log_product' %}">
-                                    <i class="nav-icon fas fa-pallet"></i>
-                                    <p>{% trans 'Product' %}</p>
+                                    <i class="nav-icon fas fa-pallet"></i><p>{% trans 'Product' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/storage/' %}" href="{% url 'wms:log_storage' %}">
-                                    <i class="nav-icon fas fa-boxes"></i>
-                                    <p>{% trans 'Storage' %}</p>
+                                    <i class="nav-icon fas fa-boxes"></i><p>{% trans 'Storage' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/agvproductionplan/' %}" href="{% url 'wms:log_agvproductionplan' %}">
-                                    <i class="nav-icon far fa-calendar-alt"></i>
-                                    <p>{% trans 'Production Plan' %}</p>
+                                    <i class="nav-icon far fa-calendar-alt"></i><p>{% trans 'Production Plan' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/robotqueue/' %}" href="{% url 'wms:log_robotqueue' %}">
-                                    <i class="nav-icon fab fa-android"></i>
-                                    <p>{% trans 'Robot Queue' %}</p>
+                                    <i class="nav-icon fab fa-android"></i><p>{% trans 'Robot Queue' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/agvqueue/' %}" href="{% url 'wms:log_agvqueue' %}">
-                                    <i class="nav-icon fas fa-luggage-cart"></i>
-                                    <p>{% trans 'AGV Queue' %}</p>
+                                    <i class="nav-icon fas fa-luggage-cart"></i><p>{% trans 'AGV Queue' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/agvtransfer/1/' %}" href="{% url 'wms:log_agvtransfer' 1 %}">
-                                    <i class="nav-icon fas fa-luggage-cart"></i>
-                                    <p>{% trans 'AGV #1 Transfer' %}</p>
+                                    <i class="nav-icon fas fa-luggage-cart"></i><p>{% trans 'AGV #1 Transfer' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/agvtransfer/2/' %}" href="{% url 'wms:log_agvtransfer' 2 %}">
-                                    <i class="nav-icon fas fa-luggage-cart"></i>
-                                    <p>{% trans 'AGV #2 Transfer' %}</p>
+                                    <i class="nav-icon fas fa-luggage-cart"></i><p>{% trans 'AGV #2 Transfer' %}</p>
                                 </a>
                             </li>
                         </ul>
@@ -224,20 +236,17 @@
                     <!-- Small screen menu -->
                     <li class="nav-item d-block d-md-none">
                         <a class="nav-link {% active '/layout_debug/' %}" href="{% url 'wms:layout_debug' %}">
-                            <i class="nav-icon far fa-map"></i>
-                            <p>{% trans 'Layout Debug' %}</p>
+                            <i class="nav-icon far fa-map"></i><p>{% trans 'Layout Debug' %}</p>
                         </a>
                     </li>
                     <li class="nav-item d-block d-md-none">
                         <a class="nav-link {% active '/agv_debug/' %}" href="{% url 'wms:agv_debug' %}">
-                            <i class="nav-icon fas fa-luggage-cart"></i>
-                            <p>{% trans 'AGV Debug' %}</p>
+                            <i class="nav-icon fas fa-luggage-cart"></i><p>{% trans 'AGV Debug' %}</p>
                         </a>
                     </li>
                     <li class="nav-item d-block d-md-none">
                         <a class="nav-link" href="{% url 'admin:index' %}">
-                            <i class="nav-icon fas fa-user-cog"></i>
-                            <p>{% trans 'Site Admin' %}</p>
+                            <i class="nav-icon fas fa-user-cog"></i><p>{% trans 'Site Admin' %}</p>
                         </a>
                     </li>
 
@@ -252,7 +261,7 @@
     <div class="content-wrapper">
         {% if messages %}
         <div class="alert alert-secondary" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <button class="close" type="button" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
             {% for message in messages %}

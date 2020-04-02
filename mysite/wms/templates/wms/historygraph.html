@@ -18,7 +18,7 @@
 
 <section class="content">
     <div class="row justify-content-center">
-        <form method="get" class="form-inline m-0" action="{{ request.path }}">
+        <form class="form-inline m-0" method="get" action="{{ request.path }}">
             {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
             {% for field in form.visible_fields %}
                 <label class="text-secondary mx-1" for="{{ field.id_for_label }}">{{ field.label }}:</label>
@@ -46,6 +46,7 @@
 {% endblock %}
 
 {% block javascript %}
+<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 
 <script type="text/javascript">
     var str_submit = "{% trans 'Submit' %}"
@@ -65,7 +66,5 @@
     var label_toolboxName = '{{ view.kwargs.pk|upper }} {% trans 'Inventory Graph' %}'
 </script>
 
-<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/historygraph.js' %}"></script>
-
 {% endblock %}

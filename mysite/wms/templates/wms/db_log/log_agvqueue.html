@@ -2,10 +2,9 @@
 {% load static i18n custom_tags widget_tweaks %}
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/dataTables.bootstrap4.min.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/buttons.bootstrap4.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/datatables.min.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'daterangepicker/css/daterangepicker.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db&log.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db_log.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'wms/css/db_log/log.css' %}">
 {% endblock %}
 
@@ -20,7 +19,7 @@
 
 <section class="content">
     <div class="row justify-content-center">
-        <form method="get" class="form-inline" action="{{ request.path }}">
+        <form class="form-inline" method="get" action="{{ request.path }}">
             {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
             {% for field in form.visible_fields %}
             <label class="text-secondary mx-1" for="{{ field.id_for_label }}">{{ field.label }}:</label>
@@ -48,15 +47,7 @@
 {% endblock %}
 
 {% block javascript %}
-
-<script type="text/javascript" src="{% static 'datatables/js/jszip.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/jquery.dataTables.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/dataTables.bootstrap4.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/dataTables.buttons.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/buttons.bootstrap4.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/buttons.colVis.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/buttons.html5.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/buttons.print.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'datatables/js/datatables.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 
 <script type="text/javascript">
@@ -100,5 +91,4 @@
         })
     })
 </script>
-
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends 'wms/base.html' %}
-{% load static i18n %}
+{% load static i18n humanize %}
 
 {% block css %}
 <script type="text/javascript" src="{% static 'echarts/js/echarts-en.min.js' %}"></script>
@@ -24,7 +24,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">{% trans 'In-stock Status' %}</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ in_stock_status }} {% trans 'Bags' %}</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ in_stock_status|intcomma }} {% trans 'Bags' %}</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-cubes fa-2x text-gray-300"></i>
@@ -96,19 +96,19 @@
                         {% for plant in overview_plant_list %}
                         <div class="form-check-inline">
                             <label class="form-check-label">
-                                <input type="radio" class="form-check-input" name="overview_plant_id" value="{{ plant.1 }}" {% if forloop.first %}checked{% endif %}>{{ plant.1 }}
+                                <input class="form-check-input" type="radio" name="overview_plant_id" value="{{ plant.1 }}"{% if forloop.first %} checked{% endif %}>{{ plant.1 }}
                             </label>
                         </div>
                         {% endfor %}
                         <br>
                         <div class="form-check-inline">
                             <label class="form-check-label">
-                                <input type="radio" class="form-check-input" name="overview_value_type" value="0" checked>{% trans 'Bags' %}
+                                <input class="form-check-input" type="radio" name="overview_value_type" value="0" checked>{% trans 'Bags' %}
                             </label>
                         </div>
                         <div class="form-check-inline">
                             <label class="form-check-label">
-                                <input type="radio" class="form-check-input" name="overview_value_type" value="1">{% trans '% Total' %}
+                                <input class="form-check-input" type="radio" name="overview_value_type" value="1">{% trans '% Total' %}
                             </label>
                         </div>
                         <br>
@@ -142,7 +142,6 @@
 {% endblock %}
 
 {% block javascript %}
-
 <script type="text/javascript">
     var overview_plant_list = {{ overview_plant_list|safe }}
 
@@ -157,5 +156,4 @@
 </script>
 
 <script type="text/javascript" src="{% static 'wms/js/dashboard.js' %}"></script>
-
 {% endblock %}

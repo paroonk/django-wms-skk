@@ -1,6 +1,6 @@
 {% load i18n widget_tweaks %}
 
-<form method="post" action="{% url 'wms:agvproductionplan_update' form.instance.pk %}" class="js-agvproductionplan-update" novalidate>
+<form class="js-agvproductionplan-update" method="post" action="{% url 'wms:agvproductionplan_update' form.instance.pk %}" novalidate>
     {% csrf_token %}
 
     <div class="modal-header">
@@ -31,9 +31,9 @@
     </div>
 
     <div class="modal-footer">
-        <input type="button" value="{% trans 'Close' %}" class="btn btn-default" onclick="window.close()">
-        <a href="{% url 'wms:agvproductionplan_delete' form.instance.pk %}" role="button" class="btn btn-danger">{% trans 'Delete' %}</a>
-        <input type="submit" value="{% trans 'Update' %}" class="btn btn-primary">
+        <input class="btn btn-default" type="button" value="{% trans 'Close' %}" onclick="window.close()">
+        <a class="btn btn-danger" href="{% url 'wms:agvproductionplan_delete' form.instance.pk %}" role="button">{% trans 'Delete' %}</a>
+        <input class="btn btn-primary" type="submit" value="{% trans 'Update' %}">
     </div>
 
 </form>

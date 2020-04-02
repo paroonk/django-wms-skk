@@ -19,7 +19,7 @@
 <section class="content">
     <div class="row justify-content-center">
         <div class="col-md-4">
-            <div class="card card-outline card-info shadow" id="agvproductionplan-table">
+            <div id="agvproductionplan-table" class="card card-outline card-info shadow">
                 <div class="card-header">
                     <h3 class="card-title font-weight-bold">{% trans 'Production Plan' %}</h3>
                 </div>
@@ -60,7 +60,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card card-outline card-warning shadow" id="robotqueue-table">
+            <div id="robotqueue-table" class="card card-outline card-warning shadow">
                 <div class="card-header">
                     <h3 class="card-title font-weight-bold">{% trans 'Robot Queue' %}</h3>
                 </div>
@@ -99,7 +99,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card card-outline card-success shadow" id="agvqueue-table">
+            <div id="agvqueue-table" class="card card-outline card-success shadow">
                 <div class="card-header">
                     <h3 class="card-title font-weight-bold">{% trans 'AGV Queue' %}</h3>
                 </div>
@@ -148,7 +148,7 @@
     </div>
     <div class="row justify-content-center">
         <div class="col">
-            <div class="table-responsive" id="agvtransfer-table">
+            <div id="agvtransfer-table" class="table-responsive">
                 <table class="table table-sm table-hover">
                     <thead>
                         <tr>
@@ -375,15 +375,12 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="modal" role="dialog" tabindex="-1">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content"></div>
-        </div>
-    </div>
 </section>
 {% endblock %}
 
 {% block javascript %}
+<script type="text/javascript" src="{% static 'select2/js/select2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'select2/js/th.js' %}"></script>
 
 <script type="text/javascript">
     var url_get_data_storage_form = '{% url 'wms:get_data_storage_form' %}'
@@ -391,9 +388,6 @@
     var url_get_data_move_form = '{% url 'wms:get_data_move_form' %}'
 </script>
 
-<script type="text/javascript" src="{% static 'select2/js/select2.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'select2/js/th.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/agv.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/PopupCenter.js' %}"></script>
-
 {% endblock %}

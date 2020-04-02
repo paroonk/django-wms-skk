@@ -112,7 +112,7 @@ class CoordinateResource(resources.ModelResource):
 
 class CoordinateAdmin(ImportExportMixin, SimpleHistoryAdmin):
     resource_class = CoordinateResource
-    list_display = ['coor_id', 'layout_col', 'layout_row', 'coor_x', 'coor_y']
+    list_display = ['__str__', 'coor_x', 'coor_y']
     list_per_page = 50
     list_filter = ['layout_col', 'layout_row']
     search_fields = ['layout_col', 'layout_row']
@@ -268,6 +268,31 @@ class SettingAdmin(ImportExportMixin, admin.ModelAdmin):
         return False
 
 
+class ReportResource(resources.ModelResource):
+    class Meta:
+        model = Report
+        skip_unchanged = True
+        report_skipped = False
+
+
+class ReportAdmin(ImportExportMixin, admin.ModelAdmin):
+    resource_class = ReportResource
+    list_display = ['__str__', 'qty_produce', 'qty_sale', 'qty_nonmove']
+    list_editable = ['qty_produce', 'qty_sale', 'qty_nonmove']
+    list_filter = ['product__product_name', 'year', 'month']
+    search_fields = ['product__product_name']
+    # list_display_links = None
+
+    def get_import_formats(self):
+        return [base_formats.XLSX]
+
+    def get_export_formats(self):
+        return [base_formats.XLSX]
+
+    # def has_add_permission(self, request, obj=None):
+    #     return False
+
+
 admin.site.register(Plant, PlantAdmin)
 admin.site.register(Buffer, BufferAdmin)
 admin.site.register(Product, ProductAdmin)
@@ -281,6 +306,7 @@ admin.site.register(RobotQueue, RobotQueueAdmin)
 admin.site.register(AgvQueue, AgvQueueAdmin)
 admin.site.register(AgvTransfer, AgvTransferAdmin)
 admin.site.register(Setting, SettingAdmin)
+admin.site.register(Report, ReportAdmin)
 
 
 class ProductHistoryResource(resources.ModelResource):
