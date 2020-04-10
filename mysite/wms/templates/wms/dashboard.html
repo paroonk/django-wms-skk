@@ -148,6 +148,7 @@
     var overviewChart = echarts.init(document.getElementById('stockOverview'))
     var api_overviewgraph = '{% url 'wms:overviewgraph-list' %}'
     var lebel_legendList = ['{% trans 'Inventory' %}', '{% trans 'Buffer' %}', '{% trans 'Misplace' %}', '{% trans 'Available Storage' %}']
+    var unit = [' ' + '{% trans 'Bags' %}', '%']
 
     var usageChart = echarts.init(document.getElementById('stockUsage'))
     var api_usagegraph = '{% url 'wms:usagegraph-list' %}'

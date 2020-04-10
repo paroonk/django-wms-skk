@@ -125,39 +125,46 @@
                     <!-- Age layout menu -->
                     <li class="nav-item">
                         <a class="nav-link {% active '/layout_age/' %}" href="{% url 'wms:layout_age' %}">
-                            <i class="nav-icon far fa-hourglass"></i><p>{% trans 'Inventory Period' %}</p>
+                            <i class="nav-icon far fa-hourglass"></i>
+                            <p>{% trans 'Inventory Period' %}</p>
                         </a>
                     </li>
 
                     <!-- Report dropdown menu -->
                     <li class="nav-item hav-treeview {% menu_open '/report/' %}">
                         <a class="nav-link {% active '/report/' %}" href="#">
-                            <i class="nav-icon fas fa-book"></i><p>{% trans 'Report' %}<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-book"></i>
+                            <p>{% trans 'Report' %}<i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/report/stockdata/' %}" href="{% url 'wms:reportstockdata' %}">
-                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Stock Data' %}</p>
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>&nbsp;{% trans 'Stock Data' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/report/monthlyproduce/' %}" href="{% url 'wms:reportmonthlyproduce' %}">
-                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Monthly Production' %}</p>
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>&nbsp;{% trans 'Monthly Production' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/report/monthlysale/' %}" href="{% url 'wms:reportmonthlysale' %}">
-                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Monthly Sales' %}</p>
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>&nbsp;{% trans 'Monthly Sales' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/report/dailyproduce/' %}" href="{% url 'wms:reportdailyproduce' %}">
-                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Daily Production' %}</p>
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>&nbsp;{% trans 'Daily Production' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/report/dailysale/' %}" href="{% url 'wms:reportdailysale' %}">
-                                    <i class="nav-icon fas fa-book"></i><p>{% trans 'Daily Sales' %}</p>
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>&nbsp;{% trans 'Daily Sales' %}</p>
                                 </a>
                             </li>
                         </ul>
@@ -166,24 +173,28 @@
                     <!-- Graph menu -->
                     <li class="nav-item">
                         <a class="nav-link {% active '/historygraph/' %}" href="{% url 'wms:historygraph' %}">
-                            <i class="nav-icon far fa-chart-bar"></i><p>{% trans 'Graph' %}</p>
+                            <i class="nav-icon far fa-chart-bar"></i>
+                            <p>{% trans 'Graph' %}</p>
                         </a>
                     </li>
 
                     <!-- Database dropdown menu -->
                     <li class="nav-item hav-treeview {% menu_open '/db/' %}">
                         <a class="nav-link {% active '/db/' %}" href="#">
-                            <i class="nav-icon fas fa-database"></i><p>{% trans 'Database' %}<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-database"></i>
+                            <p>{% trans 'Database' %}<i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/db/product/' %}" href="{% url 'wms:db_product' %}">
-                                    <i class="nav-icon fas fa-pallet"></i><p>{% trans 'Product' %}</p>
+                                    <i class="nav-icon fas fa-pallet"></i>
+                                    <p>&nbsp;{% trans 'Product' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/db/storage/' %}" href="{% url 'wms:db_storage' 'all' %}">
-                                    <i class="nav-icon fas fa-boxes"></i><p>{% trans 'Storage' %}</p>
+                                    <i class="nav-icon fas fa-boxes"></i>
+                                    <p>&nbsp;{% trans 'Storage' %}</p>
                                 </a>
                             </li>
                         </ul>
@@ -192,42 +203,50 @@
                     <!-- Log Dropdown Menu -->
                     <li class="nav-item hav-treeview {% menu_open '/log/' %}">
                         <a class="nav-link {% active '/log/' %}" href="#">
-                            <i class="nav-icon fas fa-history"></i><p>{% trans 'Log' %}<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-history"></i>
+                            <p>{% trans 'Log' %}<i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/product/' %}" href="{% url 'wms:log_product' %}">
-                                    <i class="nav-icon fas fa-pallet"></i><p>{% trans 'Product' %}</p>
+                                    <i class="nav-icon fas fa-pallet"></i>
+                                    <p>&nbsp;{% trans 'Product' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/storage/' %}" href="{% url 'wms:log_storage' %}">
-                                    <i class="nav-icon fas fa-boxes"></i><p>{% trans 'Storage' %}</p>
+                                    <i class="nav-icon fas fa-boxes"></i>
+                                    <p>&nbsp;{% trans 'Storage' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/agvproductionplan/' %}" href="{% url 'wms:log_agvproductionplan' %}">
-                                    <i class="nav-icon far fa-calendar-alt"></i><p>{% trans 'Production Plan' %}</p>
+                                    <i class="nav-icon far fa-calendar-alt"></i>
+                                    <p>&nbsp;{% trans 'Production Plan' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/robotqueue/' %}" href="{% url 'wms:log_robotqueue' %}">
-                                    <i class="nav-icon fab fa-android"></i><p>{% trans 'Robot Queue' %}</p>
+                                    <i class="nav-icon fab fa-android"></i>
+                                    <p>&nbsp;{% trans 'Robot Queue' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/agvqueue/' %}" href="{% url 'wms:log_agvqueue' %}">
-                                    <i class="nav-icon fas fa-luggage-cart"></i><p>{% trans 'AGV Queue' %}</p>
+                                    <i class="nav-icon fas fa-luggage-cart"></i>
+                                    <p>&nbsp;{% trans 'AGV Queue' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/agvtransfer/1/' %}" href="{% url 'wms:log_agvtransfer' 1 %}">
-                                    <i class="nav-icon fas fa-luggage-cart"></i><p>{% trans 'AGV #1 Transfer' %}</p>
+                                    <i class="nav-icon fas fa-luggage-cart"></i>
+                                    <p>&nbsp;{% trans 'AGV #1 Transfer' %}</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-sm {% active '/log/agvtransfer/2/' %}" href="{% url 'wms:log_agvtransfer' 2 %}">
-                                    <i class="nav-icon fas fa-luggage-cart"></i><p>{% trans 'AGV #2 Transfer' %}</p>
+                                    <i class="nav-icon fas fa-luggage-cart"></i>
+                                    <p>&nbsp;{% trans 'AGV #2 Transfer' %}</p>
                                 </a>
                             </li>
                         </ul>
@@ -236,17 +255,20 @@
                     <!-- Small screen menu -->
                     <li class="nav-item d-block d-md-none">
                         <a class="nav-link {% active '/layout_debug/' %}" href="{% url 'wms:layout_debug' %}">
-                            <i class="nav-icon far fa-map"></i><p>{% trans 'Layout Debug' %}</p>
+                            <i class="nav-icon far fa-map"></i>
+                            <p>{% trans 'Layout Debug' %}</p>
                         </a>
                     </li>
                     <li class="nav-item d-block d-md-none">
                         <a class="nav-link {% active '/agv_debug/' %}" href="{% url 'wms:agv_debug' %}">
-                            <i class="nav-icon fas fa-luggage-cart"></i><p>{% trans 'AGV Debug' %}</p>
+                            <i class="nav-icon fas fa-luggage-cart"></i>
+                            <p>{% trans 'AGV Debug' %}</p>
                         </a>
                     </li>
                     <li class="nav-item d-block d-md-none">
                         <a class="nav-link" href="{% url 'admin:index' %}">
-                            <i class="nav-icon fas fa-user-cog"></i><p>{% trans 'Site Admin' %}</p>
+                            <i class="nav-icon fas fa-user-cog"></i>
+                            <p>{% trans 'Site Admin' %}</p>
                         </a>
                     </li>
 
