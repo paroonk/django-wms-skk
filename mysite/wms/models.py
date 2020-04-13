@@ -351,6 +351,7 @@ class AgvTransfer(DirtyFieldsMixin, ComputedFieldsModel):
 
     def save_without_historical_record(self, *args, **kwargs):
         self.skip_history_when_saving = True
+        print('test', *args)
         try:
             ret = self.save(*args, **kwargs)
         finally:

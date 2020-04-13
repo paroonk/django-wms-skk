@@ -615,7 +615,7 @@ class HistoryGraphView(generic.TemplateView):
     template_name = 'wms/historygraph.html'
 
     def get_context_data(self, **kwargs):
-        dt_stop = datetime.now()
+        dt_stop = timezone.localtime()
         dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         dt_format = '%d/%m/%y %H:%M'
 
@@ -677,7 +677,7 @@ class ProductHistoryView(generic.TemplateView):
         class_name = self.class_name
         instance = self.instance
 
-        dt_stop = datetime.now()
+        dt_stop = timezone.localtime()
         dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         dt_format = '%d/%m/%y %H:%M'
         date_filter = self.request.GET.get('date_filter', '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)))
@@ -1116,7 +1116,7 @@ class HistoryGraphViewSet(viewsets.ReadOnlyModelViewSet):
         if date_filter:
             dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
         else:
-            dt_stop = datetime.now()
+            dt_stop = timezone.localtime()
             dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         dt_list = pd.date_range(dt_start, dt_stop, periods=data).to_list()
         dt_list = [timezone.make_aware(dt) for dt in dt_list]
@@ -1157,8 +1157,8 @@ class ReportStockDataView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         by = self.request.GET.get('by', 'product')
-        month = int(self.request.GET.get('month', datetime.now().month))
-        year = int(self.request.GET.get('year', datetime.now().year))
+        month = int(self.request.GET.get('month', timezone.localtime().month))
+        year = int(self.request.GET.get('year', timezone.localtime().year))
 
         form_data = {
             'by': by,
@@ -1192,8 +1192,8 @@ class ReportStockDataViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = self.get_queryset()
 
         by = self.request.query_params.get('by', 'product')
-        month = int(self.request.query_params.get('month', datetime.now().month))
-        year = int(self.request.query_params.get('year', str(datetime.now().year)).replace(',', ''))
+        month = int(self.request.query_params.get('month', timezone.localtime().month))
+        year = int(self.request.query_params.get('year', str(timezone.localtime().year)).replace(',', ''))
 
         if by == 'product':
             label_list = list(Product.objects.all().values_list('product_name', flat=True))
@@ -1238,7 +1238,7 @@ class ReportMonthlyProduceView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         plant = self.request.GET.get('plant', 'all')
-        year = int(self.request.GET.get('year', str(datetime.now().year)).replace(',', ''))
+        year = int(self.request.GET.get('year', str(timezone.localtime().year)).replace(',', ''))
 
         form_data = {
             'plant': plant,
@@ -1275,7 +1275,7 @@ class ReportMonthlyProduceViewSet(viewsets.ReadOnlyModelViewSet):
         mode = self.mode
 
         plant = self.request.query_params.get('plant', 'all')
-        year = int(self.request.query_params.get('year', str(datetime.now().year)).replace(',', ''))
+        year = int(self.request.query_params.get('year', str(timezone.localtime().year)).replace(',', ''))
 
         if plant == 'all':
             label_list = list(Plant.objects.all().values_list('plant_id', flat=True))
@@ -1316,8 +1316,8 @@ class ReportDailyProduceView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         plant = self.request.GET.get('plant', 'all')
-        month = int(self.request.GET.get('month', datetime.now().month))
-        year = int(self.request.GET.get('year', datetime.now().year))
+        month = int(self.request.GET.get('month', timezone.localtime().month))
+        year = int(self.request.GET.get('year', timezone.localtime().year))
 
         form_data = {
             'plant': plant,
@@ -1355,8 +1355,8 @@ class ReportDailyProduceViewSet(viewsets.ReadOnlyModelViewSet):
         mode = self.mode
 
         plant = self.request.query_params.get('plant', 'all')
-        month = int(self.request.query_params.get('month', datetime.now().month))
-        year = int(self.request.query_params.get('year', str(datetime.now().year)).replace(',', ''))
+        month = int(self.request.query_params.get('month', timezone.localtime().month))
+        year = int(self.request.query_params.get('year', str(timezone.localtime().year)).replace(',', ''))
 
         if plant == 'all':
             label_list = list(Plant.objects.all().values_list('plant_id', flat=True))
