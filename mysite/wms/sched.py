@@ -929,7 +929,10 @@ def update_product_db():
 
                 qs_avail_inventory = Storage.objects.filter(inv_product=obj.product_name, storage_for=obj.product_name).exclude(storage_id__in=AgvQueue.objects.filter(mode=2).values('pick_id'))
                 condition_misplace = ~Q(inv_product=obj.product_name) & Q(storage_for=obj.product_name) & Q(have_inventory=True)
-                age_criteria = Setting.objects.get(id=1).age_criteria if Setting.objects.filter(id=1).exists() else 0
+                try:
+                    age_criteria = Setting.objects.get(id=1).age_criteria if Setting.objects.filter(id=1).exists() else 0
+                except:
+                    age_criteria = 0
                 condition_new = Q(have_inventory=True) & Q(created_on__gte=timezone.now() - timezone.timedelta(days=age_criteria))
                 qs_exclude = Storage.objects.filter(condition_misplace | condition_new)
                 for column_id in qs_exclude.order_by().distinct().values_list('column_id', flat=True):
