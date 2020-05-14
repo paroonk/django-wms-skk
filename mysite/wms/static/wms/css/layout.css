@@ -42,11 +42,11 @@
     animation-iteration-count: infinite;
 }
 .age-nok {
-    border: 0.2vh solid red;
+    border: 0.2vh solid darkred;
 }
-.age-ok {
+/* .age-ok {
     border: 0.2vh solid green;
-}
+} */
 .runway {
     height: 3vh;
 }

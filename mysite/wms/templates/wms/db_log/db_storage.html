@@ -2,10 +2,9 @@
 {% load static i18n custom_tags widget_tweaks %}
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/dataTables.bootstrap4.min.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/buttons.bootstrap4.min.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db&log.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db_log/db_storage.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'datatables/css/datatables.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db_log.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/db_log/db_product.css' %}">
 {% endblock %}
 
 {% block title %}{% trans 'Storage Database' %}{% endblock %}
@@ -13,15 +12,14 @@
 {% block body %}
 <section class="content-header p-2">
     <div class="d-sm-flex justify-content-center">
-        <p class="font-weight-bold my-0">{% trans 'Storage Database' %} {% if view.kwargs.type != 'all' %}<small>({{ view.kwargs.type }}){% endif %}</small></p>
+        <p class="font-weight-bold my-0">{% trans 'Storage Database' %}{% if view.kwargs.type != 'all' %}<small> ({{ view.kwargs.type }})</small>{% endif %}</p>
     </div>
 </section>
 
 <section class="content">
     <div class="card shadow">
         <div class="card-body">
-            <table id="datatable" class="table" style="width:100%" data-server-side="true"
-                   data-ajax="{% url 'wms:storage-list' type %}?format=datatables">
+            <table id="datatable" class="table" style="width:100%" data-server-side="true" data-ajax="{% url 'wms:storage-list' type %}?format=datatables">
                 <thead>
                     <tr>
                         {% for data, name, class_name in fields %}
@@ -37,15 +35,7 @@
 {% endblock %}
 
 {% block javascript %}
-
-<script type="text/javascript" src="{% static 'datatables/js/jszip.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/jquery.dataTables.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/dataTables.bootstrap4.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/dataTables.buttons.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/buttons.bootstrap4.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/buttons.colVis.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/buttons.html5.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'datatables/js/buttons.print.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'datatables/js/datatables.min.js' %}"></script>
 
 <script type="text/javascript">
     $(document).ready(function() {
@@ -56,15 +46,16 @@
                 { extend: 'excelHtml5', text: '<span class="fas fa-file-excel" data-toggle="tooltip" title="Export Excel"></span>' },
                 { extend: 'print', text: '<span class="fas fa-print" data-toggle="tooltip" title="Print"></span>' }
             ],
-            order: [[1, 'asc']],
+            order: [[0, 'asc']],
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
             searching: true,
             processing: true,
-            stateSave: true,
+            rowGroup: {
+                dataSrc: ['storage_for']
+            }
         })
 
         $('[data-toggle="tooltip"]').tooltip()
     })
 </script>
-
 {% endblock %}

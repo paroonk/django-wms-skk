@@ -13,7 +13,7 @@ $(document).ready(function () {
                     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, textStyle: { fontSize: 12 } },
                     legend: { data: lebel_legendList },
                     xAxis: { data: response.product_name, axisLabel: { fontSize: 9, rotate: 25 } },
-                    yAxis: { type: 'value', min: null, max: null, axisLabel: { formatter: '{value} Bags' } },
+                    yAxis: { type: 'value', min: null, max: null, axisLabel: { formatter: '{value}' + unit[$('input:radio[name="overview_value_type"]:checked').val()] } },
                     color: ['#003366', 'purple', 'red', 'silver'],
                     series: [
                         { name: lebel_legendList[0], type: 'bar', stack: 'component', data: response.qty_inventory },
@@ -40,7 +40,7 @@ $(document).ready(function () {
         type: 'GET',
         success: function (response) {
             Option = {
-                tooltip: { trigger: 'item', formatter: '{b}<br/>{c} ({d}%)', textStyle: { fontSize: 12 } },
+                tooltip: { trigger: 'item', formatter: '{b}:<br>{c} ({d}%)', textStyle: { fontSize: 12 } },
                 series: [{
                     name: 'Inventory', type: 'pie', radius: ['0%', '80%'], center: ['50%', '50%'],
                     data: response.qty_inventory, itemStyle: { emphasis: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' } }

@@ -19,7 +19,7 @@
     <div class="card shadow">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="layout" id="layout-table">
+                <table id="layout-table" class="layout">
                     <thead>
                         <tr>
                             <th class="headerFooter font-weight-bold"></th>
@@ -27,7 +27,7 @@
                             <th class="headerFooter font-weight-bold"></th>
                             <th class="headerFooter font-weight-bold"></th>
                             <th class="headerFooter font-weight-bold"></th>
-                            <th class="headerFooter font-weight-bold" colspan="46">B</th>
+                            <th class="headerFooter font-weight-bold" colspan="44">B</th>
                         </tr>
                         <tr>
                             <th class="headerFooter font-weight-normal"></th>
@@ -81,18 +81,18 @@
                                 {% else %}
                                     {% if col == 9 and row >= 5 and row <= 6 %}
                                         {% if col == 9 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #2</td>
+                                        <td class="storage robot" rowspan="2">Ro bot #2</td>
                                         {% endif %}
                                     {% elif col == 12 and row >= 5 and row <= 6 %}
                                         {% if col == 12 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
+                                        <td class="storage robot" rowspan="2">Ro bot #1</td>
                                         {% endif %}
                                     {% comment %} {% elif col == 15 and row >= 5 and row <= 6 %}
                                         {% if col == 15 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #3</td>
+                                        <td class="storage robot" rowspan="2">Ro bot #3</td>
                                         {% endif %} {% endcomment %}
                                     {% else %}
-                                        <td class="storage noBorder {% if row >= 8 and row <= 10 %}runway{% endif %}"></td>
+                                        <td class="storage noBorder{% if row >= 8 and row <= 10 %} runway{% endif %}"></td>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -121,7 +121,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="modal-id" role="dialog" tabindex="-1">
+    <div id="modal-id" class="modal fade" role="dialog" tabindex="-1">
         <div class="modal-dialog" role="document">
             <div class="modal-content"></div>
         </div>
@@ -130,6 +130,7 @@
 {% endblock %}
 
 {% block javascript %}
+<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 
 <script type="text/javascript">
     var str_submit = "{% trans 'Submit' %}"
@@ -145,7 +146,5 @@
     }
 </script>
 
-<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/layout_age.js' %}"></script>
-
 {% endblock %}

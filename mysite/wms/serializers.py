@@ -89,6 +89,14 @@ class AgvQueueSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field in ['plant']:
+            if not data[field]:
+                data[field] = ''
+        return data
+
     class Meta:
         model = Product
         fields = ['product_name', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
@@ -149,3 +157,8 @@ class AgvTransferHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = AgvTransfer.history.model
         fields = ['history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']
+
+
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report

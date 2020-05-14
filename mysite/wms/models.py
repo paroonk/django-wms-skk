@@ -1,3 +1,5 @@
+import calendar
+
 from computedfields.models import ComputedFieldsModel, computed
 from dirtyfields import DirtyFieldsMixin
 from django.db import models
@@ -347,6 +349,15 @@ class AgvTransfer(DirtyFieldsMixin, ComputedFieldsModel):
     )
     FIELDS_TO_CHECK = ['wdt_plc_ok']
 
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        print('test', *args)
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
+
     def __str__(self):
         return '{}'.format(self.id)
 
@@ -356,3 +367,21 @@ class AgvTransfer(DirtyFieldsMixin, ComputedFieldsModel):
 
 class Setting(ComputedFieldsModel):
     age_criteria = models.PositiveSmallIntegerField(default=7)
+
+
+class Report(ComputedFieldsModel):
+    year =  models.PositiveSmallIntegerField()
+    month_choices = [(i, _(str(calendar.month_name[i]))) for i in range(1,13)]
+    month = models.PositiveSmallIntegerField(choices=month_choices)
+    day_choices = [(i, str(i)) for i in range(1, 32)]
+    day = models.PositiveSmallIntegerField(choices=day_choices)
+    shift_choices = [(i, str(i)) for i in range(1, 4)]
+    shift = models.PositiveSmallIntegerField(choices=shift_choices)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name=_('Product Name'))
+    qty_produce = models.IntegerField(blank=True, null=True, default=0)
+    qty_sale = models.IntegerField(blank=True, null=True, default=0)
+    qty_nonmove = models.IntegerField(blank=True, null=True, default=0)
+
+
+    def __str__(self):
+        return '{}-{}-{} Shift#{} {}'.format(self.year, self.month, self.day, self.shift, self.product.product_name)

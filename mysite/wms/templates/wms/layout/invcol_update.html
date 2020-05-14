@@ -1,11 +1,11 @@
 {% load static i18n widget_tweaks %}
 
-<form method="post" action="{% url 'wms:invcol_update' form.column_id.value %}" class="js-invcol-update" novalidate>
+<form class="js-invcol-update" method="post" action="{% url 'wms:invcol_update' form.column_id.value %}" novalidate>
     {% csrf_token %}
 
     <div class="modal-header">
         <h1 class="modal-title">{% trans 'Update Inventory' %} | {{ form.column_id.value }}</h1>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
@@ -32,9 +32,11 @@
         </div>
         {% endfor %}
     </div>
+
     <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Close' %}</button>
-        <a href="{% url 'wms:invcol_delete' form.column_id.value %}" role="button" class="btn btn-danger">{% trans 'Delete' %}</a>
-        <button type="submit" class="btn btn-primary">{% trans 'Update' %}</button>
+        <button class="btn btn-default" type="button" data-dismiss="modal">{% trans 'Close' %}</button>
+        <a class="btn btn-danger" href="{% url 'wms:invcol_delete' form.column_id.value %}" role="button">{% trans 'Delete' %}</a>
+        <button class="btn btn-primary" type="submit">{% trans 'Update' %}</button>
     </div>
+
 </form>

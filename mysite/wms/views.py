@@ -1,4 +1,5 @@
 from datetime import datetime
+from itertools import chain
 
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
@@ -8,6 +9,7 @@ from django.shortcuts import get_list_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
+from django_pandas.io import read_frame
 from drf_multiple_model.pagination import MultipleModelLimitOffsetPagination
 from drf_multiple_model.views import ObjectMultipleModelAPIView
 from rest_framework import viewsets
@@ -41,19 +43,20 @@ class DashboardView(generic.TemplateView):
     template_name = 'wms/dashboard.html'
 
     def get_context_data(self, **kwargs):
-        in_stock_status = '{:}'.format(
-            Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] if Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] is not None else 0
-        )
+        in_stock = Storage.objects.filter(have_inventory=True).aggregate(models.Sum('inv_qty'))['inv_qty__sum']
+        in_stock_status = '{:}'.format(in_stock if in_stock is not None else 0)
         in_stock_pct = '{:.0%}'.format(Storage.objects.filter(have_inventory=True).count() / Storage.objects.all().count() if Storage.objects.all() else 0)
-        agv_run = AgvTransfer.objects.filter(run=1).count()
+        agv_run = AgvTransfer.objects.filter(run=1, pause=0).count()
         agv_total = AgvTransfer.objects.all().count()
 
+        plant_list = list(Product.objects.select_related('plant').exclude(plant__plant_id__isnull=True).order_by('plant_id').distinct().values_list('plant', flat=True))
+
         # For Overview Graph
-        overview_plant_list = list(enumerate([_('All')] + list(Product.objects.select_related('plant').order_by('plant_id').distinct().values_list('plant', flat=True))))
+        overview_plant_list = list(enumerate([_('All')] + plant_list))
 
         # For Usage Graph
         qty_inventory_plant = []
-        usage_plant_list = list(enumerate(list(Product.objects.order_by('plant_id').distinct().values_list('plant', flat=True))))
+        usage_plant_list = list(enumerate(plant_list))
         for i, plant in usage_plant_list:
             qty_inventory_plant.append(Storage.objects.filter(column_id__is_inventory=True, column_id__for_product__plant__plant_id=plant).aggregate(models.Sum('inv_qty'))['inv_qty__sum'])
             if qty_inventory_plant[-1] == None:
@@ -127,9 +130,8 @@ def layout_map(obj_storage, debug=False, age=False):
         if i in [1, 2, 3, 4, 33, 34]:
             col_label = ''
             headers.append(col_label)
-        elif i <= 50:
-            # col_label = 'B{:02d}'.format(50 - i if i < 32 else 50 - i)
-            col_label = 'B{:02d}'.format(49 - i if i < 33 else 51 - i)
+        elif i < 49:
+            col_label = 'B{:02d}'.format(47 - i if i < 33 else 49 - i)
             headers.append(col_label)
 
         col_label = 'A{:02d}'.format(77 - i)
@@ -606,29 +608,26 @@ class ServerLogView(generic.TemplateView):
             context['log'] = log
         return context
 
+
 ######################################################################################################################################################
 # @method_decorator(login_required, name='dispatch')
 class HistoryGraphView(generic.TemplateView):
     template_name = 'wms/historygraph.html'
 
     def get_context_data(self, **kwargs):
-        dt_stop = datetime.now()
+        dt_stop = timezone.localtime()
         dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         dt_format = '%d/%m/%y %H:%M'
-        form_data = {
-            'label': 'all',
-            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
-            'data': 25,
-        }
 
-        form_data['label'] = self.request.GET.get('label')
-        date_filter = self.request.GET.get('date_filter')
-        if date_filter:
-            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
-            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
-        data = self.request.GET.get('data')
-        if data:
-            form_data['data'] = int(data)
+        label = self.request.GET.get('label', 'all')
+        date_filter = self.request.GET.get('date_filter', '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)))
+        data = int(self.request.GET.get('data', 25))
+
+        form_data = {
+            'label': label,
+            'date_filter': date_filter,
+            'data': data,
+        }
 
         context = super().get_context_data(**kwargs)
         context['form'] = HistoryGraphForm(initial=form_data)
@@ -666,157 +665,75 @@ class StorageView(generic.TemplateView):
 # @method_decorator(login_required, name='dispatch')
 class ProductHistoryView(generic.TemplateView):
     template_name = 'wms/db_log/log_product.html'
+    data = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+    name = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+    class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right']
+    instance = Product.history.model
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        data = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
-        name = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
-        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right', 'text-right']
+        data = self.data
+        name = self.name
+        class_name = self.class_name
+        instance = self.instance
 
-        dt_stop = datetime.now()
+        dt_stop = timezone.localtime()
         dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         dt_format = '%d/%m/%y %H:%M'
+        date_filter = self.request.GET.get('date_filter', '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)))
+
         form_data = {
-            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
+            'date_filter': date_filter,
         }
-        date_filter = self.request.GET.get('date_filter', None)
-        if date_filter:
-            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
-            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
 
         context['form'] = LogFilterForm(initial=form_data)
-        context.update({'instance': Product.history.model, 'fields': zip(data, name, class_name)})
+        context.update({'instance': instance, 'fields': zip(data, name, class_name)})
         return context
 
 
 # @method_decorator(login_required, name='dispatch')
-class StorageHistoryView(generic.TemplateView):
+class StorageHistoryView(ProductHistoryView):
     template_name = 'wms/db_log/log_storage.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        data = ['history_date', 'history_type', 'history_change_reason', 'storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty']
-        name = ['history_date', 'history_type', 'history_change_reason', 'storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product.product_name', 'inv_qty']
-        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-center', 'text-left', 'text-center', 'text-left', 'text-right']
-
-        dt_stop = datetime.now()
-        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        dt_format = '%d/%m/%y %H:%M'
-        form_data = {
-            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
-        }
-        date_filter = self.request.GET.get('date_filter', None)
-        if date_filter:
-            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
-            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
-
-        context['form'] = LogFilterForm(initial=form_data)
-        context.update({'instance': Storage.history.model, 'fields': zip(data, name, class_name)})
-        return context
+    data = ['history_date', 'history_type', 'history_change_reason', 'storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty']
+    name = ['history_date', 'history_type', 'history_change_reason', 'storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product.product_name', 'inv_qty']
+    class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-center', 'text-left', 'text-center', 'text-left', 'text-right']
+    instance = Storage.history.model
 
 
 # @method_decorator(login_required, name='dispatch')
-class AgvProductionPlanHistoryView(generic.TemplateView):
+class AgvProductionPlanHistoryView(ProductHistoryView):
     template_name = 'wms/db_log/log_agvproductionplan.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        data = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'qty_total', 'qty_remain', 'lot_name']
-        name = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name.product_name', 'qty_total', 'qty_remain', 'lot_name']
-        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-right', 'text-left']
-
-        dt_stop = datetime.now()
-        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        dt_format = '%d/%m/%y %H:%M'
-        form_data = {
-            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
-        }
-        date_filter = self.request.GET.get('date_filter', None)
-        if date_filter:
-            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
-            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
-
-        context['form'] = LogFilterForm(initial=form_data)
-        context.update({'instance': AgvProductionPlan.history.model, 'fields': zip(data, name, class_name)})
-        return context
+    data = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'qty_total', 'qty_remain', 'lot_name']
+    name = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name.product_name', 'qty_total', 'qty_remain', 'lot_name']
+    class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-right', 'text-left']
+    instance = AgvProductionPlan.history.model
 
 
 # @method_decorator(login_required, name='dispatch')
-class RobotQueueHistoryView(generic.TemplateView):
+class RobotQueueHistoryView(ProductHistoryView):
     template_name = 'wms/db_log/log_robotqueue.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        data = ['history_date', 'history_type', 'history_change_reason', 'id', 'robot_no', 'product_id', 'qty_act']
-        name = ['history_date', 'history_type', 'history_change_reason', 'id', 'robot_no', 'product_id', 'qty_act']
-        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right']
-
-        dt_stop = datetime.now()
-        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        dt_format = '%d/%m/%y %H:%M'
-        form_data = {
-            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
-        }
-        date_filter = self.request.GET.get('date_filter', None)
-        if date_filter:
-            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
-            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
-
-        context['form'] = LogFilterForm(initial=form_data)
-        context.update({'instance': RobotQueue.history.model, 'fields': zip(data, name, class_name)})
-        return context
+    data = ['history_date', 'history_type', 'history_change_reason', 'id', 'robot_no', 'product_id', 'qty_act']
+    name = ['history_date', 'history_type', 'history_change_reason', 'id', 'robot_no', 'product_id', 'qty_act']
+    class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right']
+    instance = RobotQueue.history.model
 
 
 # @method_decorator(login_required, name='dispatch')
-class AgvQueueHistoryView(generic.TemplateView):
+class AgvQueueHistoryView(ProductHistoryView):
     template_name = 'wms/db_log/log_agvqueue.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        data = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
-        name = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name.product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id.storage_id', 'place_id.storage_id', 'mode']
-        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center']
-
-        dt_stop = datetime.now()
-        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        dt_format = '%d/%m/%y %H:%M'
-        form_data = {
-            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
-        }
-        date_filter = self.request.GET.get('date_filter', None)
-        if date_filter:
-            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
-            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
-
-        context['form'] = LogFilterForm(initial=form_data)
-        context.update({'instance': AgvQueue.history.model, 'fields': zip(data, name, class_name)})
-        return context
+    data = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
+    name = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name.product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id.storage_id', 'place_id.storage_id', 'mode']
+    class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-right', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center']
+    instance = AgvQueue.history.model
 
 
 # @method_decorator(login_required, name='dispatch')
-class AgvTransferHistoryView(generic.TemplateView):
+class AgvTransferHistoryView(ProductHistoryView):
     template_name = 'wms/db_log/log_agvtransfer.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        data = ['history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']
-        name = ['history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']
-        class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center', 'text-left', 'text-left']
-
-        dt_stop = datetime.now()
-        dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        dt_format = '%d/%m/%y %H:%M'
-        form_data = {
-            'date_filter': '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format)),
-        }
-        date_filter = self.request.GET.get('date_filter', None)
-        if date_filter:
-            dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
-            form_data['date_filter'] = '{} - {}'.format(dt_start.strftime(dt_format), dt_stop.strftime(dt_format))
-
-        context['form'] = LogFilterForm(initial=form_data)
-        context.update({'instance': AgvTransfer.history.model, 'fields': zip(data, name, class_name)})
-        return context
+    data = ['history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']
+    name = ['history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']
+    class_name = ['text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-left', 'text-center', 'text-left', 'text-left']
+    instance = AgvTransfer.history.model
 
 
 ######################################################################################################################################################
@@ -987,6 +904,11 @@ def agvtransfer_update(request, pk):
         form = AgvTransferForm(request.POST, instance=obj)
         if form.is_valid():
             obj = form.save(commit=False)
+            agv_col = request.POST.get('agv_col', None)
+            agv_row = request.POST.get('agv_row', None)
+            obj_coor = get_object_or_404(Coordinate, layout_col=agv_col, layout_row=agv_row)
+            obj.x_nav = obj_coor.coor_x
+            obj.y_nav = obj_coor.coor_y
             obj.changeReason = 'Manual Update AGV Transfer'
             obj.save()
             data['form_is_valid'] = True
@@ -1052,13 +974,13 @@ class StorageViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = StorageSerializer
 
     def get_queryset(self):
-        type = self.kwargs['type']
-        if type == 'all':
+        _type = self.kwargs['type']
+        if _type == 'all':
             queryset = self.queryset
-        elif type in list(Product.objects.all().values_list('product_name', flat=True)):
-            queryset = self.queryset.filter(have_inventory=True, inv_product__product_name=type)
-        elif type in list(Plant.objects.all().values_list('plant_id', flat=True)):
-            queryset = self.queryset.filter(have_inventory=True, inv_product__plant=type)
+        elif _type in list(Product.objects.all().values_list('product_name', flat=True)):
+            queryset = self.queryset.filter(have_inventory=True, inv_product__product_name=_type)
+        elif _type in list(Plant.objects.all().values_list('plant_id', flat=True)):
+            queryset = self.queryset.filter(have_inventory=True, inv_product__plant=_type)
         else:
             queryset = self.queryset.none()
         return queryset
@@ -1079,60 +1001,24 @@ class ProductHistoryViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
-class StorageHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+class StorageHistoryViewSet(ProductHistoryViewSet):
     queryset = Storage.history.all()
     serializer_class = StorageHistorySerializer
 
-    def get_queryset(self):
-        queryset = self.queryset
-        date_filter = self.request.query_params.get('date_filter', None)
-        dt_format = '%d/%m/%y %H:%M'
-        if date_filter:
-            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
-            queryset = queryset.filter(history_date__range=date_range)
-        return queryset
 
-
-class AgvProductionPlanHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+class AgvProductionPlanHistoryViewSet(ProductHistoryViewSet):
     queryset = AgvProductionPlan.history.all()
     serializer_class = AgvProductionPlanHistorySerializer
 
-    def get_queryset(self):
-        queryset = self.queryset
-        date_filter = self.request.query_params.get('date_filter', None)
-        dt_format = '%d/%m/%y %H:%M'
-        if date_filter:
-            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
-            queryset = queryset.filter(history_date__range=date_range)
-        return queryset
 
-
-class RobotQueueHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+class RobotQueueHistoryViewSet(ProductHistoryViewSet):
     queryset = RobotQueue.history.all()
     serializer_class = RobotQueueHistorySerializer
 
-    def get_queryset(self):
-        queryset = self.queryset
-        date_filter = self.request.query_params.get('date_filter', None)
-        dt_format = '%d/%m/%y %H:%M'
-        if date_filter:
-            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
-            queryset = queryset.filter(history_date__range=date_range)
-        return queryset
 
-
-class AgvQueueHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+class AgvQueueHistoryViewSet(ProductHistoryViewSet):
     queryset = AgvQueue.history.all()
     serializer_class = AgvQueueHistorySerializer
-
-    def get_queryset(self):
-        queryset = self.queryset
-        date_filter = self.request.query_params.get('date_filter', None)
-        dt_format = '%d/%m/%y %H:%M'
-        if date_filter:
-            date_range = [timezone.make_aware(datetime.strptime(dt, dt_format)) for dt in date_filter.split(' - ')]
-            queryset = queryset.filter(history_date__range=date_range)
-        return queryset
 
 
 class AgvTransferHistoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1140,8 +1026,8 @@ class AgvTransferHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AgvTransferHistorySerializer
 
     def get_queryset(self):
-        id = self.kwargs['id']
-        queryset = self.queryset.filter(id=id)
+        _id = self.kwargs['id']
+        queryset = self.queryset.filter(id=_id)
 
         date_filter = self.request.query_params.get('date_filter', None)
         dt_format = '%d/%m/%y %H:%M'
@@ -1153,7 +1039,7 @@ class AgvTransferHistoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 ######################################################################################################################################################
 class OverviewGraphViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related('plant').exclude(plant__plant_id__isnull=True)
 
     def get_queryset(self):
         queryset = self.queryset
@@ -1166,13 +1052,15 @@ class OverviewGraphViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         plant_id = self.request.query_params.get('plant_id', _('All'))
         value_type = int(self.request.query_params.get('value_type', 0))
-        product_name = list(queryset.values_list('product_name', flat=True))
-        product_color = list(queryset.values_list('bg_color', flat=True))
-        qty_inventory = list(queryset.values_list('qty_inventory', flat=True))
-        qty_buffer = list(queryset.values_list('qty_buffer', flat=True))
-        qty_misplace = list(queryset.values_list('qty_misplace', flat=True))
-        qty_storage = list(queryset.values_list('qty_storage', flat=True))
-        qty_total = list(queryset.values_list('qty_total', flat=True))
+
+        df_product = read_frame(queryset, verbose=False)
+        product_name = df_product['product_name'].tolist()
+        product_color = df_product['bg_color'].tolist()
+        qty_inventory = df_product['qty_inventory'].tolist()
+        qty_buffer = df_product['qty_buffer'].tolist()
+        qty_misplace = df_product['qty_misplace'].tolist()
+        qty_storage = df_product['qty_storage'].tolist()
+        qty_total = df_product['qty_total'].tolist()
 
         if value_type == 0:
             qty_inventory = qty_inventory
@@ -1204,7 +1092,7 @@ class UsageGraphViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
 
-        plant_list = list(Product.objects.order_by('plant_id').distinct().values_list('plant', flat=True))
+        plant_list = list(Product.objects.select_related('plant').exclude(plant__plant_id__isnull=True).order_by('plant_id').distinct().values_list('plant', flat=True))
         qty_inventory = [queryset.filter(column_id__is_inventory=True, column_id__for_product__plant__plant_id=plant).aggregate(models.Sum('inv_qty'))['inv_qty__sum'] for plant in plant_list]
 
         data = {
@@ -1228,7 +1116,7 @@ class HistoryGraphViewSet(viewsets.ReadOnlyModelViewSet):
         if date_filter:
             dt_start, dt_stop = [datetime.strptime(dt, dt_format) for dt in date_filter.split(' - ')]
         else:
-            dt_stop = datetime.now()
+            dt_stop = timezone.localtime()
             dt_start = dt_stop.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         dt_list = pd.date_range(dt_start, dt_stop, periods=data).to_list()
         dt_list = [timezone.make_aware(dt) for dt in dt_list]
@@ -1249,15 +1137,254 @@ class HistoryGraphViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             plant = label
             product_list = list(get_object_or_404(Plant, plant_id=plant).product_set.all().values_list('product_name', flat=True))
-            label_list = product_list
+            label_list = product_list + [plant]
             for product in product_list:
                 for dt in dt_list:
                     condition = Q(history_date__lte=dt, product_name=product)
                     df_qty.loc[dt, product] = Product.history.filter(condition).order_by('-history_date').first().qty_total if Product.history.filter(condition).exists() else 0
-                df_qty[product] = df_qty.loc[:, product_list].sum(axis=1)
+            df_qty[plant] = df_qty.sum(axis=1)
 
         dt = [timezone.localtime(dt).strftime(dt_format) for dt in dt_list]
         qty = {'{}'.format(product): df_qty[product].to_list() for product in label_list}
 
         data = {'label_list': label_list, 'dt': dt, 'qty': qty}
         return Response(data)
+
+
+######################################################################################################################################################
+class ReportStockDataView(generic.TemplateView):
+    template_name = 'wms/report/report_stockdata.html'
+
+    def get_context_data(self, **kwargs):
+        by = self.request.GET.get('by', 'product')
+        month = int(self.request.GET.get('month', timezone.localtime().month))
+        year = int(self.request.GET.get('year', timezone.localtime().year))
+
+        form_data = {
+            'by': by,
+            'month': month,
+            'year': year,
+        }
+
+        data = ['plant', 'qty_storage', 'qty_total', 'qty_produce', 'qty_sale']
+        name = [_('Plant'), _('Storage Qty'), _('Ending Stock'), _('Production/Month'), _('Sales/Month')]
+
+        if by == 'product':
+            data = ['product_name'] + data
+            name = [_('Product Name')] + name
+            class_name = ['text-left'] * 2 + ['text-right'] * 4
+            width = [20] * 6
+        else:
+            class_name = ['text-left'] + ['text-right'] * 4
+            width = [20] * 5
+
+        context = super().get_context_data(**kwargs)
+        context['form'] = ReportStockDataForm(initial=form_data)
+        context.update({'fields': zip(data, name, class_name, width)})
+        return context
+
+
+class ReportStockDataViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Report.objects.none()
+    serializer_class = ReportSerializer
+
+    def list(self, request):
+        queryset = self.get_queryset()
+
+        by = self.request.query_params.get('by', 'product')
+        month = int(self.request.query_params.get('month', timezone.localtime().month))
+        year = int(self.request.query_params.get('year', str(timezone.localtime().year)).replace(',', ''))
+
+        if by == 'product':
+            label_list = list(Product.objects.all().values_list('product_name', flat=True))
+        else:
+            label_list = list(Plant.objects.all().values_list('plant_id', flat=True))
+        
+        data = []
+        for label in label_list:
+            if by == 'product':
+                qs_product = Product.objects.filter(product_name=label)
+                plant = qs_product.first().plant.plant_id if qs_product.filter(plant__isnull=False).exists() else ''
+                qty_storage = qs_product.aggregate(models.Sum('qty_storage'))['qty_storage__sum']
+                qty_total = qs_product.aggregate(models.Sum('qty_total'))['qty_total__sum']
+                
+                qs_report = Report.objects.filter(year=year, month=month, product__product_name=label)
+                qty_produce = qs_report.aggregate(models.Sum('qty_produce'))['qty_produce__sum'] if qs_report.exists() else 0
+                qty_sale = qs_report.aggregate(models.Sum('qty_sale'))['qty_sale__sum'] if qs_report.exists() else 0
+            else:
+                qs_product = get_object_or_404(Plant, plant_id=label).product_set.all()
+                qty_storage = qs_product.aggregate(models.Sum('qty_storage'))['qty_storage__sum']
+                qty_total = qs_product.aggregate(models.Sum('qty_total'))['qty_total__sum']
+
+                qs_report = Report.objects.filter(year=year, month=month, product__plant__plant_id=label)
+                qty_produce = qs_report.aggregate(models.Sum('qty_produce'))['qty_produce__sum'] if qs_report.exists() else 0
+                qty_sale = qs_report.aggregate(models.Sum('qty_sale'))['qty_sale__sum'] if qs_report.exists() else 0
+
+            table_data = {'product_name': label, 'plant': plant} if by == 'product' else {'plant': label}
+            table_data.update({
+                'qty_storage': qty_storage,
+                'qty_total': qty_total,
+                'qty_produce': qty_produce,
+                'qty_sale': qty_sale,
+            })
+            data.append(table_data)
+
+        return Response(data)
+
+
+######################################################################################################################################################
+class ReportMonthlyProduceView(generic.TemplateView):
+    template_name = 'wms/report/report_m_produce.html'
+
+    def get_context_data(self, **kwargs):
+        plant = self.request.GET.get('plant', 'all')
+        year = int(self.request.GET.get('year', str(timezone.localtime().year)).replace(',', ''))
+
+        form_data = {
+            'plant': plant,
+            'year': year,
+        }
+
+        if plant == 'all':
+            label_list = [plant.replace('.', ',') for plant in list(Plant.objects.all().values_list('plant_id', flat=True))]
+        else:
+            label_list = [product.replace('.', ',') for product in list(get_object_or_404(Plant, plant_id=plant).product_set.all().values_list('product_name', flat=True))]
+
+        data = ['month'] + label_list + ['sum']
+        name = [_('Month')] + label_list + [_('Sum')]
+        class_name = ['text-left'] + ['text-right'] * (len(label_list) + 1)
+        width = [5] + [math.floor(95 / (len(label_list) + 1))] * (len(label_list) + 1)
+
+        context = super().get_context_data(**kwargs)
+        context['form'] = ReportMonthlyForm(initial=form_data)
+        context.update({'fields': zip(data, name, class_name, width)})
+        return context
+
+
+class ReportMonthlySaleView(ReportMonthlyProduceView):
+    template_name = 'wms/report/report_m_sale.html'
+
+
+class ReportMonthlyProduceViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Report.objects.none()
+    serializer_class = ReportSerializer
+    mode = 'produce'
+
+    def list(self, request):
+        queryset = self.get_queryset()
+        mode = self.mode
+
+        plant = self.request.query_params.get('plant', 'all')
+        year = int(self.request.query_params.get('year', str(timezone.localtime().year)).replace(',', ''))
+
+        if plant == 'all':
+            label_list = list(Plant.objects.all().values_list('plant_id', flat=True))
+        else:
+            label_list = list(get_object_or_404(Plant, plant_id=plant).product_set.all().values_list('product_name', flat=True))
+
+        data = []
+        for month in range(1, 13):
+            table_data = {'month': '{} {}'.format(calendar.month_abbr[month], str(year))}
+            if plant == 'all':
+                for plant_id in label_list:
+                    name = plant_id.replace('.', ',')
+                    qs_report = Report.objects.filter(year=year, month=month, product__plant__plant_id=plant_id)
+                    value = qs_report.aggregate(models.Sum('qty_{}'.format(mode)))['qty_{}__sum'.format(mode)] if qs_report.exists() else 0
+                    table_data.update({name: value})
+            else:
+                for product_name in label_list:
+                    name = product_name.replace('.', ',')
+                    qs_report = Report.objects.filter(year=year, month=month, product__product_name=product_name)
+                    value = qs_report.aggregate(models.Sum('qty_{}'.format(mode)))['qty_{}__sum'.format(mode)] if qs_report.exists() else 0
+                    table_data.update({name: value})
+
+            table_data.update({'sum': sum([table_data[label] for label in label_list])})
+            data.append(table_data)
+
+        return Response(data)
+
+
+class ReportMonthlySaleViewSet(ReportMonthlyProduceViewSet):
+    queryset = Report.objects.none()
+    serializer_class = ReportSerializer
+    mode = 'sale'
+
+
+######################################################################################################################################################
+class ReportDailyProduceView(generic.TemplateView):
+    template_name = 'wms/report/report_d_produce.html'
+
+    def get_context_data(self, **kwargs):
+        plant = self.request.GET.get('plant', 'all')
+        month = int(self.request.GET.get('month', timezone.localtime().month))
+        year = int(self.request.GET.get('year', timezone.localtime().year))
+
+        form_data = {
+            'plant': plant,
+            'month': month,
+            'year': year,
+        }
+
+        if plant == 'all':
+            label_list = [plant.replace('.', ',') for plant in list(Plant.objects.all().values_list('plant_id', flat=True))]
+        else:
+            label_list = [product.replace('.', ',') for product in list(get_object_or_404(Plant, plant_id=plant).product_set.all().values_list('product_name', flat=True))]
+
+        data = ['day'] + label_list + ['sum']
+        name = [_('Date')] + label_list + [_('Sum')]
+        class_name = ['text-left'] + ['text-right'] * (len(label_list) + 1)
+        width = [5] + [math.floor(95 / (len(label_list) + 1))] * (len(label_list) + 1)
+
+        context = super().get_context_data(**kwargs)
+        context['form'] = ReportDailyForm(initial=form_data)
+        context.update({'fields': zip(data, name, class_name, width)})
+        return context
+
+
+class ReportDailySaleView(ReportDailyProduceView):
+    template_name = 'wms/report/report_d_sale.html'
+
+
+class ReportDailyProduceViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Report.objects.none()
+    serializer_class = ReportSerializer
+    mode = 'produce'
+
+    def list(self, request):
+        queryset = self.get_queryset()
+        mode = self.mode
+
+        plant = self.request.query_params.get('plant', 'all')
+        month = int(self.request.query_params.get('month', timezone.localtime().month))
+        year = int(self.request.query_params.get('year', str(timezone.localtime().year)).replace(',', ''))
+
+        if plant == 'all':
+            label_list = list(Plant.objects.all().values_list('plant_id', flat=True))
+        else:
+            label_list = list(get_object_or_404(Plant, plant_id=plant).product_set.all().values_list('product_name', flat=True))
+
+        data = []
+        for day in range(1, calendar.monthrange(year, month)[1] + 1):
+            table_data = {'day': '{:02d}/{:02d}/{}'.format(day, month, str(year)[-2:])}
+            if plant == 'all':
+                for plant_id in label_list:
+                    name = plant_id.replace('.', ',')
+                    qs_report = Report.objects.filter(year=year, month=month, day=day, product__plant__plant_id=plant_id)
+                    value = qs_report.aggregate(models.Sum('qty_{}'.format(mode)))['qty_{}__sum'.format(mode)] if qs_report.exists() else 0
+                    table_data.update({name: value})
+            else:
+                for product_name in label_list:
+                    name = product_name.replace('.', ',')
+                    qs_report = Report.objects.filter(year=year, month=month, day=day, product__product_name=product_name)
+                    value = qs_report.aggregate(models.Sum('qty_{}'.format(mode)))['qty_{}__sum'.format(mode)] if qs_report.exists() else 0
+                    table_data.update({name: value})
+            table_data.update({'sum': sum([table_data[label] for label in label_list])})
+            data.append(table_data)
+
+        return Response(data)
+
+
+class ReportDailySaleViewSet(ReportDailyProduceViewSet):
+    queryset = Report.objects.none()
+    serializer_class = ReportSerializer
+    mode = 'sale'

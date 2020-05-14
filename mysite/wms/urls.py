@@ -20,7 +20,11 @@ router.register('agvtransferlog/(?P<id>[0-9]*)', views.AgvTransferHistoryViewSet
 router.register('overviewgraph', views.OverviewGraphViewSet, basename='overviewgraph')
 router.register('usagegraph', views.UsageGraphViewSet, basename='usagegraph')
 router.register('historygraph', views.HistoryGraphViewSet, basename='historygraph')
-
+router.register('reportstockdata', views.ReportStockDataViewSet, basename='reportstockdata')
+router.register('reportmonthlyproduce', views.ReportMonthlyProduceViewSet, basename='reportmonthlyproduce')
+router.register('reportmonthlysale', views.ReportMonthlySaleViewSet, basename='reportmonthlysale')
+router.register('reportdailyproduce', views.ReportDailyProduceViewSet, basename='reportdailyproduce')
+router.register('reportdailysale', views.ReportDailySaleViewSet, basename='reportdailysale')
 
 app_name = 'wms'
 urlpatterns = [
@@ -39,6 +43,11 @@ urlpatterns = [
     path('layout_debug/', views.LayoutDebugView.as_view(), name='layout_debug'),
     path('layout_debug/<slug:pk>/col_update/', views.col_update, name='col_update'),
     path('layout_age/', views.LayoutAgeView.as_view(), name='layout_age'),
+    path('report/stockdata/', views.ReportStockDataView.as_view(), name='reportstockdata'),
+    path('report/monthlyproduce/', views.ReportMonthlyProduceView.as_view(), name='reportmonthlyproduce'),
+    path('report/monthlysale/', views.ReportMonthlySaleView.as_view(), name='reportmonthlysale'),
+    path('report/dailyproduce/', views.ReportDailyProduceView.as_view(), name='reportdailyproduce'),
+    path('report/dailysale/', views.ReportDailySaleView.as_view(), name='reportdailysale'),
     path('db/product/', views.ProductView.as_view(), name='db_product'),
     path('db/storage/<str:type>/', views.StorageView.as_view(), name='db_storage'),
     path('log/product/', views.ProductHistoryView.as_view(), name='log_product'),
