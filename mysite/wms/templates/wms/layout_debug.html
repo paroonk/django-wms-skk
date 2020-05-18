@@ -1,0 +1,116 @@
+{% extends 'wms/base.html' %}
+{% load static i18n custom_tags %}
+
+{% block css %}
+<link href="{% static 'wms/css/layout.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block title %}{% trans 'Layout Debug' %}{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex justify-content-center">
+        <p class="font-weight-bold my-0">{% trans 'Warehouse Layout Debug' %}</p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="layout-table" class="layout">
+                    <thead>
+                        <tr>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold" colspan="44">B</th>
+                        </tr>
+                        <tr>
+                            <th class="headerFooter font-weight-normal"></th>
+                            {% for header in headers %}
+                                <th class="headerFooter font-weight-normal">{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for index, row in zip_row %}
+                        <tr>
+                            <td class="headerFooter font-weight-normal">{{ index }}</td>
+                            {% for col in layout_col reversed %}
+                                {% if layout|k:col|k:row|k:'storage_for' %}
+                                    {% if layout|k:col|k:row|k:'is_inventory' %}
+                                    <td bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
+                                        class="js-col-update-button storage"
+                                        data-html="true"
+                                        data-toggle="tooltip"
+                                        data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}"
+                                        title="<div align='center'>
+                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
+                                            </div>">
+                                    </td>
+                                    {% else %}
+                                    <td bgcolor="white"
+                                        class="js-col-update-button storage"
+                                        data-html="true"
+                                        data-toggle="tooltip"
+                                        data-url="{% url 'wms:col_update' layout|k:col|k:row|k:'column_id' %}"
+                                        title="<div align='center'>
+                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
+                                            </div>">
+                                    </td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if col == 9 and row >= 5 and row <= 6 %}
+                                        {% if col == 9 and row == 5 %}
+                                        <td class="storage robot" rowspan="2">Ro bot #2</td>
+                                        {% endif %}
+                                    {% elif col == 12 and row >= 5 and row <= 6 %}
+                                        {% if col == 12 and row == 5 %}
+                                        <td class="storage robot" rowspan="2">Ro bot #1</td>
+                                        {% endif %}
+                                    {% comment %} {% elif col == 15 and row >= 5 and row <= 6 %}
+                                        {% if col == 15 and row == 5 %}
+                                        <td class="storage robot" rowspan="2">Ro bot #3</td>
+                                        {% endif %} {% endcomment %}
+                                    {% else %}
+                                        <td class="storage noBorder{% if row >= 8 and row <= 10 %} runway{% endif %}"></td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            <td class="headerFooter font-weight-normal">{% if row >= 11 %}{{ index }}{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="headerFooter font-weight-normal"></td>
+                            {% for footer in footers %}
+                                <th class="headerFooter font-weight-normal">{{ footer }}</th>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="headerFooter font-weight-bold"></td>
+                            <td class="headerFooter font-weight-bold" colspan="76">A</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <br>
+            </div>
+        </div>
+    </div>
+    <div id="modal-id" class="modal fade" role="dialog" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'wms/js/layout_debug.js' %}"></script>
+{% endblock %}

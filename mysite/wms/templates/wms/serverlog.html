@@ -1,0 +1,32 @@
+{% extends 'wms/base.html' %}
+{% load static i18n widget_tweaks %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/serverlog.css' %}">
+{% endblock %}
+
+{% block title %}{% trans 'Server Log' %}{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex justify-content-center">
+        <p class="font-weight-bold my-0">{% trans 'Server Log' %}</p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row justify-content-center">
+        <div class="col">
+            <div class="card">
+                <div class="card-body refresh">
+                    {{ log | linebreaks }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'wms/js/serverlog.js' %}"></script>
+{% endblock %}

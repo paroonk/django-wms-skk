@@ -1,0 +1,93 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+{% load account socialaccount %}
+{% providers_media_js %}
+
+{% block head_title %}Sign In{% endblock %}
+
+{% block content %}
+<h1 class="text-primary">Sign In</h1>
+
+{% get_providers as socialaccount_providers %}
+{% if socialaccount_providers %}
+<p>
+    Please sign in with one of your existing third party accounts or local accounts.
+<!--    Or <a href="{{ signup_url }}">sign up</a> for a {{ site.name }} account and sign in below:<br>-->
+</p>
+
+<div class="socialaccount_ballot">
+    <h5 class="mb-2 mt-4">Third party login: </h5>
+    <div class="col-9 col-lg-7 text-center social-btn">
+        <a href="/accounts/google/login/?process=login" class="btn btn-danger btn-block"><i class="fab fa-google"></i> Sign in with <b>Google</b></a>
+        <a href="{% provider_login_url 'facebook' method='js_sdk' %}" class="btn btn-primary btn-block"><i class="fab fa-facebook"></i> Sign in with <b>Facebook</b></a>
+    </div>
+    <small>
+        This site use third party login API to obtain user's email address and simple profile information such as first name and last name to use as a userdata to login and use this site functionality.
+    </small>
+
+</div>
+
+<h5 class="mb-2 mt-4">Local login: </h5>
+{% include "socialaccount/snippets/login_extra.html" %}
+
+{% else %}
+<p>
+    If you have not created an account yet, then please <a href="{{ signup_url }}">sign up</a> first.
+</p>
+{% endif %}
+
+<form class="login" id="login_form" method="POST" action="{% url 'account_login' %}">
+    {% csrf_token %}
+    <div class="col-9 col-lg-7">
+        <div class="form-group">
+            <label for="id_login">Account: </label>
+            <input id="id_login" class="form-control" type="text" name="login" placeholder="Enter username or email" autofocus="autofocus" required/>
+<!--            <small class="form-text text-muted ml-1">-->
+<!--                No account yet?-->
+<!--                <a href="{% url 'account_signup' %}" style="color:cornflowerblue;">-->
+<!--                    Register a new account-->
+<!--                </a>-->
+<!--            </small>-->
+        </div>
+        <div class="form-group mb-1">
+            <label for="id_password">Password: </label>
+            <input id="id_password" class="form-control" type="password" name="password" placeholder="Enter password" required>
+<!--            <small class="form-text text-muted ml-1">-->
+<!--                <a class="button secondaryAction" href="{% url 'account_reset_password' %}" style="color:cornflowerblue;">-->
+<!--                    Forget the password?-->
+<!--                </a>-->
+<!--            </small>-->
+        </div>
+<!--        <div class="custom-control custom-checkbox mb-2">-->
+<!--            <input id="id_remember" class="custom-control-input" type="checkbox" name="remember" checked>-->
+<!--            <label for="id_remember" class="custom-control-label">-->
+<!--                Keep logged in-->
+<!--            </label>-->
+<!--        </div>-->
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+        {% endif %}
+        <button id="submit_login" class="btn btn-primary primaryAction" type="submit">Sign In</button>
+    </div>
+    <div class="mb-2 mt-4">
+        {% for error in form.non_field_errors %}
+        <p><span class="text-danger">{{ error }}</span></p>
+        {% endfor %}
+    </div>
+</form>
+
+<style>
+.social-btn .btn {
+    margin: 10px 0px;
+    font-size: 15px;
+    text-align: left;
+    line-height: 24px;
+}
+.social-btn .btn i {
+    float: left;
+    margin: 4px 15px 0px 5px;
+    min-width: 15px;
+}
+</style>
+{% endblock %}

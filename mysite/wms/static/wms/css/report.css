@@ -1,0 +1,13 @@
+.content-header p {
+    font-size: calc(16px + 0.2vh + 0.05vw);
+    color: crimson;
+}
+.card-header h3, th, tr, .card-body input, .card-body label, .card-body span, .card-body select, .card-body option, .card-body button, .card-body a, .select2-results__options {
+    font-size: calc(10px + 0.2vh + 0.05vw);
+}
+.card {
+    min-height: 750px;
+}
+.card-body {
+    padding: 10px;
+}

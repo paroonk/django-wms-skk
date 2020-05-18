@@ -1,0 +1,150 @@
+{% extends 'wms/base.html' %}
+{% load static i18n custom_tags humanize %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'daterangepicker/css/daterangepicker.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'wms/css/layout.css' %}">
+{% endblock %}
+
+{% block title %}{% trans 'Inventory Period' %}{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex justify-content-center">
+        <p class="font-weight-bold my-0">{% trans 'Inventory Period' %}</p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="layout-table" class="layout">
+                    <thead>
+                        <tr>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold"></th>
+                            <th class="headerFooter font-weight-bold" colspan="44">B</th>
+                        </tr>
+                        <tr>
+                            <th class="headerFooter font-weight-normal"></th>
+                            {% for header in headers %}
+                                {% if header %}
+                                <th class="headerFooter font-weight-normal js-invcol-update-button" data-url="{% url 'wms:invcol_update' header %}">{{ header }}</th>
+                                {% else %}
+                                <th class="headerFooter font-weight-normal">{{ header }}</th>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for index, row in zip_row %}
+                        <tr>
+                            <td class="headerFooter font-weight-normal">{{ index }}</td>
+                            {% for col in layout_col reversed %}
+                                {% if layout|k:col|k:row|k:'storage_for' %}
+                                    {% if layout|k:col|k:row|k:'have_inventory' %}
+                                    <td class="js-inv-update-button storage age-{% if layout|k:col|k:row|k:'age' < age_criteria %}n{% endif %}ok"
+                                        data-url="{% url 'wms:inv_update' layout|k:col|k:row|k:'storage_id' %}"
+                                        bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
+                                        data-toggle="tooltip"
+                                        data-html="true"
+                                        title="<div align='center'>
+                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                            {{ layout|k:col|k:row|k:'inv_product' }}<br>
+                                            </div>
+                                            <br>
+                                            <div align='left'>
+                                            {% trans 'Quantity' %} : {{ layout|k:col|k:row|k:'inv_qty' }}<br>
+                                            {% if layout|k:col|k:row|k:'lot_name' %}{% trans 'Lot Name' %}: {{ layout|k:col|k:row|k:'lot_name' }}<br>{% endif %}
+                                            {% trans 'Created' %}: {{ layout|k:col|k:row|k:'created_on'|date:'d/m/y H:i' }}<br>
+                                            {% trans 'Updated' %}: {{ layout|k:col|k:row|k:'updated_on'|date:'d/m/y H:i' }}<br>
+                                            {% trans 'Age' %}: {{ layout|k:col|k:row|k:'created_on'|naturaltime }}<br>
+                                            </div>">
+                                        <font color="{{ layout|k:col|k:row|k:'font_color' }}">{{ layout|k:col|k:row|k:'age' }}</font>
+                                    </td>
+                                    {% else %}
+                                    <td class="js-inv-create-button storage"
+                                        data-url="{% url 'wms:inv_create' layout|k:col|k:row|k:'storage_id' %}"
+                                        bgcolor="{% if layout|k:col|k:row|k:'is_inventory' %}#EEE{% else %}white{% endif %}"
+                                        data-toggle="tooltip"
+                                        data-html="true"
+                                        title="<div align='center'>
+                                            {{ layout|k:col|k:row|k:'storage_id' }}<br>
+                                            {{ layout|k:col|k:row|k:'storage_for' }}<br>
+                                            </div>">
+                                    </td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if col == 9 and row >= 5 and row <= 6 %}
+                                        {% if col == 9 and row == 5 %}
+                                        <td class="storage robot" rowspan="2">Ro bot #2</td>
+                                        {% endif %}
+                                    {% elif col == 12 and row >= 5 and row <= 6 %}
+                                        {% if col == 12 and row == 5 %}
+                                        <td class="storage robot" rowspan="2">Ro bot #1</td>
+                                        {% endif %}
+                                    {% comment %} {% elif col == 15 and row >= 5 and row <= 6 %}
+                                        {% if col == 15 and row == 5 %}
+                                        <td class="storage robot" rowspan="2">Ro bot #3</td>
+                                        {% endif %} {% endcomment %}
+                                    {% else %}
+                                        <td class="storage noBorder{% if row >= 8 and row <= 10 %} runway{% endif %}"></td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            <td class="headerFooter font-weight-normal">{% if row >= 11 %}{{ index }}{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="headerFooter font-weight-normal"></td>
+                            {% for footer in footers %}
+                                {% if footer %}
+                                <th class="headerFooter font-weight-normal js-invcol-update-button" data-url="{% url 'wms:invcol_update' footer %}">{{ footer }}</th>
+                                {% else %}
+                                <th class="headerFooter font-weight-normal">{{ footer }}</th>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="headerFooter font-weight-bold"></td>
+                            <td class="headerFooter font-weight-bold" colspan="76">A</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <br>
+            </div>
+        </div>
+    </div>
+    <div id="modal-id" class="modal fade" role="dialog" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
+
+<script type="text/javascript">
+    var str_submit = "{% trans 'Submit' %}"
+    var str_cancel = "{% trans 'Close' %}"
+    var str_custom_range = "{% trans 'Custom Range' %}"
+    var custom_range = {
+        '{% trans 'Today' %}': [moment().subtract(1, 'days'), moment()],
+        '{% trans 'Yesterday' %}': [moment().subtract(2, 'days'), moment().subtract(1, 'days')],
+        '{% trans 'Last 7 Days' %}': [moment().subtract(7, 'days'), moment()],
+        '{% trans 'Last 30 Days' %}': [moment().subtract(30, 'days'), moment()],
+        '{% trans 'This Month' %}': [moment().startOf('month'), moment().endOf('month')],
+        '{% trans 'Last Month' %}': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+    }
+</script>
+
+<script type="text/javascript" src="{% static 'wms/js/layout_age.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,393 @@
+{% extends 'wms/base.html' %}
+{% load static i18n widget_tweaks %}
+
+{% block css %}
+<link href="{% static 'select2/css/select2.min.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'select2/css/select2-bootstrap4.min.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'wms/css/agv.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block title %}{% trans 'AGV' %}{% endblock %}
+
+{% block body %}
+<section class="content-header p-2">
+    <div class="d-sm-flex justify-content-center">
+        <p class="font-weight-bold my-0">{% trans 'AGV Control' %}</p>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div id="agvproductionplan-table" class="card card-outline card-info shadow">
+                <div class="card-header">
+                    <h3 class="card-title font-weight-bold">{% trans 'Production Plan' %}</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <script type="text/javascript">
+                    var api_agvproductionplan = '{% url 'wms:agvproductionplan-list' %}'
+                    function render_agvproductionplan(response) {
+                        $("#agvproductionplan-table .table-responsive").empty()
+                        if (Object.keys(response).length > 0) {
+                            var data = "<table class='table table-sm table-hover'>" +
+                                "<th>{% trans 'Product Name' %}</th>" +
+                                "<th>{% trans 'Lot Name' %}</th>" +
+                                "<th>{% trans 'Total Qty (Bags)' %}</th>" +
+                                "<th>{% trans 'Remaining Qty (Bags)' %}</th>" +
+                                "<th>{% trans '% Complete' %}</th>" +
+                                "</tr>" +
+                                "</thead>" +
+                                "<tbody>"
+                            $.each(response, function (key, value) {
+                                data += "<tr>" +
+                                "<td><a href='#' onclick=PopupCenter('" + "{% url 'wms:agvproductionplan_form' -1 %}".replace("-1", value.id) + "','Popup','400','500')>" + value.product_name + "</a></td>" +
+                                "<td>" + value.lot_name + "</td>" +
+                                "<td>" + value.qty_total + "</td>" +
+                                "<td>" + value.qty_remain + "</td>" +
+                                "<td>" + value.percent_complete + "</td>" +
+                                "</tr>"
+                            })
+                            data += "</tbody>" +
+                                "</table>" +
+                                "<div align='center'>" +
+                                "<a class='btn btn-danger' href='{% url 'wms:agvproductionplan_clear' %}' onclick=return confirm('{% trans 'Are you sure?' %}')>{% trans 'Clear All' %}</a>" +
+                                "</div>"
+                            $("#agvproductionplan-table .table-responsive").append(data)
+                        }
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div id="robotqueue-table" class="card card-outline card-warning shadow">
+                <div class="card-header">
+                    <h3 class="card-title font-weight-bold">{% trans 'Robot Queue' %}</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <script type="text/javascript">
+                    var api_robotqueue = '{% url 'wms:robotqueue-list' %}'
+                    function render_robotqueue(response) {
+                        $("#robotqueue-table .table-responsive").empty()
+                        if (Object.keys(response).length > 0) {
+                            var data = "<table class='table table-sm table-hover'>" +
+                                "<th>{% trans 'Robot No.' %}</th>" +
+                                "<th>{% trans 'Product Name' %}</th>" +
+                                "<th>{% trans 'Qty (Bags)' %}</th>" +
+                                "<th>{% trans 'Status' %}</th>" +
+                                "</tr>" +
+                                "</thead>" +
+                                "<tbody>"
+                            $.each(response, function (key, value) {
+                                data += "<tr>" +
+                                    "<td><a href='#' onclick=PopupCenter('" + "{% url 'wms:robotqueue_form' -1 %}".replace("-1", value.id) + "','Popup','400','500')>" + value.robot_no + "</a></td>" +
+                                    "<td>" + value.product_id + "</td>" +
+                                    "<td>" + value.qty_act + "</td>" +
+                                    "<td>" + value.updated + "</td>" +
+                                    "</tr>"
+                            })
+                            data += "</tbody>" +
+                                "</table>" +
+                                "<div align='center'>" +
+                                "<a class='btn btn-danger' href='{% url 'wms:robotqueue_clear' %}' onclick=return confirm('{% trans 'Are you sure?' %}')>{% trans 'Clear All' %}</a>" +
+                                "</div>"
+                            $("#robotqueue-table .table-responsive").append(data)
+                        }
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div id="agvqueue-table" class="card card-outline card-success shadow">
+                <div class="card-header">
+                    <h3 class="card-title font-weight-bold">{% trans 'AGV Queue' %}</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <script type="text/javascript">
+                    var api_agvqueue = '{% url 'wms:agvqueue-list' %}'
+                    function render_agvqueue(response) {
+                        $("#agvqueue-table .table-responsive").empty()
+                        if (Object.keys(response).length > 0) {
+                            var data = "<table class='table table-sm table-hover'>" +
+                                "<th>{% trans 'Product Name' %}</th>" +
+                                "<th>{% trans 'Lot Name' %}</th>" +
+                                "<th>{% trans 'Qty (Bags)' %}</th>" +
+                                "<th>{% trans 'Robot No.' %}</th>" +
+                                "<th>{% trans 'Pick Location' %}</th>" +
+                                "<th>{% trans 'Place Location' %}</th>" +
+                                "<th>{% trans 'Mode' %}</th>" +
+                                "<th>{% trans 'AGV No.' %}</th>" +
+                                "</tr>" +
+                                "</thead>" +
+                                "<tbody>"
+                            $.each(response, function (key, value) {
+                                data += "<tr>" +
+                                    "<td><a href='#' onclick=PopupCenter('" + "{% url 'wms:agvqueue_form' -1 %}".replace("-1", value.id) + "','Popup','400','650')>" + value.product_name + "</a></td>" +
+                                    "<td>" + value.lot_name + "</td>" +
+                                    "<td>" + value.qty_act + "</td>" +
+                                    "<td>" + value.robot_no + "</td>" +
+                                    "<td>" + value.pick_id + "</td>" +
+                                    "<td>" + value.place_id + "</td>" +
+                                    "<td>" + value.mode + "</td>" +
+                                    "<td>" + value.agv_no + "</td>" +
+                                    "</tr>"
+                            })
+                            data += "</tbody>" +
+                                "</table>" +
+                                "<div align='center'>" +
+                                "<a class='btn btn-danger' href='{% url 'wms:agvqueue_clear' %}' onclick=return confirm('{% trans 'Are you sure?' %}')>{% trans 'Clear All' %}</a>" +
+                                "</div>"
+                            $("#agvqueue-table .table-responsive").append(data)
+                        }
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col">
+            <div id="agvtransfer-table" class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{% trans 'Conn.' %}</th>
+                            <th>{% trans 'AGV Run' %}</th>
+                            <th>{% trans 'Interlock' %}</th>
+                            <th>{% trans 'AGV Status' %}</th>
+                            <th>{% trans 'Step' %}</th>
+                            <th>{% trans 'X NAV' %}</th>
+                            <th>{% trans 'Y NAV' %}</th>
+                            <th>{% trans 'Beta NAV' %}</th>
+                            <th>{% trans 'AGV Col' %}</th>
+                            <th>{% trans 'AGV Row' %}</th>
+                            <th>{% trans 'Pattern' %}</th>
+                            <th>Col1</th>
+                            <th>Row1</th>
+                            <th>Col2</th>
+                            <th>Row2</th>
+                            <th>Col3</th>
+                            <th>Row3</th>
+                            <th>Col4</th>
+                            <th>Row4</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <script type="text/javascript">
+                        var api_agvtransfer = '{% url 'wms:agvtransfer-list' %}'
+                        function render_agvtransfer(response) {
+                            $("#agvtransfer-table tbody").empty()
+                            $.each(response, function (key, value) {
+                                if (value.wdt_plc_ok == '{% trans 'OK' %}') { wdt_plc_ok_class = 'text-success' } else { wdt_plc_ok_class = 'text-danger' }
+                                if (value.run == '{% trans 'Start' %}') { run_class = 'text-success' } else { run_class = 'text-danger' }
+                                if (value.pause == '{% trans 'Not Pause' %}') { pause_class = 'text-success' } else { pause_class = 'text-danger' }
+                                var data = "<tr>" +
+                                    "<td>" + value.id + "</td>" +
+                                    "<td><a class=" + wdt_plc_ok_class + ">" + value.wdt_plc_ok + "<a></td>" +
+                                    "<td><a class=" + run_class + ">" + value.run + "<a></td>" +
+                                    "<td><a class=" + pause_class + ">" + value.pause + "<a></td>" +
+                                    "<td><a href='#' onclick=PopupCenter('" + "{% url 'wms:agvtransfer_form' -1 %}".replace("-1", value.id) + "','Popup','400','600')>" + value.status + "</a></td>" +
+                                    "<td>" + value.step + "</td>" +
+                                    "<td>" + value.x_nav + "</td>" +
+                                    "<td>" + value.y_nav + "</td>" +
+                                    "<td>" + value.beta_nav + "</td>" +
+                                    "<td>" + value.agv_col + "</td>" +
+                                    "<td>" + value.agv_row + "</td>" +
+                                    "<td>" + value.pattern + "</td>" +
+                                    "<td>" + value.col1 + "</td>" +
+                                    "<td>" + value.row1 + "</td>" +
+                                    "<td>" + value.col2 + "</td>" +
+                                    "<td>" + value.row2 + "</td>" +
+                                    "<td>" + value.col3 + "</td>" +
+                                    "<td>" + value.row3 + "</td>" +
+                                    "<td>" + value.col4 + "</td>" +
+                                    "<td>" + value.row4 + "</td>" +
+                                    "</tr>"
+                                $("#agvtransfer-table tbody").append(data)
+                            })
+                        }
+                        </script>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card card-secondary">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'Storage Order' %}</h3>
+                    <div class="card-tools">
+                        <!-- Collapse Button -->
+                        <button class="btn btn-tool m-0 p-0" data-card-widget="collapse" type="button"><i class="fas fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" name="storage-form" novalidate>
+                        {% csrf_token %}
+                        {% for hidden in storage_form.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% for field in storage_form.visible_fields %}
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label" for="{{ field.id_for_label }}">{{ field.label }} :</label>
+                            <div class="col-sm-8">
+                                {% if storage_form.is_bound %}
+                                {% if field.errors %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-invalid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-invalid select2" %}
+                                {% endif %}
+                                {% for error in field.errors %}
+                                <div class="invalid-feedback">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-valid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-valid select2" %}
+                                {% endif %}
+                                {% endif %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control" %}
+                                {% else %}
+                                {% render_field field class="form-control select2" %}
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div align="center">
+                            <button class="btn btn-success" name="storage" type="submit">{% trans 'Submit' %}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-secondary">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'Retrieve Order' %}</h3>
+                    <div class="card-tools">
+                        <!-- Collapse Button -->
+                        <button class="btn btn-tool m-0 p-0" data-card-widget="collapse" type="button"><i class="fas fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" name="retrieval-form" novalidate>
+                        {% csrf_token %}
+                        {% for hidden in retrieval_form.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% for field in retrieval_form.visible_fields %}
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label" for="{{ field.id_for_label }}">{{ field.label }} :</label>
+                            <div class="col-sm-8">
+                                {% if retrieval_form.is_bound %}
+                                {% if field.errors %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-invalid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-invalid select2" %}
+                                {% endif %}
+                                {% for error in field.errors %}
+                                <div class="invalid-feedback">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-valid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-valid select2" %}
+                                {% endif %}
+                                {% endif %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control" %}
+                                {% else %}
+                                {% render_field field class="form-control select2" %}
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div align="center">
+                            <button class="btn btn-success" name="retrieval" type="submit">{% trans 'Submit' %}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-secondary">
+                <div class="card-header">
+                    <h3 class="card-title">{% trans 'Move Order' %}</h3>
+                    <div class="card-tools">
+                        <!-- Collapse Button -->
+                        <button class="btn btn-tool m-0 p-0" data-card-widget="collapse" type="button"><i class="fas fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" name="move-form" novalidate>
+                        {% csrf_token %}
+                        {% for hidden in move_form.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% for field in move_form.visible_fields %}
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label" for="{{ field.id_for_label }}">{{ field.label }} :</label>
+                            <div class="col-sm-8">
+                                {% if move_form.is_bound %}
+                                {% if field.errors %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-invalid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-invalid select2" %}
+                                {% endif %}
+                                {% for error in field.errors %}
+                                <div class="invalid-feedback">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control is-valid" %}
+                                {% else %}
+                                {% render_field field class="form-control is-valid select2" %}
+                                {% endif %}
+                                {% endif %}
+                                {% else %}
+                                {% if not field|widget_type == 'select' %}
+                                {% render_field field class="form-control" %}
+                                {% else %}
+                                {% render_field field class="form-control select2" %}
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div align="center">
+                            <button class="btn btn-success" name="move" type="submit">{% trans 'Submit' %}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'select2/js/select2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'select2/js/th.js' %}"></script>
+
+<script type="text/javascript">
+    var url_get_data_storage_form = '{% url 'wms:get_data_storage_form' %}'
+    var url_get_data_retrieval_form = '{% url 'wms:get_data_retrieval_form' %}'
+    var url_get_data_move_form = '{% url 'wms:get_data_move_form' %}'
+</script>
+
+<script type="text/javascript" src="{% static 'wms/js/agv.js' %}"></script>
+<script type="text/javascript" src="{% static 'wms/js/PopupCenter.js' %}"></script>
+{% endblock %}
