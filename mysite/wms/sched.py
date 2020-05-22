@@ -1,5 +1,6 @@
 import itertools
 import math
+import os
 
 import numpy as np
 import pandas as pd
@@ -46,6 +47,10 @@ logfilename = 'serverlog.txt'
 
 
 def logfile_update(filename, lines_to_append):
+    if not os.path.exists(filename):
+        with open(filename, 'w') as file_object:
+            pass
+
     with open(filename, 'r') as file_object:
         lines = file_object.readlines()
 

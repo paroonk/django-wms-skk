@@ -1,3 +1,3 @@
 @ECHO OFF
-D:\PycharmProjects\venv\Scripts\activate.bat && python "D:\PycharmProjects\django-wms\mysite\server.py"
+D:\VSC\django-wms-skk\.venv\Scripts\activate.bat && python "D:\VSC\django-wms-skk\mysite\server.py"
 EXIT /B
