@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-10 09:08+0700\n"
+"POT-Creation-Date: 2020-05-22 10:05+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -70,7 +70,7 @@ msgstr "เป็นสินค้าคงคลัง?"
 msgid "Product"
 msgstr "สินค้า"
 
-#: .\wms\forms.py:52 .\wms\models.py:59 .\wms\templates\wms\dashboard.html:150
+#: .\wms\forms.py:52 .\wms\models.py:59 .\wms\templates\wms\dashboard.html:167
 msgid "Buffer"
 msgstr "พื้นที่พัก"
 
@@ -80,10 +80,10 @@ msgstr "ฟิลด์นี้จำเป็น"
 
 #: .\wms\forms.py:77 .\wms\forms.py:98 .\wms\forms.py:129 .\wms\forms.py:168
 #: .\wms\forms.py:200 .\wms\models.py:36 .\wms\models.py:223
-#: .\wms\models.py:379 .\wms\templates\wms\agv.html:33
+#: .\wms\models.py:380 .\wms\templates\wms\agv.html:33
 #: .\wms\templates\wms\agv.html:75 .\wms\templates\wms\agv.html:113
 #: .\wms\templates\wms\agv_debug.html:33 .\wms\templates\wms\agv_debug.html:75
-#: .\wms\templates\wms\agv_debug.html:113 .\wms\views.py:1174
+#: .\wms\templates\wms\agv_debug.html:113 .\wms\views.py:1178
 msgid "Product Name"
 msgstr "ชื่อสินค้า"
 
@@ -243,7 +243,7 @@ msgid "AGV No."
 msgstr "เอจีวีคันที่"
 
 #: .\wms\forms.py:297 .\wms\forms.py:310 .\wms\forms.py:321 .\wms\models.py:37
-#: .\wms\views.py:1170
+#: .\wms\views.py:1174
 msgid "Plant"
 msgstr "โรงงาน"
 
@@ -251,7 +251,7 @@ msgstr "โรงงาน"
 msgid "By"
 msgstr "โดย"
 
-#: .\wms\forms.py:299 .\wms\forms.py:322 .\wms\views.py:1254
+#: .\wms\forms.py:299 .\wms\forms.py:322 .\wms\views.py:1258
 msgid "Month"
 msgstr "เดือน"
 
@@ -259,9 +259,9 @@ msgstr "เดือน"
 msgid "Year"
 msgstr "ปี"
 
-#: .\wms\forms.py:309 .\wms\forms.py:320 .\wms\forms.py:332 .\wms\views.py:55
-#: .\wms\views.py:1046 .\wms\views.py:1047 .\wms\views.py:1053
-#: .\wms\views.py:1127 .\wms\views.py:1135
+#: .\wms\forms.py:309 .\wms\forms.py:320 .\wms\forms.py:332 .\wms\views.py:57
+#: .\wms\views.py:1050 .\wms\views.py:1051 .\wms\views.py:1057
+#: .\wms\views.py:1131 .\wms\views.py:1139
 msgid "All"
 msgstr "ทั้งหมด"
 
@@ -269,7 +269,7 @@ msgstr "ทั้งหมด"
 msgid "Data"
 msgstr "ข้อมูล"
 
-#: .\wms\forms.py:334 .\wms\forms.py:339 .\wms\views.py:1334
+#: .\wms\forms.py:334 .\wms\forms.py:339 .\wms\views.py:1338
 msgid "Date"
 msgstr "วันที่"
 
@@ -289,7 +289,7 @@ msgstr "สีพื้นหลัง"
 msgid "Font Color"
 msgstr "สีตัวหนังสือ"
 
-#: .\wms\models.py:41 .\wms\views.py:1170
+#: .\wms\models.py:41 .\wms\views.py:1174
 msgid "Storage Qty"
 msgstr "จำนวนพื้นที่เก็บสินค้า"
 
@@ -317,7 +317,7 @@ msgstr "จำนวนพื้นที่เก็บที่ใช้ได
 msgid "Avail. Inventory Qty"
 msgstr "จำนวนสินค้าคงคลังที่ใช้ได้"
 
-#: .\wms\models.py:59 .\wms\templates\wms\dashboard.html:150
+#: .\wms\models.py:59 .\wms\templates\wms\dashboard.html:167
 msgid "Inventory"
 msgstr "สินค้าคงคลัง"
 
@@ -377,7 +377,7 @@ msgstr "มีสินค้าคงคลัง"
 msgid "Bg Color"
 msgstr "สีพื้นหลัง"
 
-#: .\wms\models.py:164 .\wms\templates\wms\dashboard.html:150
+#: .\wms\models.py:164 .\wms\templates\wms\dashboard.html:167
 msgid "Misplace"
 msgstr "สินค้าผิดตำแหน่ง"
 
@@ -839,8 +839,8 @@ msgstr "คำสั่งเอจีวี 2"
 msgid "In-stock Status"
 msgstr "จำนวนสินค้าในระบบ"
 
-#: .\wms\templates\wms\dashboard.html:27 .\wms\templates\wms\dashboard.html:106
-#: .\wms\templates\wms\dashboard.html:151
+#: .\wms\templates\wms\dashboard.html:27 .\wms\templates\wms\dashboard.html:123
+#: .\wms\templates\wms\dashboard.html:168
 msgid "Bags"
 msgstr "ถุง"
 
@@ -852,24 +852,32 @@ msgstr "ร้อยละสินค้าที่อยู่ในระบ
 msgid "Running"
 msgstr "ทำงาน"
 
-#: .\wms\templates\wms\dashboard.html:88
+#: .\wms\templates\wms\dashboard.html:86
+msgid "Robot Status"
+msgstr "สถานะโรบอท"
+
+#: .\wms\templates\wms\dashboard.html:87
+msgid "Robot"
+msgstr "โรบอท"
+
+#: .\wms\templates\wms\dashboard.html:105
 msgid "Stock Overview"
 msgstr "ภาพรวมสินค้า"
 
-#: .\wms\templates\wms\dashboard.html:111
+#: .\wms\templates\wms\dashboard.html:128
 #, python-format
 msgid "%% Total"
 msgstr "ร้อยละ (%%)"
 
-#: .\wms\templates\wms\dashboard.html:126
+#: .\wms\templates\wms\dashboard.html:143
 msgid "Stock Usage"
 msgstr "สัดส่วนสินค้า"
 
-#: .\wms\templates\wms\dashboard.html:150
+#: .\wms\templates\wms\dashboard.html:167
 msgid "Available Storage"
 msgstr "พื้นที่เก็บที่ใช้ได้"
 
-#: .\wms\templates\wms\dashboard.html:156
+#: .\wms\templates\wms\dashboard.html:173
 #: .\wms\templates\wms\historygraph.html:65
 msgid "Save As Image"
 msgstr "เซฟเป็นรูป"
@@ -1030,19 +1038,19 @@ msgstr "แก้ไขสินค้าคงคลัง"
 msgid "Warehouse Layout Debug"
 msgstr "แก้ไขแผนผัง"
 
-#: .\wms\views.py:1170
+#: .\wms\views.py:1174
 msgid "Ending Stock"
 msgstr "สต๊อคสิ้นเดือน"
 
-#: .\wms\views.py:1170
+#: .\wms\views.py:1174
 msgid "Production/Month"
 msgstr "ยอดผลิตต่อเดือน"
 
-#: .\wms\views.py:1170
+#: .\wms\views.py:1174
 msgid "Sales/Month"
 msgstr "ยอดขายต่อเดือน"
 
-#: .\wms\views.py:1254 .\wms\views.py:1334
+#: .\wms\views.py:1258 .\wms\views.py:1338
 msgid "Sum"
 msgstr "รวม"
 

@@ -48,6 +48,8 @@ class DashboardView(generic.TemplateView):
         in_stock_pct = '{:.0%}'.format(Storage.objects.filter(have_inventory=True).count() / Storage.objects.all().count() if Storage.objects.all() else 0)
         agv_run = AgvTransfer.objects.filter(run=1, pause=0).count()
         agv_total = AgvTransfer.objects.all().count()
+        robot_qty_1 = RobotStatus.objects.get(robot_no=1).qty_act if RobotStatus.objects.filter(robot_no=1).exists() else 'N/A'
+        robot_qty_2 = RobotStatus.objects.get(robot_no=2).qty_act if RobotStatus.objects.filter(robot_no=2).exists() else 'N/A'
 
         plant_list = list(Product.objects.select_related('plant').exclude(plant__plant_id__isnull=True).order_by('plant_id').distinct().values_list('plant', flat=True))
 
@@ -69,6 +71,8 @@ class DashboardView(generic.TemplateView):
                 'in_stock_pct': in_stock_pct,
                 'agv_run': agv_run,
                 'agv_total': agv_total,
+                'robot_qty_1': robot_qty_1,
+                'robot_qty_2': robot_qty_2,
                 # For Overview Graph
                 'overview_plant_list': overview_plant_list,
                 # For Usage Graph
