@@ -1261,7 +1261,10 @@ class ReportMonthlyProduceView(generic.TemplateView):
 
         context = super().get_context_data(**kwargs)
         context['form'] = ReportMonthlyForm(initial=form_data)
-        context.update({'fields': zip(data, name, class_name, width)})
+        context.update({
+            'fields': zip(data, name, class_name, width),
+            'label_list': label_list
+        })
         return context
 
 
@@ -1341,7 +1344,10 @@ class ReportDailyProduceView(generic.TemplateView):
 
         context = super().get_context_data(**kwargs)
         context['form'] = ReportDailyForm(initial=form_data)
-        context.update({'fields': zip(data, name, class_name, width)})
+        context.update({
+            'fields': zip(data, name, class_name, width),
+            'label_list': label_list
+        })
         return context
 
 
