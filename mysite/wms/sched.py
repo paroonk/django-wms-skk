@@ -988,7 +988,10 @@ def update_product_db():
                 obj.qty_inventory_avail = qty_avail_inventory if qty_avail_inventory else 0
 
                 if db_update_initial:
-                    obj.save_without_historical_record()
+                    try:
+                        obj.save_without_historical_record()
+                    except:
+                        pass
                 else:
                     obj.changeReason = 'Update Quantity'
                     obj.save()
@@ -1038,7 +1041,9 @@ def post_update_storage_db(sender, instance, **kwargs):
                         db_update_list.append(new_obj.inv_product.product_name)
     else:
         new_obj = new_record.instance
-        db_update_list.append(new_obj.inv_product.product_name) if new_obj.inv_product.product_name not in db_update_list else db_update_list
+        if new_obj.inv_product:
+            if new_obj.inv_product.product_name not in db_update_list:
+                db_update_list.append(new_obj.inv_product.product_name)
     scheduler.add_job(update_product_db, 'date', run_date=timezone.now() + timezone.timedelta(seconds=1), id='update_product_db', replace_existing=True)
 
 
