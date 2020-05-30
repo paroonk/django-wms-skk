@@ -437,7 +437,6 @@ def transfer_check():
         print('transfer_check error')
 
 
-
 def transfer_adjust(obj_transfer):
     beta_offset = 0.0
     agv_beta = obj_transfer.beta_nav - beta_offset
@@ -1016,7 +1015,7 @@ def post_update_storage_db(sender, instance, **kwargs):
             if change.field == 'storage_for':
                 if old_obj.is_inventory:
                     if change.old not in db_update_list:
-                        db_update_list.append(change.old) 
+                        db_update_list.append(change.old)
                     elif new_obj.is_inventory:
                         db_update_list.append(change.new)
             elif change.field == 'inv_product':
