@@ -89,7 +89,6 @@ class AgvQueueSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-
     def to_representation(self, instance):
         data = super().to_representation(instance)
         for field in ['plant']:

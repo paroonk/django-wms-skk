@@ -1203,7 +1203,7 @@ class ReportStockDataViewSet(viewsets.ReadOnlyModelViewSet):
             label_list = list(Product.objects.all().values_list('product_name', flat=True))
         else:
             label_list = list(Plant.objects.all().values_list('plant_id', flat=True))
-        
+
         data = []
         for label in label_list:
             if by == 'product':
@@ -1211,7 +1211,7 @@ class ReportStockDataViewSet(viewsets.ReadOnlyModelViewSet):
                 plant = qs_product.first().plant.plant_id if qs_product.filter(plant__isnull=False).exists() else ''
                 qty_storage = qs_product.aggregate(models.Sum('qty_storage'))['qty_storage__sum']
                 qty_total = qs_product.aggregate(models.Sum('qty_total'))['qty_total__sum']
-                
+
                 qs_report = Report.objects.filter(year=year, month=month, product__product_name=label)
                 qty_produce = qs_report.aggregate(models.Sum('qty_produce'))['qty_produce__sum'] if qs_report.exists() else 0
                 qty_sale = qs_report.aggregate(models.Sum('qty_sale'))['qty_sale__sum'] if qs_report.exists() else 0
@@ -1225,12 +1225,9 @@ class ReportStockDataViewSet(viewsets.ReadOnlyModelViewSet):
                 qty_sale = qs_report.aggregate(models.Sum('qty_sale'))['qty_sale__sum'] if qs_report.exists() else 0
 
             table_data = {'product_name': label, 'plant': plant} if by == 'product' else {'plant': label}
-            table_data.update({
-                'qty_storage': qty_storage,
-                'qty_total': qty_total,
-                'qty_produce': qty_produce,
-                'qty_sale': qty_sale,
-            })
+            table_data.update(
+                {'qty_storage': qty_storage, 'qty_total': qty_total, 'qty_produce': qty_produce, 'qty_sale': qty_sale,}
+            )
             data.append(table_data)
 
         return Response(data)
@@ -1261,10 +1258,7 @@ class ReportMonthlyProduceView(generic.TemplateView):
 
         context = super().get_context_data(**kwargs)
         context['form'] = ReportMonthlyForm(initial=form_data)
-        context.update({
-            'fields': zip(data, name, class_name, width),
-            'label_list': label_list
-        })
+        context.update({'fields': zip(data, name, class_name, width), 'label_list': label_list})
         return context
 
 
@@ -1344,10 +1338,7 @@ class ReportDailyProduceView(generic.TemplateView):
 
         context = super().get_context_data(**kwargs)
         context['form'] = ReportDailyForm(initial=form_data)
-        context.update({
-            'fields': zip(data, name, class_name, width),
-            'label_list': label_list
-        })
+        context.update({'fields': zip(data, name, class_name, width), 'label_list': label_list})
         return context
 
 

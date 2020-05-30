@@ -345,7 +345,37 @@ class AgvTransfer(DirtyFieldsMixin, ComputedFieldsModel):
     col5 = models.FloatField(default=0.0)
     row5 = models.FloatField(default=0.0)
     history = HistoricalRecords(
-        excluded_fields=['wdt_wms', 'wdt_plc', 'wdt_plc_ok', 'x_nav', 'y_nav', 'beta_nav', 'agv_col', 'agv_row', 'agv_direction', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5', 'col1', 'row1', 'col2', 'row2', 'col3', 'row3', 'col4', 'row4', 'col5', 'row5']
+        excluded_fields=[
+            'wdt_wms',
+            'wdt_plc',
+            'wdt_plc_ok',
+            'x_nav',
+            'y_nav',
+            'beta_nav',
+            'agv_col',
+            'agv_row',
+            'agv_direction',
+            'x1',
+            'y1',
+            'x2',
+            'y2',
+            'x3',
+            'y3',
+            'x4',
+            'y4',
+            'x5',
+            'y5',
+            'col1',
+            'row1',
+            'col2',
+            'row2',
+            'col3',
+            'row3',
+            'col4',
+            'row4',
+            'col5',
+            'row5',
+        ]
     )
     FIELDS_TO_CHECK = ['wdt_plc_ok']
 
@@ -370,8 +400,8 @@ class Setting(ComputedFieldsModel):
 
 
 class Report(ComputedFieldsModel):
-    year =  models.PositiveSmallIntegerField()
-    month_choices = [(i, _(str(calendar.month_name[i]))) for i in range(1,13)]
+    year = models.PositiveSmallIntegerField()
+    month_choices = [(i, _(str(calendar.month_name[i]))) for i in range(1, 13)]
     month = models.PositiveSmallIntegerField(choices=month_choices)
     day_choices = [(i, str(i)) for i in range(1, 32)]
     day = models.PositiveSmallIntegerField(choices=day_choices)
@@ -381,7 +411,6 @@ class Report(ComputedFieldsModel):
     qty_produce = models.IntegerField(blank=True, null=True, default=0)
     qty_sale = models.IntegerField(blank=True, null=True, default=0)
     qty_nonmove = models.IntegerField(blank=True, null=True, default=0)
-
 
     def __str__(self):
         return '{}-{}-{} Shift#{} {}'.format(self.year, self.month, self.day, self.shift, self.product.product_name)
