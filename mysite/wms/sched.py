@@ -1015,24 +1015,32 @@ def post_update_storage_db(sender, instance, **kwargs):
         for change in delta.changes:
             if change.field == 'storage_for':
                 if old_obj.is_inventory:
-                    db_update_list.append(change.old) if change.old not in db_update_list else db_update_list
-                if new_obj.is_inventory:
-                    db_update_list.append(change.new) if change.new not in db_update_list else db_update_list
+                    if change.old not in db_update_list:
+                        db_update_list.append(change.old) 
+                    elif new_obj.is_inventory:
+                        db_update_list.append(change.new)
             elif change.field == 'inv_product':
                 if new_obj.inv_product:
-                    db_update_list.append(new_obj.inv_product.product_name) if new_obj.inv_product.product_name not in db_update_list else db_update_list
+                    if new_obj.inv_product.product_name not in db_update_list:
+                        db_update_list.append(new_obj.inv_product.product_name)
                 try:
                     if old_obj.inv_product:
-                        db_update_list.append(old_obj.inv_product.product_name) if old_obj.inv_product.product_name not in db_update_list else db_update_list
+                        if old_obj.inv_product.product_name not in db_update_list:
+                            db_update_list.append(old_obj.inv_product.product_name)
                 except Product.DoesNotExist:
                     pass
             elif change.field == 'inv_qty':
                 if new_obj.inv_product:
-                    db_update_list.append(new_obj.inv_product.product_name) if new_obj.inv_product.product_name not in db_update_list else db_update_list
+                    if new_obj.inv_product.product_name not in db_update_list:
+                        db_update_list.append(new_obj.inv_product.product_name)
             elif change.field == 'created_on':
                 if new_obj.inv_product:
-                    db_update_list.append(new_obj.inv_product.product_name) if new_obj.inv_product.product_name not in db_update_list else db_update_list
-        scheduler.add_job(update_product_db, 'date', run_date=timezone.now() + timezone.timedelta(seconds=1), id='update_product_db', replace_existing=True)
+                    if new_obj.inv_product.product_name not in db_update_list:
+                        db_update_list.append(new_obj.inv_product.product_name)
+    else:
+        new_obj = new_record.instance
+        db_update_list.append(new_obj.inv_product.product_name) if new_obj.inv_product.product_name not in db_update_list else db_update_list
+    scheduler.add_job(update_product_db, 'date', run_date=timezone.now() + timezone.timedelta(seconds=1), id='update_product_db', replace_existing=True)
 
 
 @receiver(post_create_historical_record, sender=HistoricalAgvProductionPlan, dispatch_uid="post_update_agv_plan")

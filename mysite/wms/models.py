@@ -61,7 +61,7 @@ class Column(ComputedFieldsModel):
     for_product = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True)
     for_buffer = models.ForeignKey(Buffer, on_delete=models.SET_NULL, blank=True, null=True)
 
-    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name=_('Storage For')))
+    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name=_('Storage For')), depends=[])
     def storage_for(self):
         try:
             return self.for_product.product_name if self.is_inventory else self.for_buffer.buffer_id
@@ -109,59 +109,59 @@ class Storage(ComputedFieldsModel):
     updated_on = models.DateTimeField(blank=True, null=True, verbose_name=_('Updated On'))
     history = HistoricalRecords(excluded_fields=['layout_col', 'layout_row', 'column_id', 'coor_id', 'lot_name', 'updated_on', 'zone', 'col', 'row', 'coor_x', 'coor_y', 'bg_color', 'font_color'])
 
-    @computed(models.CharField(max_length=1, verbose_name=_('Zone')))
+    @computed(models.CharField(max_length=1, verbose_name=_('Zone')), depends=[])
     def zone(self):
         return str(self.storage_id)[0:1]
 
-    @computed(models.CharField(max_length=2, verbose_name=_('Column No.')))
+    @computed(models.CharField(max_length=2, verbose_name=_('Column No.')), depends=[])
     def col(self):
         return str(self.storage_id)[1:3]
 
-    @computed(models.CharField(max_length=3, verbose_name=_('Row No.')))
+    @computed(models.CharField(max_length=3, verbose_name=_('Row No.')), depends=[])
     def row(self):
         return str(self.storage_id)[3:6]
 
-    @computed(models.FloatField(verbose_name=_('Coordinate X')), depends=['coor_id#layout_col', 'coor_id#layout_row', 'coor_id#coor_x', 'coor_id#coor_y'])
+    @computed(models.FloatField(verbose_name=_('Coordinate X')), depends=[['self', ['coor_id']], ['coor_id', ['layout_col', 'layout_row', 'coor_x', 'coor_y']]])
     def coor_x(self):
         try:
             return self.coor_id.coor_x
         except:
             return 0.0
 
-    @computed(models.FloatField(verbose_name=_('Coordinate Y')), depends=['coor_id#layout_col', 'coor_id#layout_row', 'coor_id#coor_x', 'coor_id#coor_y'])
+    @computed(models.FloatField(verbose_name=_('Coordinate Y')), depends=[['self', ['coor_id']], ['coor_id', ['layout_col', 'layout_row', 'coor_x', 'coor_y']]])
     def coor_y(self):
         try:
             return self.coor_id.coor_y
         except:
             return 0.0
 
-    @computed(models.BooleanField(verbose_name=_('Is Inventory')), depends=['column_id#is_inventory'])
+    @computed(models.BooleanField(verbose_name=_('Is Inventory')), depends=[['self', ['column_id']], ['column_id', ['is_inventory']]])
     def is_inventory(self):
         return self.column_id.is_inventory
 
-    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name='Storage For'), depends=['column_id#storage_for'])
+    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name='Storage For'), depends=[['self', ['column_id']], ['column_id', ['storage_for']]])
     def storage_for(self):
         return self.column_id.storage_for
 
-    @computed(models.BooleanField(verbose_name=_('Have Inventory')))
+    @computed(models.BooleanField(verbose_name=_('Have Inventory')), depends=[])
     def have_inventory(self):
         return True if self.inv_product else False
 
-    @computed(models.CharField(max_length=10, verbose_name=_('Bg Color')), depends=['inv_product#bg_color'])
+    @computed(models.CharField(max_length=10, verbose_name=_('Bg Color')), depends=[['self', ['inv_product']], ['inv_product', ['bg_color']]])
     def bg_color(self):
         try:
             return self.inv_product.bg_color
         except:
             return 'white'
 
-    @computed(models.CharField(max_length=10, verbose_name=_('Font Color')), depends=['inv_product#font_color'])
+    @computed(models.CharField(max_length=10, verbose_name=_('Font Color')), depends=[['self', ['inv_product']], ['inv_product', ['font_color']]])
     def font_color(self):
         try:
             return self.inv_product.font_color
         except:
             return 'black'
 
-    @computed(models.BooleanField(blank=True, null=True, verbose_name=_('Misplace')), depends=['column_id#storage_for'])
+    @computed(models.BooleanField(blank=True, null=True, verbose_name=_('Misplace')), depends=[['self', ['column_id']], ['column_id', ['storage_for']]])
     def misplace(self):
         try:
             return True if self.is_inventory and self.inv_product.product_name != self.column_id.storage_for else False
@@ -259,28 +259,28 @@ class AgvQueue(ComputedFieldsModel):
     agv_no = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name=_('AGV No.'))
     history = HistoricalRecords()
 
-    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Pick Col')), depends=['pick_id#layout_col'])
+    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Pick Col')), depends=[['self', ['pick_id']], ['pick_id', ['layout_col']]])
     def pick_col(self):
         try:
             return self.pick_id.layout_col
         except:
             return None
 
-    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Pick Row')), depends=['pick_id#layout_row'])
+    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Pick Row')), depends=[['self', ['pick_id']], ['pick_id', ['layout_row']]])
     def pick_row(self):
         try:
             return self.pick_id.layout_row
         except:
             return None
 
-    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Place Col')), depends=['place_id#layout_col'])
+    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Place Col')), depends=[['self', ['place_id']], ['place_id', ['layout_col']]])
     def place_col(self):
         try:
             return self.place_id.layout_col
         except:
             return None
 
-    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Place Row')), depends=['place_id#layout_row'])
+    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Place Row')), depends=[['self', ['place_id']], ['place_id', ['layout_row']]])
     def place_row(self):
         try:
             return self.place_id.layout_row
