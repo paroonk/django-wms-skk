@@ -23,20 +23,12 @@ Serve static:
         py manage.py collectstatic
 
     which will copy the Django admin static files to /path/to/project/static/
+    
+Create translation::
+
+    py manage.py makemessages -l th
+    py manage.py compilemessages
 
 Runserver::
 
     py manage.py runserver
-
-Python Anywhere::
-
-    use paroonk$mysite;
-    source mysite.sql;
-
-Virtualenv::
-
-    mkvirtualenv venv --python=/usr/bin/python3.7
-    which python
-    deactivate
-    workon venv
-
