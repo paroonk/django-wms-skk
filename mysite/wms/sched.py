@@ -188,7 +188,6 @@ def robot_check():
                         obj_queue.pick_id = None
                         obj_queue.place_id = obj_to
                         obj_queue.mode = 1
-                        obj_queue.updated = 0
                         obj_queue.changeReason = 'New AGV Queue'
                         obj_queue.save()
 
@@ -211,7 +210,6 @@ def robot_check():
 
 def watchdog():
     global wdt_plc_true, wdt_plc_false
-    # scheduler.print_jobs()
     try:
         qs_transfer_list = []
         for agv_no in agv_list:
@@ -258,12 +256,10 @@ def watchdog():
 
 def interlock_check():
     try:
-        agv_active_list = []
         qs_transfer_list = []
         for agv_no in agv_list:
             qs_transfer = AgvTransfer.objects.filter(id=agv_no, wdt_plc_ok=True)
             if qs_transfer.exists():
-                agv_active_list.append(agv_no)
                 qs_transfer_list.append(qs_transfer)
 
         for agv_no, qs_transfer in enumerate(qs_transfer_list, 1):
@@ -1053,7 +1049,8 @@ def post_update_agv_plan(sender, instance, **kwargs):
     new_record = instance.history.first()
     new_obj = new_record.instance
     try:
-        db_update_list.append(new_obj.product_name.product_name) if new_obj.product_name.product_name not in db_update_list else db_update_list
+        if new_obj.product_name.product_name not in db_update_list:
+            db_update_list.append(new_obj.product_name.product_name)
     except AttributeError:
         pass
     scheduler.add_job(update_product_db, 'date', run_date=timezone.now() + timezone.timedelta(seconds=1), id='update_product_db', replace_existing=True)
@@ -1065,7 +1062,8 @@ def post_update_agv_queue(sender, instance, **kwargs):
     new_record = instance.history.first()
     new_obj = new_record.instance
     try:
-        db_update_list.append(new_obj.product_name.product_name) if new_obj.product_name.product_name not in db_update_list else db_update_list
+        if new_obj.product_name.product_name not in db_update_list:
+            db_update_list.append(new_obj.product_name.product_name)
     except AttributeError:
         pass
     scheduler.add_job(update_product_db, 'date', run_date=timezone.now() + timezone.timedelta(seconds=1), id='update_product_db', replace_existing=True)
