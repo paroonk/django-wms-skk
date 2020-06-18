@@ -430,6 +430,7 @@ class AgvTestView(generic.TemplateView):
             context['robot_form'] = RobotQueueForm()
         if 'manualtransfer_form' not in context:
             context['manualtransfer_form'] = ManualTransferForm()
+        context['agvtransfer'] = AgvTransfer.objects.all()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1072,10 +1073,10 @@ class OverviewGraphViewSet(viewsets.ReadOnlyModelViewSet):
             qty_misplace = qty_misplace
             qty_avail_storage = [storage - total for storage, total in zip(qty_storage, qty_total)]
         else:
-            qty_inventory = [round(inventory / storage * 100, 2) for inventory, storage in zip(qty_inventory, qty_storage)]
-            qty_buffer = [round(buffer / storage * 100, 2) for buffer, storage in zip(qty_buffer, qty_storage)]
-            qty_misplace = [round(misplace / storage * 100, 2) for misplace, storage in zip(qty_misplace, qty_storage)]
-            qty_avail_storage = [round((storage - total) / storage * 100, 2) for storage, total in zip(qty_storage, qty_total)]
+            qty_inventory = [round(inventory / storage * 100, 2) if storage > 0 else 0 for inventory, storage in zip(qty_inventory, qty_storage)]
+            qty_buffer = [round(buffer / storage * 100, 2) if storage > 0 else 0 for buffer, storage in zip(qty_buffer, qty_storage)]
+            qty_misplace = [round(misplace / storage * 100, 2) if storage > 0 else 0 for misplace, storage in zip(qty_misplace, qty_storage)]
+            qty_avail_storage = [round((storage - total) / storage * 100, 2) if storage > 0 else 0 for storage, total in zip(qty_storage, qty_total)]
         data = {
             'plant_id': plant_id,
             'value_type': value_type,

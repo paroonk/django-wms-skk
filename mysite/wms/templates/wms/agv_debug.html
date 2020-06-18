@@ -338,6 +338,8 @@
     {% for item in agvtransfer %}
         url_agv_to_home[{{ item.id }}] = "{% url 'wms:agv_to_home' item.id %}"
     {% endfor %}
+    var str_start = "{% trans 'Start' %}"
+    var str_wait = "{% trans 'Wait for queue' %}"
 </script>
 
 <script type="text/javascript" src="{% static 'wms/js/agv_debug.js' %}"></script>

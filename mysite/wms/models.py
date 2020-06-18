@@ -309,7 +309,7 @@ class AgvTransfer(DirtyFieldsMixin, ComputedFieldsModel):
     wdt_plc_ok = models.BooleanField(default=0, choices=wdt_plc_ok_choices)
     run_choices = list(enumerate([_('Stop'), _('Start')]))
     run = models.PositiveSmallIntegerField(choices=run_choices, default=0)
-    status_choices = list(enumerate([_('Wait for queue'), _('Sending command'), _('Operating queue')]))
+    status_choices = list(enumerate([_('Wait for queue'), _('Operating queue')]))
     status = models.PositiveSmallIntegerField(choices=status_choices, default=1, verbose_name=_('AGV Status'))
     step_choices = [(i + 1, i + 1) for i in range(7)]
     step = models.PositiveSmallIntegerField(choices=step_choices, default=1)

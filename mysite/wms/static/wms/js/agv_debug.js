@@ -47,7 +47,7 @@ $(document).ready(function () {
             success: function (response) {
                 render_agvtransfer(response)
                 agv_no = $('form[name="manualtransfer-form"] #id_agv_no').val()
-                if (response[agv_no - 1].run != 'Start' || response[agv_no - 1].status != 'Wait for queue') {
+                if (response[agv_no - 1].run != str_start || response[agv_no - 1].status != str_wait) {
                     $('button[name="manualtransfer"]').addClass('disabled')
                     $('#agv_to_home').addClass('disabled')
                 }

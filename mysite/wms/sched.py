@@ -799,7 +799,6 @@ def agv_route_manual(agv_no, qs_transfer, pattern, target_col, target_row):
 
 
 def position_cal(agv_x, agv_y, ignore_custom_col=False):
-    df_route = pd.DataFrame()
     custom_col_list = [9.5, 12.5, 15.5]
     qs_coor = Coordinate.objects.all() if not ignore_custom_col else Coordinate.objects.exclude(layout_col__in=custom_col_list)
     df_coordinate = read_frame(qs_coor, index_col='coor_id', verbose=False)
