@@ -221,9 +221,11 @@ def watchdog():
         for agv_no, qs_transfer in enumerate(qs_transfer_list, 1):
             obj_transfer = get_object_or_404(qs_transfer)
 
-            # Simulate PLC Watchdog
-            if obj_transfer.run == 1:
-                obj_transfer.wdt_plc = not obj_transfer.wdt_plc
+            # Simulate PLC Watchdog for test
+            # if obj_transfer.run == 1:
+            #     obj_transfer.wdt_plc = not obj_transfer.wdt_plc
+            #     obj_transfer.save_without_historical_record(update_fields=['wdt_plc'])
+
 
             if obj_transfer.run == 1:
                 if obj_transfer.wdt_plc:
@@ -241,7 +243,7 @@ def watchdog():
                         logfile_update(logfilename, datetime_now() + 'Connection Lost AGV #{}'.format(agv_no))
             elif obj_transfer.run == 0:
                 obj_transfer.wdt_plc_ok = True
-            obj_transfer.save_without_historical_record(update_fields=['wdt_plc', 'wdt_plc_ok'])
+            obj_transfer.save_without_historical_record(update_fields=['wdt_plc_ok'])
             wdt_plc_all = wdt_plc_all and obj_transfer.wdt_plc_ok
 
         if wdt_plc_all:
