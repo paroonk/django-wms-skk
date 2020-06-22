@@ -483,14 +483,27 @@ def agv_route(agv_no, qs_transfer, qs_queue):
     # Reverse NAV Offset 1.14m
     # Forward NAV Offset 0.60m + dist_Offset (Pattern 3,4)
 
-    # Step for storage
+    # Step for storage (Mode=1)
     # 1: Runway Stock/Home to Runway Robot (Pattern 0)
     # 2: Runway Robot to Robot (Pattern 2)
     # 3: Robot to Runway Robot (Pattern 1)
-    # 4: Runway Robot to Runway Stock (Pattern 0)
-    # 5: Runway Stock to Stock (Pattern 4)
-    # 6: Stock to Runway Stock (Pattern 1)
-    # 7: Runway Stock to Home (If no task queue) (Pattern 1, 4)
+    # 4: Runway Robot to Runway Stock_Place (Pattern 0)
+    # 5: Runway Stock_Place to Stock_Place (Pattern 4)
+    # 6: Stock_Place to Runway Stock_Place (Pattern 1)
+    # If no queue: Go to Home (Change to Mode=100)
+
+    # Step for retrieve (Mode=2)
+    # 1: Runway Stock/Home to Runway Stock_Pick (Pattern 0)
+    # 2: Runway Stock_Pick to Stock_Pick (Pattern 3)
+    # 3: Stock_Pick to Runway Stock_Pick (Pattern 1)
+    # 4: Runway Stock_Pick to Runway Stock_Place (Pattern 0)
+    # 5: Runway Stock_Place to Stock_Place (Pattern 4)
+    # 6: Stock_Place to Runway Stock_Place (Pattern 1)
+    # If no queue: Go to Home (Change to Mode=100)
+
+    # Step for home (Mode=100)
+    # 1: Runway Stock to Runway Home (Pattern 1)
+    # 2: Runway Home to Home (Pattern 4)
 
     df_queue = read_frame(qs_queue, index_col='id', verbose=False)
     if len(df_queue) >= 1 and send_cmd_hold[agv_no] == 0:
